@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ôn chương 8 toán 10 - Trình Chiếu</title>
+    <style>
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #eccfa0; font-family: Arial, sans-serif; display: flex; justify-content: center; align-items: center; overflow: hidden; }
+        .slide-container { width: 95vw; height: 95vh; height: 95dvh; background: #fff; border-radius: 5px; box-shadow: 0 5px 15px rgba(0,0,0,0.5); display: flex; flex-direction: column; position: relative; padding: 10px; box-sizing: border-box; }
+        .slide-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #0056b3; padding-bottom: 10px; margin-bottom: 20px; flex-shrink: 0; }
+        .slide-header h2 { margin: 0; color: #0056b3; font-size: var(--fs-title); }
+        
+        /* --- CỠ CHỮ CO GIÃN THEO MÀN HÌNH ---
+           --u kết hợp chiều rộng và chiều cao nên màn hình dọc (điện thoại) và ngang đều vừa mắt;
+           clamp() chặn nhỏ nhất để dễ đọc trên điện thoại, chặn lớn nhất để không phình trên màn hình lớn. */
+        :root {
+            --u: calc(0.65vw + 0.65vh);
+            --fs-title: clamp(16px, calc(var(--u) * 1.8), 34px);
+            --fs-q: clamp(16px, calc(var(--u) * 2), 40px);
+            --fs-q-sm: clamp(15px, calc(var(--u) * 1.6), 34px);
+            --fs-sol: clamp(15px, calc(var(--u) * 1.8), 36px);
+            --fs-opt: clamp(14px, calc(var(--u) * 1.6), 32px);
+            --fs-btn: clamp(13px, calc(var(--u) * 1.25), 22px);
+            --fs-toc-h: clamp(16px, calc(var(--u) * 1.5), 28px);
+            --fs-toc: clamp(13px, calc(var(--u) * 1.2), 22px);
+            --fs-toc-num: clamp(19px, calc(var(--u) * 2), 30px);   /* số câu trong mục lục */
+            --box-w: clamp(34px, calc(var(--u) * 3.2), 64px);
+            --box-h: clamp(42px, calc(var(--u) * 4), 80px);
+        }
+        html { -webkit-text-size-adjust: 100%; }
+        @supports (height: 100dvh) { body, html { height: 100dvh; } }
+
+        /* BẬT TÍNH NĂNG CUỘN CHO NỘI DUNG SLIDE */
+        .slide-content { flex-grow: 1; display: flex; flex-direction: column; justify-content: flex-start; align-items: stretch; overflow-y: auto; overflow-x: hidden; padding-right: 7px; padding-bottom: 30px; }
+        /* Trang trí thanh cuộn */
+        .slide-content::-webkit-scrollbar { width: 8px; }
+        .slide-content::-webkit-scrollbar-thumb { background: #888; border-radius: 4px; }
+        .slide-content::-webkit-scrollbar-thumb:hover { background: #555; }
+
+        .question-box { font-size: var(--fs-q); line-height: 1.5; transition: all 0.3s ease; }
+        .solution-box { display: none; font-size: var(--fs-sol); line-height: 1.4; margin-top: 15px; padding: 15px; background: #e2f3f5; border-left: 5px solid #17a2b8; border-radius: 5px; flex-shrink: 0; }
+        
+        /* Trắc nghiệm 1 lựa chọn */
+        .options { display: flex; flex-wrap: wrap; gap: 15px; margin-top: 15px; }
+        .options div { flex: 1 1 45%; background: #f9f9f9; padding: 10px; border: 2px solid #ddd; border-radius: 5px; cursor: pointer; transition: 0.2s; box-sizing: border-box; }
+        .options div:hover:not(.disabled) { background: #e9e9e9; }
+        .options div.selected { border-color: #007bff; background: #e2eefb; }
+        .options div.correct { background: #d4edda !important; border-color: #28a745 !important; color: #155724; font-weight: bold; }
+        .options div.incorrect { background: #f8d7da !important; border-color: #dc3545 !important; color: #721c24; }
+        .options div.disabled { cursor: not-allowed; opacity: 0.8; }
+        
+        /* Trắc nghiệm Đúng/Sai */
+        .tf-row { display: flex; align-items: center; justify-content: space-between; background: #f9f9f9; padding: 8px; margin-top: 10px; border: 2px solid #ddd; border-radius: 3px; }
+        .tf-row .content { flex-grow: 1; padding-right: 15px; font-size: var(--fs-sol); }
+        .tf-actions { display: flex; gap: 10px; }
+        .tf-btn { padding: 10px 20px; font-size: var(--fs-opt); font-weight: bold; border: 2px solid #ccc; border-radius: 5px; cursor: pointer; background: #fff; transition: 0.2s; user-select: none; }
+        .tf-btn.selected { border-color: #007bff; background: #e2eefb; color: #0056b3; }
+        .tf-btn.correct { background: #d4edda !important; border-color: #28a745 !important; color: #155724; }
+        .tf-btn.incorrect { background: #f8d7da !important; border-color: #dc3545 !important; color: #721c24; }
+        
+        /* Trắc nghiệm Trả lời ngắn */
+        .short-ans-group-slide { display: flex; gap: 5px; margin-top: 15px; }
+        .short-ans-box-slide { width: var(--box-w); height: var(--box-h); font-size: var(--fs-sol); text-align: center; border: 1px solid #007bff; border-radius: 8px; font-weight: bold; color: #0056b3; box-sizing: border-box; }
+        .short-ans-box-slide.correct { background: #d4edda; border-color: #28a745; color: #155724; }
+        .short-ans-box-slide.incorrect { background: #f8d7da; border-color: #dc3545; color: #721c24; }
+        .true-ans-text { display: none; color: #28a745; font-weight: bold; font-size: var(--fs-sol); margin-top: 15px; }
+        
+        /* CSS Nút điều khiển */
+        .controls { position: absolute; bottom: 20px; right: 20px; display: flex; gap: 10px; z-index: 100; background: #fff; padding-left: 10px; box-shadow: -10px 0px 10px white; }
+        button { padding: 10px 20px; font-size: var(--fs-btn); cursor: pointer; border: none; border-radius: 2px; font-weight: bold; transition: 0.3s; }
+        .btn-nav { background: #007bff; color: white; }
+        .btn-nav:hover { background: #0056b3; }
+        .btn-nav:disabled { background: #ccc; cursor: not-allowed; }
+        .btn-sol { background: #28a745; color: white; }
+        .btn-sol:hover { background: #218838; }
+        .btn-check { background: #ffc107; color: black; }
+        .btn-check:hover:not(:disabled) { background: #e0a800; }
+        .btn-check:disabled { background: #ccc; color: #666; cursor: not-allowed; }
+        
+        .scale-down .question-box { font-size: var(--fs-q-sm); }
+        .scale-down .options div, .scale-down .tf-row .content, .scale-down .tf-btn { font-size: var(--fs-opt); }
+        
+        mjx-container { max-width: 100%; }
+        /* --- SVG / ẢNH + KHUNG ZOOM DÙNG CHUNG (khung tự co giãn, không đặt chiều cao cố định) --- */
+        :root {
+            --zoom-accent: #1e88e5; --zoom-accent-hover: #1565c0;
+            --zoom-border: #b3d4fc; --zoom-bar-bg: #eef6fc; --zoom-max-h: none;
+        }
+        svg { max-width: 100%; height: auto; display: block; margin: 10px auto; overflow: visible; }
+        svg text { font-family: Arial, sans-serif; }
+        img { max-width: 100%; height: auto; }
+        .zoom-container { display: flex; align-items: flex-start; gap: 10px; margin: 15px 0; }
+        .zoom-viewport {
+            flex: 1 1 auto; min-width: 0;
+            overflow: auto; -webkit-overflow-scrolling: touch;
+            border: 1px solid var(--zoom-border); border-radius: 4px; background: #fff;
+            box-sizing: border-box; padding: 4px;
+        }
+        /* chỉ giới hạn chiều cao và giữ cuộn bên trong khi ảnh đang được phóng to */
+        .zoom-viewport.can-pan { cursor: grab; max-height: var(--zoom-max-h); overscroll-behavior: contain; }
+        .zoom-viewport.dragging { cursor: grabbing; user-select: none; }
+        .zoom-toolbar { display: flex; flex-direction: column; gap: 5px; background: var(--zoom-bar-bg); padding: 5px; border-radius: 4px; border: 1px solid var(--zoom-border); flex-shrink: 0; }
+        .zoom-btn { background: var(--zoom-accent); color: #fff; border: none; padding: 6px 10px; font-size: 14px; border-radius: 4px; cursor: pointer; transition: background .2s, opacity .2s; white-space: nowrap; }
+        .zoom-btn:hover:not(:disabled) { background: var(--zoom-accent-hover); }
+        .zoom-btn:disabled { background: #ccc; cursor: not-allowed; opacity: .6; }
+        .zoom-media { display: block; margin: 0 auto; max-width: 100%; height: auto; user-select: none; -webkit-user-drag: none; }
+        .zoom-media.zoomed { width: var(--zw) !important; max-width: none !important; height: auto !important; }
+        /* --- BẢNG DÀI: bọc trong khung cuộn ngang, không làm tràn lề --- */
+        .table-scroll { display: block; width: 100%; max-width: 100%; min-width: 0; box-sizing: border-box; overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain; margin: 10px 0; }
+        .table-scroll > table { margin: 0; max-width: 100%; border-collapse: collapse; }
+        .table-scroll th, .table-scroll td { overflow-wrap: break-word; }
+
+        :root { --zoom-accent: #17a2b8; --zoom-accent-hover: #138496; --zoom-border: #ced4da; --zoom-bar-bg: #f8f9fa; --zoom-max-h: 70vh; }
+        .slide { display: none; height: 100%; flex-direction: column; }
+        .slide.active { display: flex; }
+
+
+        .slide-counter { align-self: center; font-weight: bold; color: #555; font-size: var(--fs-btn); white-space: nowrap; min-width: 3.6em; text-align: center; }
+        .tf-row { flex-wrap: wrap; gap: 8px; }
+
+        @media (max-width: 700px) {
+            .slide-container { width: 100vw; height: 100vh; height: 100dvh; border-radius: 0; padding: 8px; }
+            .slide-header { margin-bottom: 10px; padding-bottom: 6px; }
+            .options div { flex-basis: 100%; }
+            .slide { height: auto; flex: 1 1 auto; min-height: 0; }
+            .slide-content { padding-bottom: 10px; }
+            .controls { position: static; width: 100%; box-shadow: none; padding: 8px 0 0; background: transparent; flex-shrink: 0; justify-content: space-between; }
+            .controls button { flex: 1; padding: 10px 6px; }
+            .controls .btn-fs { flex: 0 0 auto; }
+        }
+        @media (max-height: 500px) {
+            .slide-header { margin-bottom: 8px; padding-bottom: 6px; }
+            .slide-content { padding-bottom: 50px; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            * { transition: none !important; }
+        }
+
+        .author-footer { position: absolute; left: 14px; bottom: 24px; max-width: 38%; z-index: 90; background: #fff; padding: 2px 10px 2px 0; color: #6b7280; font-size: clamp(11px, calc(var(--u) * 0.9), 16px); line-height: 1.3; }
+        .author-footer:empty { display: none; }
+        @media (max-width: 700px) {
+            .author-footer { position: static; max-width: 100%; text-align: center; padding: 6px 0 0; flex-shrink: 0; }
+        }
+
+        /* --- MỤC LỤC: tấm trượt từ dưới lên, có trạng thái từng câu --- */
+        .btn-toc { background: #17a2b8; color: white; cursor: pointer; }
+        .slide-container:focus { outline: none; }
+
+        .toc-modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); z-index: 1000;
+            display: flex; justify-content: center; align-items: flex-end;
+            opacity: 0; visibility: hidden;
+            transition: opacity 0.25s ease, visibility 0.25s ease;
+        }
+        .toc-content {
+            background: #fff; width: 80vw; max-width: 900px; max-height: 85vh; max-height: 85dvh;
+            border-radius: 15px 15px 0 0; padding: 12px 25px 0;
+            display: flex; flex-direction: column; box-sizing: border-box;
+            box-shadow: 0 -5px 25px rgba(0,0,0,0.3);
+            transform: translateY(100%);
+            transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+        .toc-modal.active { opacity: 1; visibility: visible; }
+        .toc-modal.active .toc-content { transform: translateY(0); }
+
+        .toc-handle { flex-shrink: 0; padding: 4px 0 10px; touch-action: none; cursor: grab; }
+        .toc-handle span { display: block; width: 46px; height: 5px; border-radius: 3px; background: #cbd5e1; margin: 0 auto; }
+        .toc-content h3 { flex-shrink: 0; margin: 0 0 4px; color: #0056b3; font-size: var(--fs-toc-h); text-align: center; }
+        .toc-summary { flex-shrink: 0; text-align: center; color: #333; font-size: var(--fs-btn); margin: 2px 0 8px; }
+        .toc-legend { flex-shrink: 0; display: flex; flex-wrap: wrap; gap: 6px 10px; justify-content: center; margin-bottom: 8px; font-size: clamp(11px, calc(var(--u) * 0.9), 15px); }
+        .toc-legend span { padding: 1px 9px; border: 2px solid; border-radius: 12px; white-space: nowrap; }
+
+        .toc-scroll { flex: 1 1 auto; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; padding: 4px 2px 8px; }
+        .toc-group-title { margin: 12px 0 4px; color: #495057; font-size: var(--fs-btn); }
+        .toc-group-title:first-child { margin-top: 2px; }
+        .toc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(58px, 1fr)); gap: 8px; padding: 8px; }
+
+        .toc-item {
+            position: relative; display: flex; align-items: center; justify-content: center;
+            min-height: 44px; padding: 2px; border: 2px solid #007bff; border-radius: 6px;
+            background: #e2eefb; color: #0056b3; font-family: inherit; font-weight: bold; font-size: var(--fs-toc-num);
+            line-height: 1; cursor: pointer; user-select: none; transition: filter .15s, transform .15s;
+        }
+        /* ký hiệu trạng thái: dấu nhỏ ở góc trên bên phải để ô thấp, số to */
+        .toc-item .m { position: absolute; top: 1px; right: 4px; font-size: 11px; line-height: 1; }
+        .toc-item:hover { filter: brightness(0.94); transform: translateY(-1px); }
+        .toc-item:focus-visible { outline: 3px solid #ff9800; outline-offset: 2px; }
+        .toc-item.current { box-shadow: 0 0 0 3px #fff, 0 0 0 6px #0056b3; }
+        .toc-s-correct { background: #d4edda; border-color: #28a745; color: #155724; }
+        .toc-s-wrong   { background: #f8d7da; border-color: #dc3545; color: #721c24; }
+        .toc-s-partial { background: #fff3cd; border-color: #ff9800; color: #7a4b00; }
+        .toc-s-picked  { background: #fffbe6; border-style: dashed; border-color: #d39e00; color: #7a5c00; }
+        .toc-s-none    { background: #f1f3f5; border-color: #adb5bd; color: #495057; }
+        .toc-s-empty   { background: #e2eefb; border-color: #007bff; color: #0056b3; }
+
+        .toc-footer { flex-shrink: 0; display: flex; justify-content: center; padding: 10px 0 calc(12px + env(safe-area-inset-bottom)); }
+        .toc-close { background: #dc3545; font-size: var(--fs-btn); min-width: 120px; }
+        .toc-close:hover { background: #b02a37; }
+
+        @media (max-width: 700px) {
+            .toc-content { width: 100vw; max-width: none; max-height: 88vh; max-height: 88dvh; padding: 8px 14px 0; }
+            .toc-grid { grid-template-columns: repeat(auto-fill, minmax(48px, 1fr)); gap: 6px; padding: 6px; }
+            .toc-item { min-height: 42px; }
+        }
+        @media (max-height: 500px) {
+            .toc-content { max-height: 96vh; max-height: 96dvh; }
+            .toc-legend { display: none; }
+        }
+
+        
+        /* ===== Bổ sung của bộ chuyển đổi TeX2HTML (PyQt6) ===== */
+        .tp { margin: 6px 0; }
+        .center { text-align: center; }
+        .figure svg, .figure img { max-width: 100%; height: auto; }
+        .fig-error { color: #b00020; border: 1px dashed #b00020; padding: 6px 10px; text-align: center; margin: 8px 0; font-size: 14px; }
+        .fbox { border: 1px solid currentColor; padding: 0 4px; }
+        blockquote { margin: 8px 20px; }
+        img { max-width: 100%; height: auto; }
+        ul, ol { margin: 6px 0; padding-left: 24px; }
+        ul.desc, li.cl { list-style: none; }
+        li.cl .lbl { font-weight: bold; margin-right: .4em; }
+        ol[class^="paren-"] { list-style: none; counter-reset: pc; padding-left: 2.2em; }
+        ol[class^="paren-"] > li { counter-increment: pc; position: relative; margin: 4px 0; }
+        ol[class^="paren-"] > li::before { position: absolute; left: -2.2em; width: 2em; text-align: right; font-weight: bold; }
+        ol.paren-a > li::before { content: counter(pc, lower-alpha) ")"; }
+        ol.paren-A > li::before { content: counter(pc, upper-alpha) ")"; }
+        ol.paren-i > li::before { content: counter(pc, lower-roman) ")"; }
+        ol.paren-I > li::before { content: counter(pc, upper-roman) ")"; }
+        ol.paren-1 > li::before { content: counter(pc, decimal) ")"; }
+        table.tex-table { border-collapse: collapse; margin: 8px auto; }
+        table.tex-table td { padding: 4px 10px; }
+        table.tex-table.bordered td { border: 1px solid #555; }
+
+
+    </style>
+
+    <script>
+        window.MathJax = {
+          tex: { inlineMath: [['$','$'], ['\\(','\\)']], displayMath: [['$$','$$'], ['\\[','\\]']], processEscapes: true, macros: {"wideparen": ["\\overset{\\frown}{#1}", 1], "overarc": ["\\overset{\\frown}{#1}", 1], "colorInterval": "white", "skipInterval": "0.4cm", "Interval": ["\\coordinate [label={center:$#1$},label=below:$\\rule{0pt}{\\skipInterval}#2$] (a) at (#2,0); \n \\coordinate [label={center:$#3$},label=below:$\\rule{0pt}{\\skipInterval}#4$] (b) at (#4,0); \n \\draw[color=\\colorInterval] decorate[decoration={ticks,amplitude=3pt,segment length=1mm}] {(a)--(b)};\n", 4], "IntervalR": ["\\coordinate [label={center:$#1$},label=below:$\\rule{0pt}{\\skipInterval}#2$] (a) at (#2,0); \n \\coordinate [label={center:$#3$},label=below:$\\rule{0pt}{\\skipInterval}#4$] (b) at (#4,0); \n \\draw decorate[decoration={markings,mark=between positions 0 and 1 step 1mm\n with\n {\n\\draw[color=\\colorInterval] (-3pt,-3pt) -- (3pt,3pt);\n }}] {(a)--(b)};\n", 4], "IntervalL": ["\\coordinate [label={center:$#1$},label=below:$\\rule{0pt}{\\skipInterval}#2$] (a) at (#2,0); \n \\coordinate [label={center:$#3$},label=below:$\\rule{0pt}{\\skipInterval}#4$] (b) at (#4,0); \n \\draw decorate[decoration={\n\t\tmarkings,\n\t\tmark=between positions 0 and 1 step 1mm\n with\n {\n\t\t\\draw[color=\\colorInterval] (-3pt,3pt) -- (3pt,-3pt);\n }\n\t\t}\n\t\t] {(a)--(b)};\n", 4], "IntervalLF": ["\\coordinate [label={center:$#1$},label=below:$\\rule{0pt}{\\skipInterval}#2$] (a) at (#2,0); \n \\coordinate [label={center:$#3$},label=below:$\\rule{0pt}{\\skipInterval}#4$] (b) at (#4,0); \n \\fill[pattern=north west lines,pattern color=\\colorInterval](#2,-3pt)rectangle(#4,3pt);\n", 4], "IntervalRF": ["\\coordinate [label={center:$#1$},label=below:$\\rule{0pt}{\\skipInterval}#2$] (a) at (#2,0); \n \\coordinate [label={center:$#3$},label=below:$\\rule{0pt}{\\skipInterval}#4$] (b) at (#4,0); \n \\fill[pattern=north east lines,pattern color=\\colorInterval](#2,-3pt)rectangle(#4,3pt);\n", 4], "pre": "0", "next": "2", "IntervalLR": ["\n\\def\\pre{#1}\n\\def\\next{#2}\n", 2], "IntervalG": ["\\coordinate [label={center:$#1$},label=below:$\\rule{0pt}{\\skipInterval}#2$] (a) at (\\pre,0); \n \\coordinate [label={center:$#3$},label=below:$\\rule{0pt}{\\skipInterval}#4$] (b) at (\\next,0); \n \\draw[color=\\colorInterval] decorate[decoration={ticks,amplitude=3pt,segment length=1mm}] {(a)--(b)};\n", 4], "IntervalGL": ["\\coordinate [label={center:$#1$},label=below:$\\rule{0pt}{\\skipInterval}#2$] (a) at (\\pre,0); \n \\coordinate [label={center:$#3$},label=below:$\\rule{0pt}{\\skipInterval}#4$] (b) at (\\next,0); \n \\draw decorate[decoration={markings,mark=between positions 0 and 1 step 1mm\n with\n {\n\\draw[color=\\colorInterval] (-3pt,3pt) -- (3pt,-3pt);\n }}] {(a)--(b)};\n", 4], "IntervalGR": ["\\coordinate [label={center:$#1$},label=below:$\\rule{0pt}{\\skipInterval}#2$] (a) at (\\pre,0); \n \\coordinate [label={center:$#3$},label=below:$\\rule{0pt}{\\skipInterval}#4$] (b) at (\\next,0); \n \\draw decorate[decoration={markings,mark=between positions 0 and 1 step 1mm\n with\n {\n\\draw[color=\\colorInterval] (-3pt,-3pt) -- (3pt,3pt);\n }}] {(a)--(b)};\n", 4], "IntervalGLF": ["\\coordinate [label={center:$#1$},label=below:$\\rule{0pt}{\\skipInterval}#2$] (a) at (\\pre,0); \n \\coordinate [label={center:$#3$},label=below:$\\rule{0pt}{\\skipInterval}#4$] (b) at (\\next,0); \n \\fill[pattern=north west lines,pattern color=\\colorInterval](\\pre,-3pt)rectangle(\\next,3pt);\n", 4], "IntervalGRF": ["\\coordinate [label={center:$#1$},label=below:$\\rule{0pt}{\\skipInterval}#2$] (a) at (\\pre,0); \n \\coordinate [label={center:$#3$},label=below:$\\rule{0pt}{\\skipInterval}#4$] (b) at (\\next,0); \n \\fill[pattern=north east lines,pattern color=\\colorInterval](\\pre,-3pt)rectangle(\\next,3pt);\n", 4], "tikzsetnextfilename": ["", 1], "phone": "0947 306 694", "facenhom": "\\raisebox{-1pt}{\\scriptsize\\faFacebook}\\ LaTeX\\ Theme and Related Topics", "hmmax": "0", "bmmax": "0", "sotracnghiem": "46", "sodungsai": "4", "sotrln": "6", "sotuluan": "14"} },
+          options: { enableMenu: false }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-chtml.min.js"></script>
+</head>
+<body>
+    <div class="slide-container" id="mainContainer" tabindex="-1">
+        <div class="slide" id="slide-0" data-checked="false" data-type="1"><div class="slide-header"><h2>Câu 1</h2><div style="display: flex; gap: 10px;"><button class="btn-check" onclick="checkAnswer(this, 'slide-0')">Kiểm tra</button><button class="btn-sol" onclick="toggleSolution(this, 'slide-0')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Gieo hai con xúc xắc. Tính xác suất của biến cố “ Tổng số chấm trên hai mặt là số&nbsp;lẻ”.</div><div class='options'><div onclick="selectOption(this, 'slide-0')"><b>A.</b> $\dfrac{11}{36}$</div><div onclick="selectOption(this, 'slide-0')" data-correct='true'><b>B.</b> $\dfrac{1}{2}$</div><div onclick="selectOption(this, 'slide-0')"><b>C.</b> $\dfrac{1}{3}$</div><div onclick="selectOption(this, 'slide-0')"><b>D.</b> $\dfrac{1}{4}$</div></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Không gian mẫu là các bộ $(i, j)$ với $i,j \in \{1,2,3,4,5,6\}$. \[
+			n(\Omega) = 6 \cdot 6 = 36.
+			\] Gọi $A$ là biến cố “ Tổng số chấm trên hai mặt là số lẻ”.<br> <b>Trường hợp 1:</b> Xúc xắc thứ nhất ra số lẻ ($3$ cách), xúc xắc thứ hai ra số chẵn ($3$ cách) $\Rightarrow 3 \cdot 3 = 9$ cách.<br> <b>Trường hợp 2:</b> Xúc xắc thứ nhất ra số chẵn ($3$ cách), xúc xắc thứ hai ra số lẻ ($3$ cách) $\Rightarrow 3 \cdot 3 = 9$ cách.<br> $\Rightarrow n(A) = 9 + 9 = 18\Rightarrow
+			\mathrm{P}(A) = \dfrac{18}{36} = \dfrac{1}{2}$.</div></div></div></div>
+<div class="slide" id="slide-1" data-checked="false" data-type="1"><div class="slide-header"><h2>Câu 2</h2><div style="display: flex; gap: 10px;"><button class="btn-check" onclick="checkAnswer(this, 'slide-1')">Kiểm tra</button><button class="btn-sol" onclick="toggleSolution(this, 'slide-1')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Tung một đồng xu cân đối và đồng chất hai lần liên tiếp. Tính xác suất để cả hai lần tung đều xuất hiện mặt ngửa.</div><div class='options'><div onclick="selectOption(this, 'slide-1')"><b>A.</b> $\dfrac{1}{2}$</div><div onclick="selectOption(this, 'slide-1')"><b>B.</b> $\dfrac{1}{3}$</div><div onclick="selectOption(this, 'slide-1')" data-correct='true'><b>C.</b> $\dfrac{1}{4}$</div><div onclick="selectOption(this, 'slide-1')"><b>D.</b> $\dfrac{3}{4}$</div></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Không gian mẫu của phép thử là $\Omega = \{SS,\ SN,\ NS,\ NN \}$. <br> Xét biến cố $A$: “ Hai lần tung đều xuất hiện mặt ngửa”. Nên $A = \{NN\}$. <br> Khi đó \[
+			n(\Omega) = 4,\quad n(A) = 1,\quad \mathrm{P}(A) = \dfrac{n(A)}{n(\Omega)} = \dfrac{1}{4}.
+			\]</div></div></div></div>
+<div class="slide" id="slide-2" data-checked="false" data-type="1"><div class="slide-header"><h2>Câu 3</h2><div style="display: flex; gap: 10px;"><button class="btn-check" onclick="checkAnswer(this, 'slide-2')">Kiểm tra</button><button class="btn-sol" onclick="toggleSolution(this, 'slide-2')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Tung một đồng xu cân đối và đồng chất ba lần liên tiếp. Tính xác suất để có ít nhất một lần tung xuất hiện mặt sấp.</div><div class='options'><div onclick="selectOption(this, 'slide-2')"><b>A.</b> $\dfrac{1}{8}$</div><div onclick="selectOption(this, 'slide-2')" data-correct='true'><b>B.</b> $\dfrac{7}{8}$</div><div onclick="selectOption(this, 'slide-2')"><b>C.</b> $\dfrac{1}{4}$</div><div onclick="selectOption(this, 'slide-2')"><b>D.</b> $\dfrac{3}{4}$</div></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Số phần tử của không gian mẫu là $\quad n(\Omega) = 2\cdot 2\cdot 2= 8$. <br> Xét biến cố $A$: “ Ít nhất một lần tung xuất hiện mặt sấp”.<br> Biến cố đối của $A$ là “ Không có lần nào sấp” tức là chỉ có kết quả $\mathrm{NNN}$, nên $n(A)=8-1=7$. <br> Vậy xác suất cần tìm là \[
+			\mathrm{P}(A) = \dfrac{n(A)}{n(\Omega)} = \dfrac{7}{8}.
+			\]</div></div></div></div>
+<div class="slide" id="slide-3" data-checked="false" data-type="1"><div class="slide-header"><h2>Câu 4</h2><div style="display: flex; gap: 10px;"><button class="btn-check" onclick="checkAnswer(this, 'slide-3')">Kiểm tra</button><button class="btn-sol" onclick="toggleSolution(this, 'slide-3')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Một em bé có bộ $6$ thẻ chữ, trên mỗi thẻ có ghi một chữ cái, trong đó có $3$ thẻ chữ T, một thẻ chữ N, một thẻ chữ H và một thẻ chữ P. Em bé đó xếp ngẫu nhiên $6$ thẻ đó thành một hàng ngang. Tính xác suất em bé xếp được thành dãy <b>TNTHPT</b>.</div><div class='options'><div onclick="selectOption(this, 'slide-3')" data-correct='true'><b>A.</b> $\dfrac{1}{120}$</div><div onclick="selectOption(this, 'slide-3')"><b>B.</b> $\dfrac{1}{720}$</div><div onclick="selectOption(this, 'slide-3')"><b>C.</b> $\dfrac{1}{6}$</div><div onclick="selectOption(this, 'slide-3')"><b>D.</b> $\dfrac{1}{20}$</div></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Xem ba chữ T là phân biệt ta có $n(\Omega) = 6!$. <br> Gọi $A$ là biến cố “ xếp ngẫu nhiên $6$ thẻ đó thành dãy <b>TNTHPT</b>”.<br> Suy ra $n(A) = 3!$ (vì hoán vị các chữ T, còn N, H, P cố định).<br> Vậy xác suất biến cố $A$ là $\mathrm{P}(A) = \dfrac{3!}{6!} = \dfrac{1}{120}$.</div></div></div></div>
+<div class="slide" id="slide-4" data-checked="false" data-type="1"><div class="slide-header"><h2>Câu 5</h2><div style="display: flex; gap: 10px;"><button class="btn-check" onclick="checkAnswer(this, 'slide-4')">Kiểm tra</button><button class="btn-sol" onclick="toggleSolution(this, 'slide-4')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Ban chấp hành Đoàn thanh niên của nhà trường cần lập $4$ đội cờ đỏ để chấm thi đua, mỗi đội $3$ người từ $12$ học sinh gồm $5$ học sinh lớp $12$, $4$ học sinh lớp $11$, $3$ học sinh lớp $10$. Xác suất để đội nào cũng có học sinh lớp $12$ và học sinh lớp $11$ là</div><div class='options'><div onclick="selectOption(this, 'slide-4')" data-correct='true'><b>A.</b> $\dfrac{36}{385}$</div><div onclick="selectOption(this, 'slide-4')"><b>B.</b> $\dfrac{6}{385}$</div><div onclick="selectOption(this, 'slide-4')"><b>C.</b> $\dfrac{3}{770}$</div><div onclick="selectOption(this, 'slide-4')"><b>D.</b> $\dfrac{9}{385}$</div></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Số cách chia $12$ học sinh thành $4$ đội là $n\left(\Omega\right)=\mathrm{C}_{12}^3\cdot\mathrm{C}_9^3\cdot\mathrm{C}_6^3\cdot\mathrm{C}_3^3$. <br> Gọi $A$ là biến cố “ Mỗi đội luôn có học sinh lớp $12$ và học sinh lớp $11$”.<br> Xếp vào mỗi đội một học sinh lớp $11$ ta có $4!$ cách.<br> Xếp $5$ học sinh lớp $12$ vào $4$ đội thì sẽ có $1$ đội có $2$ học sinh lớp $12$. <br> Chọn đội có $2$ học sinh lớp $12$ có $4$ cách, chọn $2$ học sinh lớp $12$ có $\mathrm{C}_5^2$ cách, xếp $3$ học sinh lớp $12$ còn lại có $3!$ cách.<br> Xếp $3$ học sinh lớp $10$ có $3!$ cách.<br> Ta có $n(A)=4!\cdot4\cdot\mathrm{C}_5^2\cdot3!\cdot3!$. <br> Xác suất của biến cố $A$ là $\mathrm{P}(A)=\dfrac{4!\cdot4\cdot\mathrm{C}_5^2\cdot3!\cdot3!}{\mathrm{C}_{12}^3\cdot\mathrm{C}_9^3\cdot\mathrm{C}_6^3\cdot\mathrm{C}_3^3}=\dfrac{36}{385}$.</div></div></div></div>
+<div class="slide" id="slide-5" data-checked="false" data-type="1"><div class="slide-header"><h2>Câu 6</h2><div style="display: flex; gap: 10px;"><button class="btn-check" onclick="checkAnswer(this, 'slide-5')">Kiểm tra</button><button class="btn-sol" onclick="toggleSolution(this, 'slide-5')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Gieo một con xúc sắc cân đối, đồng chất. Biến cố nào sau đây là biến cố chắc chắn</div><div class='options'><div onclick="selectOption(this, 'slide-5')"><b>A.</b> A: “Xuất hiện mặt chẵn chấm”</div><div onclick="selectOption(this, 'slide-5')" data-correct='true'><b>B.</b> C: “Xuất hiện mặt nhỏ hơn $7$ chấm”</div><div onclick="selectOption(this, 'slide-5')"><b>C.</b> D: “Xuất hiện mặt có số chấm là một số nguyên tố”</div><div onclick="selectOption(this, 'slide-5')"><b>D.</b> B: “Xuất hiện mặt lẻ chấm”</div></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Biến cố chắc chắn là C: “Xuất hiện mặt nhỏ hơn $10$ chấm”.</div></div></div></div>
+<div class="slide" id="slide-6" data-checked="false" data-type="1"><div class="slide-header"><h2>Câu 7</h2><div style="display: flex; gap: 10px;"><button class="btn-check" onclick="checkAnswer(this, 'slide-6')">Kiểm tra</button><button class="btn-sol" onclick="toggleSolution(this, 'slide-6')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Gieo con súc sắc hai lần. Biến cố $A$ là biến cố để sau hai lần gieo có ít nhất một mặt $6$ chấm xuất hiện. Biến cố $A$ là tập nào sau đây?</div><div class='options'><div onclick="selectOption(this, 'slide-6')"><b>A.</b> $A=\{(1;6),(2;6),(3;6),(4;6),(5;6),(6;6)\}$</div><div onclick="selectOption(this, 'slide-6')" data-correct='true'><b>B.</b> $A=\{(1;6),(2;6),(3;6),(4;6),(5;6),(6;6),(6;1),(6;2),(6;3),(6;4),(6;5)\}$</div><div onclick="selectOption(this, 'slide-6')"><b>C.</b> $A=\{(1;6),(2;6),(3;6),(4;6),(5;6),(6;1),(6;2),(6;3),(6;4),(6;5)\}$</div><div onclick="selectOption(this, 'slide-6')"><b>D.</b> $A=\{(1;6),(2;6),(3;6),(4;6),(5;6)\}$</div></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Gieo con súc sắc hai lần. Biến cố $A$ là biến cố để sau hai lần gieo có ít nhất một mặt $6$ chấm xuất hiện là $A=\{(1;6),(2;6),(3;6),(4;6),(5;6),(6;6),(6;1),(6;2),(6;3),(6;4),(6;5)\}$.</div></div></div></div>
+<div class="slide" id="slide-7" data-checked="false" data-type="1"><div class="slide-header"><h2>Câu 8</h2><div style="display: flex; gap: 10px;"><button class="btn-check" onclick="checkAnswer(this, 'slide-7')">Kiểm tra</button><button class="btn-sol" onclick="toggleSolution(this, 'slide-7')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Xét phép thử tung con súc sắc $6$ mặt hai lần. Số phần tử của biến cố $B$: “ Tổng số chấm xuất hiện ở hai lần tung chia hết cho $3$”&thinsp; là</div><div class='options'><div onclick="selectOption(this, 'slide-7')"><b>A.</b> $n(B)=14$</div><div onclick="selectOption(this, 'slide-7')"><b>B.</b> $n(B)=15$</div><div onclick="selectOption(this, 'slide-7')"><b>C.</b> $n(B)=13$</div><div onclick="selectOption(this, 'slide-7')" data-correct='true'><b>D.</b> $n(B)=11$</div></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Xét các cặp $(i,j)$ với $i,j\in \left\{1,2,3,4,5,6\right\}$ mà $(i+j)\vdots 3$. <br> Ta có các cặp có tổng chia hết cho $3$ là $(1,2);(1,5);(2,4);(3,3);(3,6);(4,5)$. <br> Hơn nữa mỗi cặp (trừ cặp $\left(3,3\right)$) khi hoán vị ta được một cặp thỏa yêu cầu bài toán.<br> Vậy $n(B)=11$.</div></div></div></div>
+<div class="slide" id="slide-8" data-checked="false" data-type="1"><div class="slide-header"><h2>Câu 9</h2><div style="display: flex; gap: 10px;"><button class="btn-check" onclick="checkAnswer(this, 'slide-8')">Kiểm tra</button><button class="btn-sol" onclick="toggleSolution(this, 'slide-8')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Minh muốn gọi điện cho Ngọc nhưng Minh quên mất chữ số cuối cùng của số điện thoại. Minh chọn ngẫu nhiên một chữ số cho chữ số cuối cùng để gọi thử. Tính số phần tử của tập không gian mẫu.</div><div class='options'><div onclick="selectOption(this, 'slide-8')"><b>A.</b> $n(\omega)=9$</div><div onclick="selectOption(this, 'slide-8')" data-correct='true'><b>B.</b> $n(\omega)=10$</div><div onclick="selectOption(this, 'slide-8')"><b>C.</b> $n(\omega)=1$</div><div onclick="selectOption(this, 'slide-8')"><b>D.</b> $n(\omega)=11$</div></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Không gian mẫu của phép thử $\Omega =\big\{0;1;2;3;4;5;6;7;8;9\big\}$ nên $n(\omega)=10$.</div></div></div></div>
+<div class="slide" id="slide-9" data-checked="false" data-type="1"><div class="slide-header"><h2>Câu 10</h2><div style="display: flex; gap: 10px;"><button class="btn-check" onclick="checkAnswer(this, 'slide-9')">Kiểm tra</button><button class="btn-sol" onclick="toggleSolution(this, 'slide-9')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Gieo một đồng tiền cân đối và đồng chất bốn lần. Xác suất để cả bốn lần xuất hiện mặt sấp là</div><div class='options'><div onclick="selectOption(this, 'slide-9')"><b>A.</b> $\dfrac{4}{16}$</div><div onclick="selectOption(this, 'slide-9')"><b>B.</b> $\dfrac{2}{16}$</div><div onclick="selectOption(this, 'slide-9')" data-correct='true'><b>C.</b> $\dfrac{1}{16}$</div><div onclick="selectOption(this, 'slide-9')"><b>D.</b> $\dfrac{6}{16}$</div></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Số phần tử của không gian mẫu là $n(\Omega)=2^4=16$. <br> Gọi $A$ là biến cố “Cả bốn lần gieo xuất hiện mặt sấp” $\Rightarrow n(A)=1$. <br> Vậy xác suất cần tính $\mathrm{P}(A)=\dfrac{1}{16}$.</div></div></div></div>
+<div class="slide" id="slide-10" data-checked="false" data-type="1"><div class="slide-header"><h2>Câu 11</h2><div style="display: flex; gap: 10px;"><button class="btn-check" onclick="checkAnswer(this, 'slide-10')">Kiểm tra</button><button class="btn-sol" onclick="toggleSolution(this, 'slide-10')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Gieo ba con xúc xắc. Xác suất để số chấm xuất hiện trên ba con xúc xắc như nhau là</div><div class='options'><div onclick="selectOption(this, 'slide-10')"><b>A.</b> $\dfrac{12}{216}$</div><div onclick="selectOption(this, 'slide-10')"><b>B.</b> $\dfrac{1}{216}$</div><div onclick="selectOption(this, 'slide-10')" data-correct='true'><b>C.</b> $\dfrac{6}{216}$</div><div onclick="selectOption(this, 'slide-10')"><b>D.</b> $\dfrac{3}{216}$</div></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Số phần tử của không gian mẫu là $n(\Omega)=6\cdot 6\cdot 6=216$. <br> Gọi $A$ là biến cố “Số chấm xuất hiện trên ba con súc sắc như nhau”. <br> Ta có các trường hợp thuận lợi cho biến cố $A$ là $(1; 1; 1),(2; 2; 2),(3; 3; 3), \ldots,(6; 6; 6)$. <br> Suy ra $n(A)=6$. <br> Vậy xác suất cần tính $\mathrm{P}(A)=\dfrac{6}{216}$.</div></div></div></div>
+<div class="slide" id="slide-11" data-checked="false" data-type="1"><div class="slide-header"><h2>Câu 12</h2><div style="display: flex; gap: 10px;"><button class="btn-check" onclick="checkAnswer(this, 'slide-11')">Kiểm tra</button><button class="btn-sol" onclick="toggleSolution(this, 'slide-11')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Rút một lá bài từ bộ bài $52$ lá. Xác suất để được lá bích là</div><div class='options'><div onclick="selectOption(this, 'slide-11')"><b>A.</b> $\dfrac{1}{13}$</div><div onclick="selectOption(this, 'slide-11')" data-correct='true'><b>B.</b> $\dfrac{1}{4}$</div><div onclick="selectOption(this, 'slide-11')"><b>C.</b> $\dfrac{12}{13}$</div><div onclick="selectOption(this, 'slide-11')"><b>D.</b> $\dfrac{3}{4}$</div></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Gọi $A$ là biến cố: “Lá bài được rút là lá bích”. <br> Ta có $n(\Omega)=52$ và $n(A)=13$. Khi đó, xác suất của biến cố $A$ là $\mathrm{P}(A)=\dfrac{n(A)}{n(\Omega)}=\dfrac{13}{52}=\dfrac{1}{4}$.</div></div></div></div>
+<div class="slide" id="slide-12" data-checked="false" data-type="1"><div class="slide-header"><h2>Câu 13</h2><div style="display: flex; gap: 10px;"><button class="btn-check" onclick="checkAnswer(this, 'slide-12')">Kiểm tra</button><button class="btn-sol" onclick="toggleSolution(this, 'slide-12')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Gieo hai con xúc xắc. Tính xác suất để tổng số chấm xuất hiện trên hai con xúc xắc bằng $11$.</div><div class='options'><div onclick="selectOption(this, 'slide-12')" data-correct='true'><b>A.</b> $\dfrac{1}{18}$</div><div onclick="selectOption(this, 'slide-12')"><b>B.</b> $\dfrac{1}{6}$</div><div onclick="selectOption(this, 'slide-12')"><b>C.</b> $\dfrac{1}{8}$</div><div onclick="selectOption(this, 'slide-12')"><b>D.</b> $\dfrac{2}{25}$</div></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Gọi $A$ là biến cố: “Tổng hai mặt bằng $11$ khi gieo hai con súc sắc”. <br> Ta có $n(\Omega)=6^{2}=36$ và $n(A)=1+1=2. $ <br> Khi đó, xác suất của biến cố $A$ là $\mathrm{P}(A)=\dfrac{n(A)}{n(\Omega)}=\dfrac{22}{52}=\dfrac{2}{36}=\dfrac{1}{18}$.</div></div></div></div>
+<div class="slide" id="slide-13" data-checked="false" data-type="1"><div class="slide-header"><h2>Câu 14</h2><div style="display: flex; gap: 10px;"><button class="btn-check" onclick="checkAnswer(this, 'slide-13')">Kiểm tra</button><button class="btn-sol" onclick="toggleSolution(this, 'slide-13')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Gieo ngẫu nhiên $2$ con súc sắc cân đối đồng chất. Xác suất của biến cố: “ Hiệu số chấm xuất hiện trên $2$ con súc sắc bằng 1” $\,$ là</div><div class='options'><div onclick="selectOption(this, 'slide-13')"><b>A.</b> $\dfrac{2}{9}$</div><div onclick="selectOption(this, 'slide-13')"><b>B.</b> $\dfrac{1}{9}$</div><div onclick="selectOption(this, 'slide-13')" data-correct='true'><b>C.</b> $\dfrac{5}{18}$</div><div onclick="selectOption(this, 'slide-13')"><b>D.</b> $\dfrac{5}{6}$</div></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Số phần tử của không gian mẫu: $n\left(\Omega \right)=6\cdot 6=36$. <br> Gọi $A$ là biến cố thỏa mãn yêu cầu bài toán.<br> $A=\left\{\left(1;2 \right),\left(2;1 \right),\left(3;2 \right),\left(2;3 \right),\left(3;4 \right),\left(4;3 \right),\left(4;5 \right),\left(5;4 \right),\left(5;6 \right),\left(6;5 \right) \right\}$ nên $n\left(A \right)=10$. <br> Vậy $\mathrm{P}\left(A \right)=\dfrac{10}{36}=\dfrac{5}{18}$.</div></div></div></div>
+<div class="slide" id="slide-14" data-checked="false" data-type="1"><div class="slide-header"><h2>Câu 15</h2><div style="display: flex; gap: 10px;"><button class="btn-check" onclick="checkAnswer(this, 'slide-14')">Kiểm tra</button><button class="btn-sol" onclick="toggleSolution(this, 'slide-14')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Lớp $11 \mathrm{B}$ có $20$ nam và $25$ nữ. Chọn ngẫu nhiên hai học sinh để làm trực nhật. Xác suất để trong đó có ít nhất một nam là</div><div class='options'><div onclick="selectOption(this, 'slide-14')"><b>A.</b> $\dfrac{20}{33}$</div><div onclick="selectOption(this, 'slide-14')" data-correct='true'><b>B.</b> $\dfrac{23}{33}$</div><div onclick="selectOption(this, 'slide-14')"><b>C.</b> $\dfrac{25}{33}$</div><div onclick="selectOption(this, 'slide-14')"><b>D.</b> $\dfrac{1}{20}$</div></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Lớp $11 \mathrm{B}$ có $20+25=45$ (học sinh). <br> Chọn $2$ học sinh trong số $45$ học sinh của lớp $11 \mathrm{~B}$ thì có $\mathrm{C}_{45}^{2}=990$ (cách).<br> Chọn $2$ học sinh trong số $45$ học sinh bao gồm $1$ nam và $1$ nữ thì có $\mathrm{C}_{20}^{1} \cdot \mathrm{C}_{25}^{1}=500$ (cách).<br> Chọn $2$ học sinh nam trong số $20$ học sinh nam thì có $\mathrm{C}_{20}^{2}=190$ (cách).<br> Xác suất để trong $2$ học sinh được chọn có ít nhất $1$ học sinh nam là $\mathrm{P}=\dfrac{500+190}{990}=\dfrac{23}{33}$.</div></div></div></div>
+<div class="slide" id="slide-15" data-checked="false" data-type="1"><div class="slide-header"><h2>Câu 16</h2><div style="display: flex; gap: 10px;"><button class="btn-check" onclick="checkAnswer(this, 'slide-15')">Kiểm tra</button><button class="btn-sol" onclick="toggleSolution(this, 'slide-15')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Một hội nghị có $15$ nam và $10$ nữ. Chọn ngẫu nhiên $3$ người vào ban tổ chức. Xác suất để trong ban tổ chức có nhiều hơn hai người nam là</div><div class='options'><div onclick="selectOption(this, 'slide-15')"><b>A.</b> $\dfrac{1}{4}$</div><div onclick="selectOption(this, 'slide-15')"><b>B.</b> $\dfrac{1}{2}$</div><div onclick="selectOption(this, 'slide-15')"><b>C.</b> $\dfrac{3}{4}$</div><div onclick="selectOption(this, 'slide-15')" data-correct='true'><b>D.</b> $\dfrac{91}{460}$</div></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Số người trong hội nghị là $15+10=25$. <br> Chọn $3$ người trong $25$ người thì có $\mathrm{C}_{25}^{3}=2300$ (cách).<br> Số nam trong ban tổ chức nhiều hơn $2$ tức là cà $3$ người trong ban tổ chức đều là nam. Chọn $3$ nam trong số $15$ nam thì có $\mathrm{C}_{15}^{3}=455$ (cách).<br> Xác suất để trong ban tổ chức có số nam nhiều hơn hai là $\mathrm{P}=\dfrac{455}{2300}=\dfrac{91}{460}$.</div></div></div></div>
+<div class="slide" id="slide-16" data-checked="false" data-type="1"><div class="slide-header"><h2>Câu 17</h2><div style="display: flex; gap: 10px;"><button class="btn-check" onclick="checkAnswer(this, 'slide-16')">Kiểm tra</button><button class="btn-sol" onclick="toggleSolution(this, 'slide-16')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Một bình chứa $6$ viên bi màu, trong đó có $2$ bi xanh, $2$ bi đỏ, $2$ bi trắng. Lấy ngẫu nhiên $2$ viên bi. Xác suất để lấy được $2$ viên bi khác màu là</div><div class='options'><div onclick="selectOption(this, 'slide-16')"><b>A.</b> $\dfrac{1}{15}$</div><div onclick="selectOption(this, 'slide-16')"><b>B.</b> $\dfrac{2}{15}$</div><div onclick="selectOption(this, 'slide-16')" data-correct='true'><b>C.</b> $\dfrac{4}{5}$</div><div onclick="selectOption(this, 'slide-16')"><b>D.</b> $\dfrac{4}{15}$</div></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Lấy $2$ viên bi bất kì trong $6$ viên bi trong bình thì có $\mathrm{C}_{6}^{2}=15$ (cách). <br> Lấy $2$ viên bi cùng màu thì có $\mathrm{C}_{2}^{2}+\mathrm{C}_{2}^{2}+\mathrm{C}_{2}^{2}=3$ (cách) nên có $15-3=12$ (cách) lấy được 2 viên bi khác màu. <br> Xác suất để lấy được $2$ viên bi khác màu trong tổng số 6 viên bi là $
+			\mathrm{P}=\dfrac{12}{15}=\dfrac{4}{5}.
+			$</div></div></div></div>
+<div class="slide" id="slide-17" data-checked="false" data-type="1"><div class="slide-header"><h2>Câu 18</h2><div style="display: flex; gap: 10px;"><button class="btn-check" onclick="checkAnswer(this, 'slide-17')">Kiểm tra</button><button class="btn-sol" onclick="toggleSolution(this, 'slide-17')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Một thùng có $7$ sản phẩm, trong đó có $4$ sản phẩm loại I và $3$ sản phầm loại II. Lấy ngẫu nhiên $2$ sản phẩm. Xác suất để lấy được $2$ sản phầm cùng loại là</div><div class='options'><div onclick="selectOption(this, 'slide-17')"><b>A.</b> $\dfrac{1}{7}$</div><div onclick="selectOption(this, 'slide-17')"><b>B.</b> $\dfrac{2}{7}$</div><div onclick="selectOption(this, 'slide-17')" data-correct='true'><b>C.</b> $\dfrac{3}{7}$</div><div onclick="selectOption(this, 'slide-17')"><b>D.</b> $\dfrac{4}{7}$</div></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Lấy ngẫu nhiên $2$ sản phẩm trong $7$ sản phẩm thì có $\mathrm{C}_{7}^{2}=21$ (cách). <br> $2$ sản phẩm được lấy ra đều là sản phẩm loại I có $\mathrm{C}_{4}^{2}=6$ (cách).<br> $2$ sản phẩm được lấy ra đều là sản phẩm loại II có $\mathrm{C}_{3}^{2}=3$ (cách).<br> Xác suất để lấy được $2$ sản phẩm cùng loại là $
+			\mathrm{P}=\dfrac{6+3}{21}=\dfrac{3}{7}.
+			$</div></div></div></div>
+<div class="slide" id="slide-18" data-checked="false" data-type="1"><div class="slide-header"><h2>Câu 19</h2><div style="display: flex; gap: 10px;"><button class="btn-check" onclick="checkAnswer(this, 'slide-18')">Kiểm tra</button><button class="btn-sol" onclick="toggleSolution(this, 'slide-18')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Một hộp chứa $5$ bi xanh, $10$ bi đỏ. Lấy ngẫu nhiên $3$ bi. Xác suất để được đúng một bi xanh là</div><div class='options'><div onclick="selectOption(this, 'slide-18')" data-correct='true'><b>A.</b> $\dfrac{45}{91}$</div><div onclick="selectOption(this, 'slide-18')"><b>B.</b> $\dfrac{2}{3}$</div><div onclick="selectOption(this, 'slide-18')"><b>C.</b> $\dfrac{3}{4}$</div><div onclick="selectOption(this, 'slide-18')"><b>D.</b> $\dfrac{200}{273}$</div></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Số phần tử của không gian mẫu là $n(\Omega)=\mathrm{C}_{15}^{3}=455$. <br> Gọi $A$ là biến cố: lấy đúng $1$ bi xanh.<br> Chọn $1$ bi xanh, $2$ bi đỏ, có $\mathrm{C}_{5}^{1} \cdot \mathrm{C}_{10}^{2}=225$ (cách).<br> Suy ra $n(A)=225$. <br> Xác suất cần tìm là $\mathrm{P}(A)=\dfrac{225}{455}=\dfrac{45}{91}$.</div></div></div></div>
+<div class="slide" id="slide-19" data-checked="false" data-type="1"><div class="slide-header"><h2>Câu 20</h2><div style="display: flex; gap: 10px;"><button class="btn-check" onclick="checkAnswer(this, 'slide-19')">Kiểm tra</button><button class="btn-sol" onclick="toggleSolution(this, 'slide-19')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Một hộp chứa $2$ loại bi xanh và đỏ. Lấy ra ngẫu nhiên từ hộp $1$ viên bi. Biết xác suất lấy được bi đỏ là $0{,}3$. Xác suất lấy được bi xanh là</div><div class='options'><div onclick="selectOption(this, 'slide-19')"><b>A.</b> $0{,}3$</div><div onclick="selectOption(this, 'slide-19')"><b>B.</b> $0{,}5$</div><div onclick="selectOption(this, 'slide-19')" data-correct='true'><b>C.</b> $0{,}7$</div><div onclick="selectOption(this, 'slide-19')"><b>D.</b> $0{,}09$</div></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Biến cố $A:$ “ Lấy được bi màu đỏ”&thinsp; có xác suất là $\mathrm{P}(A)=0{,}3$. <br> Biến cố $\overline{A}:$ “ Lấy được bi màu xanh”&thinsp; có xác suất là $\mathrm{P}\left(\overline{A}\right)=1-\mathrm{P}(A)=1-0{,}3=0{,}7$.</div></div></div></div>
+<div class="slide" id="slide-20" data-checked="false" data-type="1"><div class="slide-header"><h2>Câu 21</h2><div style="display: flex; gap: 10px;"><button class="btn-check" onclick="checkAnswer(this, 'slide-20')">Kiểm tra</button><button class="btn-sol" onclick="toggleSolution(this, 'slide-20')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Bạn Tân ở trong một nhóm có $22$ bạn học sinh. Chọn ngẫu nhiên $2$ em trong lớp để đi xem văn nghệ. Xác suất để Tân được chọn là</div><div class='options'><div onclick="selectOption(this, 'slide-20')"><b>A.</b> $19{,}6\%$</div><div onclick="selectOption(this, 'slide-20')"><b>B.</b> $9{,}1\%$</div><div onclick="selectOption(this, 'slide-20')"><b>C.</b> $9{,}8\%$</div><div onclick="selectOption(this, 'slide-20')" data-correct='true'><b>D.</b> $9{,}1\%$</div></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Số phần tử của không gian mẫu là $n\left(\Omega\right)=\mathrm{C}_{22}^2=231$. <br> Gọi $A$ là biến cố "Tân được chọn".<br> Có $1$ cách chọn Tân trong nhóm $22$ học sinh.<br> Có $\mathrm{C}_{21}^1$ cách chọn $1$ người trong nhóm $22$ học sinh.<br> Suy ra $n\left(A\right)=1\cdot \mathrm{C}_{21}^1=21$. <br> Xác suất cần tìm là $\mathrm{P}(A)=\dfrac{21}{231}=0{,}091=9{,}1\%$.</div></div></div></div>
+<div class="slide" id="slide-21" data-checked="false" data-type="1"><div class="slide-header"><h2>Câu 22</h2><div style="display: flex; gap: 10px;"><button class="btn-check" onclick="checkAnswer(this, 'slide-21')">Kiểm tra</button><button class="btn-sol" onclick="toggleSolution(this, 'slide-21')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Một chi đoàn có $3$ đoàn viên nữ và một số đoàn viên nam. Cần lập một đội thanh niên tình nguyện gồm $4$ người. Biết xác suất để trong $4$ người được chọn có $3$ nữ bằng $\dfrac{2}{5}$ lần xác suất $4$ người được chọn toàn nam. Hỏi chi đoàn đó có bao nhiêu đoàn viên?</div><div class='options'><div onclick="selectOption(this, 'slide-21')" data-correct='true'><b>A.</b> $9$</div><div onclick="selectOption(this, 'slide-21')"><b>B.</b> $10$</div><div onclick="selectOption(this, 'slide-21')"><b>C.</b> $11$</div><div onclick="selectOption(this, 'slide-21')"><b>D.</b> $12$</div></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Gọi số đoàn viên trong chi đoàn đó là $n$$\left(n \geq 7, n \in\mathbb{N}^*\right)$. <br> Suy ra số đoàn viên nam trong chi đoàn là $n-3$. <br> Xác suất để lập đội TNTN trong đó có $3$ nữ là $\dfrac{\mathrm{C}_3^3\cdot\mathrm{C}_{n-3}^1}{\mathrm{C}_n^4}$. <br> Xác suất để lập đội TNTN có toàn nam là $\dfrac{\mathrm{C}_{n-3}^4}{\mathrm{C}_n^4}$. <br> Theo giả thiết, ta có $\dfrac{\mathrm{C}_3^3\cdot\mathrm{C}_{n-3}^1}{\mathrm{C}_n^4}=\dfrac{2}{5}\cdot\dfrac{\mathrm{C}_{n-3}^4}{\mathrm{C}_n^4} \Leftrightarrow \mathrm{C}_{n-3}^1=\dfrac{2}{5}\cdot\mathrm{C}_{n-3}^4 \Rightarrow n=9$. <br> Vậy chi đoàn có $9$ đoàn viên.</div></div></div></div>
+<div class="slide" id="slide-22" data-checked="false" data-type="1"><div class="slide-header"><h2>Câu 23</h2><div style="display: flex; gap: 10px;"><button class="btn-check" onclick="checkAnswer(this, 'slide-22')">Kiểm tra</button><button class="btn-sol" onclick="toggleSolution(this, 'slide-22')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Gọi $X$ là tập hợp các số tự nhiên gồm 6 chữ số đôi một khác nhau được tạo thành từ các chữ số $1,2,3,4,5,6,7,8,9.$ Chọn ngẫu nhiên một số từ tập hợp $X$. Tính xác suất để số được chọn chỉ chứa 3 chữ số lẻ.</div><div class='options'><div onclick="selectOption(this, 'slide-22')" data-correct='true'><b>A.</b> $\dfrac{10}{21}$</div><div onclick="selectOption(this, 'slide-22')"><b>B.</b> $\dfrac{25}{49}$</div><div onclick="selectOption(this, 'slide-22')"><b>C.</b> $\dfrac{1}{3}$</div><div onclick="selectOption(this, 'slide-22')"><b>D.</b> $13/25$</div></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Số phần tử không gian mẫu $n(\Omega)=9.8.7.6.5.4$. <br> Sáu chữ số $1; 3; 5; 2; 4; 6$ lập đựơc $6!$ số thỏa mãn.<br> Tương tự đối với $(1; 3; 5; 2; 4; 8),(1; 3; 5; 2; 6; 8),(1; 3; 5; 4; 6; 8)$ nếu cố định $1; 3; 5$ thì có $6!\cdot 4$ số thỏa mãn.<br> Tương tự với $(1; 3; 7),(1; 3; 9),(1; 5; 7),(1; 5; 9),(1; 7; 9),(3; 5; 7),(3; 5; 9),(3; 7; 9),(5; 7; 9)$. <br> Xác suất cần tìm là $\dfrac{6!.4.10}{9.8.7.6.5.4}=\dfrac{10}{21}$.</div></div></div></div>
+<div class="slide" id="slide-23" data-checked="false" data-type="1"><div class="slide-header"><h2>Câu 24</h2><div style="display: flex; gap: 10px;"><button class="btn-check" onclick="checkAnswer(this, 'slide-23')">Kiểm tra</button><button class="btn-sol" onclick="toggleSolution(this, 'slide-23')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Gọi $A$ là tập các số có 6 chữ số khác nhau được tạo ra từ các số $\{0,1,2,3,4,5\}$. Từ $A$ chọn ngẫu nhiên một số, xác suất số đó có số $3$ và $4$ đứng cạnh nhau là</div><div class='options'><div onclick="selectOption(this, 'slide-23')" data-correct='true'><b>A.</b> $\dfrac{8}{25}$</div><div onclick="selectOption(this, 'slide-23')"><b>B.</b> $\dfrac{4}{15}$</div><div onclick="selectOption(this, 'slide-23')"><b>C.</b> $\dfrac{4}{25}$</div><div onclick="selectOption(this, 'slide-23')"><b>D.</b> $\dfrac{2}{15}$</div></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Số phần tử của không gian mẫu là $n(\Omega)=5\cdot5!=600$. <br> Gọi $X$ là biến cố: “ Số chọn ra là số có hai chữ số $3, 4$ đứng cạnh nhau”.<br> Vì hai số $3,4$ đứng cạnh nhau nên ta coi nó là một phần tử. Do đó, số cần tìm sẽ là số được lập từ tập hợp các chữ số $0,1,2, x, 5$ với $x=34$ hoặc $x=43$. <br> Suy ra số kết quả thuận lợi cho biến cố $X$ là $n(X)=2\cdot4\cdot4!=192$. <br> Vậy xác suất cần tính là $P=\dfrac{n(X)}{n(\Omega)}=\dfrac{192}{600}=\dfrac{8}{25}$.</div></div></div></div>
+<div class="slide" id="slide-24" data-checked="false" data-type="1"><div class="slide-header"><h2>Câu 25</h2><div style="display: flex; gap: 10px;"><button class="btn-check" onclick="checkAnswer(this, 'slide-24')">Kiểm tra</button><button class="btn-sol" onclick="toggleSolution(this, 'slide-24')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Gọi tập $A$ là tập các số có 6 chữ số khác nhau được lập từ các số $\{1,2,3,4,5,6\}$. Từ $A$ chọn ra một số, xác suất số đó bé hơn $432000$ là</div><div class='options'><div onclick="selectOption(this, 'slide-24')"><b>A.</b> $\dfrac{17}{30}$</div><div onclick="selectOption(this, 'slide-24')"><b>B.</b> $\dfrac{17}{40}$</div><div onclick="selectOption(this, 'slide-24')" data-correct='true'><b>C.</b> $\dfrac{23}{40}$</div><div onclick="selectOption(this, 'slide-24')"><b>D.</b> $\dfrac{13}{30}$</div></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Số phần tử của không gian mẫu là $n(\Omega)=6!=720$. <br> Gọi $X$ là biến cố: “ Số chọn ra bé hơn $432000$”.<br> Gọi số cần tìm có dạng $\overline{abcdef}$, vì $\overline{abcdef}&lt;432000$ nên ta xét các trường hợp.<br> TH1. Nếu $a=\{1; 2; 3\}$ và sắp xếp 5 số còn lại vào 5 vị trí nên có $3\cdot 5! =360$ số.<br> TH2. Nếu $a=4$, ta đi xét hai trường hợp. <ul><li>$b=3$ thì $c=1$ suy ra có $3! =6$ số.</li><li>$b&lt;3 \Rightarrow b\in\{1; 2\}$ và sắp xếp 4 số còn lại vào 4 vị trí nên có $2\cdot 4! =48$ số.</li></ul> Do đó, số kết quả thuận lợi cho biến cố $X$ là $n(X)=360+6+48=414$. <br> Vậy xác suất cần tính là $P=\dfrac{n(X)}{n(\Omega)}=\dfrac{414}{720}=\dfrac{23}{40}$.</div></div></div></div>
+<div class="slide" id="slide-25" data-checked="false" data-type="1"><div class="slide-header"><h2>Câu 26</h2><div style="display: flex; gap: 10px;"><button class="btn-check" onclick="checkAnswer(this, 'slide-25')">Kiểm tra</button><button class="btn-sol" onclick="toggleSolution(this, 'slide-25')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Cho tập hợp $A=\{0; 1; 2; 3; 4; 5\}$. Gọi $S$ là tập hợp các số có 3 chữ số khác nhau được lập thành từ các chữ số của tập $A$. Chọn ngẫu nhiên một số từ $S$, tính xác suất để số được chọn có chữ số cuối gấp đôi chữ số đầu.</div><div class='options'><div onclick="selectOption(this, 'slide-25')"><b>A.</b> $\dfrac{1}{5}$</div><div onclick="selectOption(this, 'slide-25')"><b>B.</b> $\dfrac{23}{25}$</div><div onclick="selectOption(this, 'slide-25')"><b>C.</b> $\dfrac{2}{25}$</div><div onclick="selectOption(this, 'slide-25')"><b>D.</b> $\dfrac{4}{5}$</div></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Gọi số cần tìm của tập $S$ có dạng $\overline{a b c}$. Trong đó $a, b, c \in A$$a \neq 0$$a \neq b; b \neq c; c \neq a$. <br> Khi đó <ul><li>Số cách chọn chữ số $a$ có 5 cách chọn vì $a \neq 0$.</li><li>Số cách chọn chữ số $b$ có 5 cách chọn vì $b \neq a$.</li><li>Số cách chọn chữ số $c$ có 4 cách chọn vì $c \neq a$ và $c \neq b$.</li></ul> Do đó tập $S$ có $5\cdot5\cdot4=100$ phần tử.<br> Không gian mẫu là chọn ngẫu nhiên 1 số từ tập $S$. Suy ra số phần tử của không gian mẫu là $n(\Omega)=\mathrm{C}_{100}^1=100$. <br> Gọi $X$ là biến cố: “ Số được chọn có chữ số cuối gấp đôi chữ số đầu”. <br> Khi đó các cặp số $(a;c)$ có thể là $(1;2), (2;4)$ và với mỗi bộ thì $b$ có 4 cách chọn nên có tất cả 8 số thỏa yêu cầu.<br> Suy ra số phần tử của biến cố $X$ là $n(X)=8$. <br> Vậy xác suất cần tính $\mathrm{P}(X)=\dfrac{n(X)}{n(\Omega)}=\dfrac{8}{100}=\dfrac{2}{25}$.</div></div></div></div>
+<div class="slide" id="slide-26" data-checked="false" data-type="1"><div class="slide-header"><h2>Câu 27</h2><div style="display: flex; gap: 10px;"><button class="btn-check" onclick="checkAnswer(this, 'slide-26')">Kiểm tra</button><button class="btn-sol" onclick="toggleSolution(this, 'slide-26')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Một hộp đựng 10 chiếc thẻ được đánh số từ 0 đến 9. Lấy ngẫu nhiên ra 3 chiếc thẻ, tính xác suất để 3 chữ số trên 3 chiếc thẻ được lấy ra có thể ghép thành một số chia hết cho 5.</div><div class='options'><div onclick="selectOption(this, 'slide-26')" data-correct='true'><b>A.</b> $\dfrac{8}{15}$</div><div onclick="selectOption(this, 'slide-26')"><b>B.</b> $\dfrac{7}{15}$</div><div onclick="selectOption(this, 'slide-26')"><b>C.</b> $\dfrac{2}{5}$</div><div onclick="selectOption(this, 'slide-26')"><b>D.</b> $\dfrac{3}{5}$</div></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Không gian mẫu là số cách lấy ngẫu nhiên 3 chiếc thẻ từ 10 chiếc thẻ.<br> Suy ra số phần tử của không gian mẫu là $n(\Omega)=\mathrm{C}_{10}^3$. <br> Gọi $A$ là biến cố: “ 3 chữ số trên 3 chiếc thẻ được lấy ra có thể ghép thành một số chia hết cho 5”. <br> Để cho biến cố $A$ xảy ra thì trong 3 thẻ lấy được phải có thẻ mang chữ số 0 hoặc chữ số 5. <br>Ta đi tìm số phần tử của biến cố $\overline{A}$, tức 3 thẻ lấy ra không có thẻ mang chữ số 0 và cũng không có thẻ mang chữ số 5 là $\mathrm{C}_8^3$ cách.<br> Suy ra số phần tử của biến cố $A$ là $n(A)=\mathrm{C}_{10}^3-\mathrm{C}_8^3$. <br> Vậy xác suất cần tính $\mathrm{P}(A)=\dfrac{n(A)}{n(\Omega)}=\dfrac{\mathrm{C}_{10}^3-\mathrm{C}_8^3}{\mathrm{C}_{10}^3}=\dfrac{8}{15}$.</div></div></div></div>
+<div class="slide" id="slide-27" data-checked="false" data-type="1"><div class="slide-header"><h2>Câu 28</h2><div style="display: flex; gap: 10px;"><button class="btn-check" onclick="checkAnswer(this, 'slide-27')">Kiểm tra</button><button class="btn-sol" onclick="toggleSolution(this, 'slide-27')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Có 20 tấm thẻ được đánh số từ 1 đến 20. Chọn ngẫu nhiên ra 8 tấm thẻ, tính xác suất để có 3 tấm thẻ mang số lẻ, 5 tấm thẻ mang số chẵn trong đó chỉ có đúng 1 tấm thẻ mang số chia hết cho 10.</div><div class='options'><div onclick="selectOption(this, 'slide-27')"><b>A.</b> $\dfrac{560}{4199}$</div><div onclick="selectOption(this, 'slide-27')"><b>B.</b> $\dfrac{4}{15}$</div><div onclick="selectOption(this, 'slide-27')"><b>C.</b> $\dfrac{11}{15}$</div><div onclick="selectOption(this, 'slide-27')"><b>D.</b> $\dfrac{3639}{4199}$</div></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Không gian mẫu là cách chọn 8 tấm thể trong 20 tấm thẻ. <br> Suy ra số phần tử của không mẫu là $n(\Omega)=\mathrm{C}_{20}^8$. <br> Gọi $A$ là biến cố: “ 3 tấm thẻ mang số lẻ, 5 tấm thẻ mang số chẵn trong đó chỉ có đúng 1 tấm thẻ mang số chia hết cho $10$”. <br> Để tìm số phần tử của $A$ ta làm như sau: <ul><li>Đầu tiên chọn 3 tấm thẻ trong 10 tấm thẻ mang số lẻ, có $\mathrm{C}_{10}^3$ cách.</li><li>Tiếp theo chọn 4 tấm thẻ trong 8 tấm thẻ mang số chẵn (không chia hết cho 10), có $\mathrm{C}_8^4$ cách.</li><li>Sau cùng ta chọn 1 trong 2 tấm thẻ mang số chia hết cho 10, có $\mathrm{C}_2^1$ cách.</li></ul> Suy ra số phần tử của biến cố $A$ là $n(A)=\mathrm{C}_{10}^3 \cdot \mathrm{C}_8^4 \cdot \mathrm{C}_2^1$. <br> Vậy xác suất cần tính $\mathrm{P}(A)=\dfrac{n(A)}{n(\Omega)}=\dfrac{\mathrm{C}_{10}^3 \cdot \mathrm{C}_8^4 \cdot \mathrm{C}_2^1}{\mathrm{C}_{20}^8}=\dfrac{560}{4199}$.</div></div></div></div>
+<div class="slide" id="slide-28" data-checked="false" data-type="1"><div class="slide-header"><h2>Câu 29</h2><div style="display: flex; gap: 10px;"><button class="btn-check" onclick="checkAnswer(this, 'slide-28')">Kiểm tra</button><button class="btn-sol" onclick="toggleSolution(this, 'slide-28')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Gọi $S$ là tập hợp các số tự nhiên có hai chữ số. Chọn ngẫu nhiên đồng thời hai số từ tập hợp $S$. Tính xác suất để hai số được chọn có chữ số hàng đơn vị giống nhau.</div><div class='options'><div onclick="selectOption(this, 'slide-28')" data-correct='true'><b>A.</b> $\dfrac{8}{89}$</div><div onclick="selectOption(this, 'slide-28')"><b>B.</b> $\dfrac{81}{89}$</div><div onclick="selectOption(this, 'slide-28')"><b>C.</b> $\dfrac{36}{89}$</div><div onclick="selectOption(this, 'slide-28')"><b>D.</b> $\dfrac{53}{89}$</div></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Số phần tử của tập $S$ là $9.10=90$. <br> Không gian mẫu là chọn ngẫu nhiên 2 số từ tập $S$. <br> Suy ra số phần tử của không gian mẫu là $n(\Omega)=\mathrm{C}_{90}^2=4005$. <br> Gọi $X$ là biến cố: “ Số được chọn có chữ số hàng đơn vị giống nhau”. <br> Ta mô tả không gian của biến cố $X$ như sau <ul><li>Có 10 cách chọn chữ số hàng đơn vị (chọn từ các chữ số $\{0; 1; 2; 3; \ldots; 9\}$).</li><li>Có $\mathrm{C}_9^2$ cách chọn hai chữ số hàng chục (chọn từ các chữ số $\{1; 2; 3; \ldots; 9\}$).</li></ul> Suy ra số phần tử của biến cố $X$ là $n(X)=10\cdot \mathrm{C}_9^2=360$. <br> Vậy xác suất cần tính $\mathrm{P}(X)=\dfrac{n(X)}{n(\Omega)}=\dfrac{360}{4005}=\dfrac{8}{89}$.</div></div></div></div>
+<div class="slide" id="slide-29" data-checked="false" data-type="1"><div class="slide-header"><h2>Câu 30</h2><div style="display: flex; gap: 10px;"><button class="btn-check" onclick="checkAnswer(this, 'slide-29')">Kiểm tra</button><button class="btn-sol" onclick="toggleSolution(this, 'slide-29')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Trong một chiếc hộp có 7 viên bi trắng, 8 viên bi đỏ và 10 viên bi vàng. Lấy ngẫu nhiên ra 6 viên bi. Tính xác suất của biến cố “ 6 viên bi lấy ra có đủ ba màu”.</div><div class='options'><div onclick="selectOption(this, 'slide-29')"><b>A.</b> $\mathrm{P}(C)=\dfrac{22}{253}$</div><div onclick="selectOption(this, 'slide-29')"><b>B.</b> $\mathrm{P}(C)=\dfrac{20}{253}$</div><div onclick="selectOption(this, 'slide-29')"><b>C.</b> $\mathrm{P}(C)=\dfrac{2}{253}$</div><div onclick="selectOption(this, 'slide-29')" data-correct='true'><b>D.</b> $\mathrm{P}(C)=\dfrac{202}{253}$</div></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Không gian mẫu là lấy ngẫu nhiên 6 viên bi trong 28 viên. <br> Suy ra số phần tử của không gian mẫu là $n(\Omega)=\mathrm{C}_{25}^6=177100$. <br> Gọi $C$ là biễn cố:“ 6 viên bi lấy ra có đủ ba màu”. <ul><li>Số cách lấy 6 viên bi cùng một màu: $\mathrm{C}_{7}^6\cdot \mathrm{C}_{8}^6\cdot \mathrm{C}_{10}^6=245$ cách.</li><li>Số cách lấy 6 viên bi gồm hai màu: $\mathrm{C}_{15}^6-\mathrm{C}_8^6+\mathrm{C}_7^6+\mathrm{C}_{17}^6-\mathrm{C}_{10}^6+\mathrm{C}_7^6+\mathrm{C}_{18}^6-\mathrm{C}_{10}^6+\mathrm{C}_8^6=35455$.</li><li>Suy ra $n(C)=177100-35455-245=141400$.</li></ul> Vậy $\mathrm{P}(C)=\dfrac{202}{253}$.</div></div></div></div>
+<div class="slide" id="slide-30" data-checked="false" data-type="1"><div class="slide-header"><h2>Câu 31</h2><div style="display: flex; gap: 10px;"><button class="btn-check" onclick="checkAnswer(this, 'slide-30')">Kiểm tra</button><button class="btn-sol" onclick="toggleSolution(this, 'slide-30')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Gieo một con xúc sắc đồng chất cân đối ba lần liên tiếp. Tìm xác suất của các biến cố: “ Có ít nhất một mặt chẵn xuất hiện”.</div><div class='options'><div onclick="selectOption(this, 'slide-30')" data-correct='true'><b>A.</b> $\mathrm{P}(B)=\dfrac{7}{8}$</div><div onclick="selectOption(this, 'slide-30')"><b>B.</b> $\mathrm{P}(B)=\dfrac{3}{8}$</div><div onclick="selectOption(this, 'slide-30')"><b>C.</b> $\mathrm{P}(B)=\dfrac{5}{8}$</div><div onclick="selectOption(this, 'slide-30')"><b>D.</b> $\mathrm{P}(B)=\dfrac{1}{8}$</div></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Số phần tử của không gian mẫu là $n(\Omega)=6.6.6=216$. <br> Khả năng xuất hiện mặt lẻ của mỗi lần gieo là 3.<br> Suy ra khả năng ba lần gieo đều xuất hiện mặt lẻ là $3^3=27$. <br> Do đó $n(B)=216-27=189$. <br> Vậy $\mathrm{P}(B)=\dfrac{n(B)}{n(\Omega)}=\dfrac{189}{216}=\dfrac{7}{8}$.</div></div></div></div>
+<div class="slide" id="slide-31" data-checked="false" data-type="1"><div class="slide-header"><h2>Câu 32</h2><div style="display: flex; gap: 10px;"><button class="btn-check" onclick="checkAnswer(this, 'slide-31')">Kiểm tra</button><button class="btn-sol" onclick="toggleSolution(this, 'slide-31')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Một hộp có 5 viên bi xanh, 6 viên bi đỏ và 7 viên bi vàng. Chọn ngẫu nhiên 5 viên bi trong hộp, tính xác suất để 5 viên bi được chọn có đủ màu và số bi đỏ bằng số bi vàng.</div><div class='options'><div onclick="selectOption(this, 'slide-31')"><b>A.</b> $\dfrac{313}{408}$</div><div onclick="selectOption(this, 'slide-31')" data-correct='true'><b>B.</b> $\cdot \dfrac{95}{408}$</div><div onclick="selectOption(this, 'slide-31')"><b>C.</b> $\dfrac{5}{102}$</div><div onclick="selectOption(this, 'slide-31')"><b>D.</b> $\dfrac{25}{136}$</div></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Không gian mẫu là số cách chọn ngẫu nhiên 5 viên bi từ hộp chứa 18 viên bi. Suy ra số phần tử của không gian mẫu là $n(\Omega)=\mathrm{C}_{18}^5=8568$. <br> Gọi $A$ là biến cố: “5 viên bi được chọn có đủ màu và số bi đỏ bằng số bi vàng”. <br> Ta có các trường hợp thuận lợi cho biến cố $A$ là <ul><li>TH1. Chọn 1 bi đỏ, 1 bi vàng và 3 bi xanh nên có $\mathrm{C}_6^1\cdot \mathrm{C}_7^1 \cdot \mathrm{C}_5^3$ cách.</li><li>TH2. Chọn 2 bi đỏ, 2 bi vàng và 1 bi xanh nên có $\mathrm{C}_6^2\cdot \mathrm{C}_7^2 \cdot \mathrm{C}_5^1$ cách.</li></ul> Suy ra số phần tử của biến cố $A$ là $n(A)=\mathrm{C}_6^1\cdot \mathrm{C}_7^1 \cdot \mathrm{C}_5^3+\mathrm{C}_6^2 \cdot \mathrm{C}_7^2 \cdot \mathrm{C}_5^1=1995$. <br> Vậy xác suất cần tính $\mathrm{P}(A)=\dfrac{n(A)}{n(\Omega)}=\dfrac{1995}{8568}=\dfrac{95}{408}$.</div></div></div></div>
+<div class="slide" id="slide-32" data-checked="false" data-type="1"><div class="slide-header"><h2>Câu 33</h2><div style="display: flex; gap: 10px;"><button class="btn-check" onclick="checkAnswer(this, 'slide-32')">Kiểm tra</button><button class="btn-sol" onclick="toggleSolution(this, 'slide-32')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Một hộp có 5 viên bi đỏ, 3 viên bi vàng và 4 viên bi xanh. Chọn ngẫu nhiên từ hộp 4 viên bi, tính xác suất để 4 viên bi được chọn có số bi đỏ lớn hơn số bi vàng và nhất thiết phải có mặt bi xanh.</div><div class='options'><div onclick="selectOption(this, 'slide-32')"><b>A.</b> $\dfrac{1}{12}$</div><div onclick="selectOption(this, 'slide-32')"><b>B.</b> $\dfrac{1}{3}$</div><div onclick="selectOption(this, 'slide-32')" data-correct='true'><b>C.</b> $\cdot \dfrac{16}{33}$</div><div onclick="selectOption(this, 'slide-32')"><b>D.</b> $\dfrac{1}{2}$</div></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Không gian mẫu là số cách chọn ngẫu nhiên 4 viên bi từ hộp chứa 12 viên bi. Suy ra số phần tử của không gian mẫu là $n(\Omega)=\mathrm{C}_{12}^4=495$. <br> Gọi $A$ là biến cố: “ 4 viên bi được chọn có số bi đỏ lớn hơn số bi vàng và nhất thiết phải có mặt bi xanh”.<br> Ta có các trường hợp thuận lợi cho biến cố $A$ là <ul><li>TH1. Chọn 1 bi đỏ và 3 bi xanh nên có $\mathrm{C}_5^1 \cdot \mathrm{C}_4^3$ cách.</li><li>TH2. Chọn 2 bi đỏ và 2 bi xanh nên có $\mathrm{C}_5^2 \cdot \mathrm{C}_4^2$ cách.</li><li>TH3. Chọn 3 bi đỏ và 1 bi xanh nên có $\mathrm{C}_5^3\cdot \mathrm{C}_4^1$ cách.</li><li>TH4. Chọn 2 bi đỏ, 1 bi vàng và 1 bi xanh nên có $\mathrm{C}_5^2\cdot \mathrm{C}_3^1\cdot \mathrm{C}_4^1$ cách.</li></ul> Suy ra số phần tử của biến cố $A$ là $n(A)=\mathrm{C}_5^1 \cdot \mathrm{C}_4^3+\mathrm{C}_5^2\cdot \mathrm{C}_4^2+\mathrm{C}_5^3 \cdot \mathrm{C}_4^1+\mathrm{C}_5^2\cdot \mathrm{C}_3^1 \cdot \mathrm{C}_4^1=240$. <br> Vậy xác suất cần tính $\mathrm{P}(A)=\dfrac{n(A)}{n(\Omega)}=\dfrac{240}{495}=\dfrac{16}{33}$.</div></div></div></div>
+<div class="slide" id="slide-33" data-checked="false" data-type="1"><div class="slide-header"><h2>Câu 34</h2><div style="display: flex; gap: 10px;"><button class="btn-check" onclick="checkAnswer(this, 'slide-33')">Kiểm tra</button><button class="btn-sol" onclick="toggleSolution(this, 'slide-33')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Một chiếc hộp đựng 7 viên bi màu xanh, 6 viên bi màu đen, 5 viên bi màu đỏ, 4 viên bi màu trắng. Chọn ngẫu nhiên ra 4 viên bi, tính xác suất để lấy được ít nhất 2 viên bi cùng màu.</div><div class='options'><div onclick="selectOption(this, 'slide-33')"><b>A.</b> $\dfrac{2808}{7315}$</div><div onclick="selectOption(this, 'slide-33')" data-correct='true'><b>B.</b> $\dfrac{185}{209}$</div><div onclick="selectOption(this, 'slide-33')"><b>C.</b> $\dfrac{24}{209}$</div><div onclick="selectOption(this, 'slide-33')"><b>D.</b> $\dfrac{4507}{7315}$</div></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Không gian mẫu là số cách chọn ngẫu nhiên 4 viên bi từ 22 viên bi đã cho. Suy ra số phần tử của không gian mẫu là $n(\Omega)=\mathrm{C}_{22}^4=7315$. <br> Gọi $A$ là biến cố: “ Lấy được 4 viên bi trong đó có ít nhất hai viên bi cùng màu”. <br> Để tìm số phần tử của $A$, ta đi tìm số phần tử của biến cố $\overline{A}$, với biến cố $\overline{A}$ là “ lấy được 4 viên bi trong đó không có hai viên bi nào cùng màu”.<br> Suy ra số phần tử của biến cố $\overline{A}$ là $n\left(\overline{A}\right)=\mathrm{C}_7^1 \mathrm{C}_6^1 \mathrm{C}_5^1 \mathrm{C}_4^1=840$. <br> Suy ra số phần tử của biến cố $A$ là $n(A)=n(\Omega)-n\left(\overline{A}\right)=6475$. <br> Vậy xác suất cần tính $\mathrm{P}(A)=\dfrac{n(A)}{n(\Omega)}=\dfrac{6475}{7315}=\dfrac{185}{209}$.</div></div></div></div>
+<div class="slide" id="slide-34" data-checked="false" data-type="1"><div class="slide-header"><h2>Câu 35</h2><div style="display: flex; gap: 10px;"><button class="btn-check" onclick="checkAnswer(this, 'slide-34')">Kiểm tra</button><button class="btn-sol" onclick="toggleSolution(this, 'slide-34')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Một hộp chứa 12 viên bi kích thước như nhau, trong đó có 5 viên bi màu xanh được đánh số từ 1 đến 5; có 4 viên bi màu đỏ được đánh số từ 1 đến 4 và 3 viên bi màu vàng được đánh số từ 1 đến 3. Lấy ngẫu nhiên 2 viên bi từ hộp, tính xác suất để 2 viên bi được lấy vừa khác màu vừa khác số.</div><div class='options'><div onclick="selectOption(this, 'slide-34')"><b>A.</b> $\dfrac{8}{33}$</div><div onclick="selectOption(this, 'slide-34')"><b>B.</b> $\dfrac{14}{33}$</div><div onclick="selectOption(this, 'slide-34')"><b>C.</b> $\dfrac{29}{66}$</div><div onclick="selectOption(this, 'slide-34')" data-correct='true'><b>D.</b> $\cdot \dfrac{37}{66}$</div></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Không gian mẫu là số sách lấy tùy ý 2 viên từ hộp chứa 12 viên bi. Suy ra số phần tử của không gian mẫu là $n(\Omega)=\mathrm{C}_{12}^2=66$. <br> Gọi $A$ là biến cố: “2 viên bi được lấy vìa khác màu vừa khác số”. <ul><li>Số cách lấy 2 viên bi gồm 1 bi xanh và 1 bi đỏ là $4\cdot 4=16$ cách (do số bi đỏ ít hơn nên ta lấy trước, có 4 cách lấy bi đỏ. Tiếp tục lấy bi xanh nhưng không lấy viên trùng với số của bi đỏ nên có 4 cách lấy bi xanh).</li><li>Số cách lấy 2 viên bi gồm 1 bi xanh và 1 bi vàng là $3\cdot 4=12$ cách.</li><li>Số cách lấy 2 viên bi gồm 1 bi đỏ và 1 bi vàng là $3\cdot 3=9$ cách.</li></ul> Suy ra số phần tử của biến cố $A$ là $n(A)=16+12+9=37$. <br> Vậy xác suất cần tính $\mathrm{P}(A)=\dfrac{n(A)}{n(\Omega)}=\dfrac{37}{66}$.</div></div></div></div>
+<div class="slide" id="slide-35" data-checked="false" data-type="1"><div class="slide-header"><h2>Câu 36</h2><div style="display: flex; gap: 10px;"><button class="btn-check" onclick="checkAnswer(this, 'slide-35')">Kiểm tra</button><button class="btn-sol" onclick="toggleSolution(this, 'slide-35')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Một người có 10 đôi giày khác nhau và trong lúc đi du lịch vội vã lấy ngẫu nhiên 4 chiếc. Tính xác suất để trong 4 chiếc giày lấy ra có ít nhất một đôi.</div><div class='options'><div onclick="selectOption(this, 'slide-35')"><b>A.</b> $\dfrac{3}{7}$</div><div onclick="selectOption(this, 'slide-35')"><b>B.</b> $\dfrac{13}{64}$</div><div onclick="selectOption(this, 'slide-35')"><b>C.</b> $\dfrac{99}{323}$</div><div onclick="selectOption(this, 'slide-35')"><b>D.</b> $\dfrac{224}{323}$</div></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Không gian mẫu là số cách chọn ngẫu nhiên 4 chiếc giày từ 20 chiếc giày. Suy ra số phần tử của không gian mẫu là $n(\Omega)=\mathrm{C}_{20}^4=4845$. <br> Gọi $A$ là biến cố: “ 4 chiếc giày lấy ra có ít nhất một đôi”. <br> Để tìm số phần tử của biến cố $A$, ta đi tìm số phần tử của biến cố $\overline{A}$, với biến cố $\overline{A}$ là 4 chiếc giày được chọn không có đôi nào. <ul><li>Số cách chọn 4 đôi giày từ 10 đôi giày là $\mathrm{C}_{10}^4$.</li><li>Mỗi đôi chọn ra 1 chiếc, thế thì mỗi chiếc có $\mathrm{C}_2^1$ cách chọn. Suy ra 4 chiếc có $\mathrm{C}_2^1{}^4$ cách chọn.</li></ul> Suy ra số phần tử của biến cố $\overline{A}$ là $n\left(\overline{A}\right)=\mathrm{C}_{10}^4\cdot \mathrm{C}_2^1{}^4=3360$. <br> Suy ra số phần tử của biến cố $A$ là $n(A)=4845-3360=1485$. <br> Vậy xác suất cần tính $\mathrm{P}(A)=\dfrac{n(A)}{n(\Omega)}=\dfrac{1485}{4845}=\dfrac{99}{323}$.</div></div></div></div>
+<div class="slide" id="slide-36" data-checked="false" data-type="1"><div class="slide-header"><h2>Câu 37</h2><div style="display: flex; gap: 10px;"><button class="btn-check" onclick="checkAnswer(this, 'slide-36')">Kiểm tra</button><button class="btn-sol" onclick="toggleSolution(this, 'slide-36')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Có 13 học sinh của một trường THPT đạt danh hiệu học sinh xuất sắc trong đó khối 12 có 8 học sinh nam và 3 học sinh nữ, khối 11 có 2 học sinh nam. Chọn ngẫu nhiên 3 học sinh bất kỳ để trao thưởng, tính xác suất để 3 học sinh được chọn có cả nam và nữ đồng thời có cả khối 11 và khối $12$.</div><div class='options'><div onclick="selectOption(this, 'slide-36')"><b>A.</b> $\dfrac{57}{286}$</div><div onclick="selectOption(this, 'slide-36')"><b>B.</b> $\dfrac{24}{143}$</div><div onclick="selectOption(this, 'slide-36')"><b>C.</b> $\dfrac{27}{143}$</div><div onclick="selectOption(this, 'slide-36')"><b>D.</b> $\dfrac{229}{286}$</div></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Không gian mẫu là số cách chọn ngẫu nhiên 3 học sinh từ 13 học sinh. Suy ra số phần tử của không gian mẫu là $n(\Omega)=\mathrm{C}_{13}^3=286$. <br> Gọi $A$ là biến cố: “ 3 học sinh được chọn có cả nam và nữ đồng thời có cả khối 11 và khối 12”. Ta có các trường hợp thuận lợi cho biến cố $A$ là <ul><li>TH1. Chọn 1 học sinh khối 11; 1 học sinh nam khối 12 và 1 học sinh nữ khối 12 nên có $\mathrm{C}_2^1 \mathrm{C}_8^1 \mathrm{C}_3^1=48$ cách.</li><li>TH2. Chọn 1 học sinh khối 11; 2 học sinh nữ khối 12 có $\mathrm{C}_2^1 \mathrm{C}_3^2=6$ cách.</li><li>TH3. Chọn 2 học sinh khối 11; 1 học sinh nữ khối 12 có $\mathrm{C}_2^2 \mathrm{C}_3^1=3$ cách.</li></ul> Suy ra số phần tử của biến cố $A$ là $n(A)=48+6+3=57$. <br> Vậy xác suất cần tính $\mathrm{P}(A)=\dfrac{n(A)}{n(\Omega)}=\dfrac{57}{286}$.</div></div></div></div>
+<div class="slide" id="slide-37" data-checked="false" data-type="1"><div class="slide-header"><h2>Câu 38</h2><div style="display: flex; gap: 10px;"><button class="btn-check" onclick="checkAnswer(this, 'slide-37')">Kiểm tra</button><button class="btn-sol" onclick="toggleSolution(this, 'slide-37')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Một đội gồm 5 nam và 8 nữ. Lập một nhóm gồm 4 người hát tốp ca, tính xác suất để trong 4 người được chọn có ít nhất 3 nữ.</div><div class='options'><div onclick="selectOption(this, 'slide-37')" data-correct='true'><b>A.</b> $\dfrac{70}{143}$</div><div onclick="selectOption(this, 'slide-37')"><b>B.</b> $\dfrac{73}{143}$</div><div onclick="selectOption(this, 'slide-37')"><b>C.</b> $\dfrac{56}{143}$</div><div onclick="selectOption(this, 'slide-37')"><b>D.</b> $\dfrac{87}{143}$</div></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Không gian mẫu là chọn tùy ý 4 người từ 13 người.<br> Suy ra số phần tử của không gian mẫu là $n(\Omega)=\mathrm{C}_{13}^4=715$. <ul><li>TH1. Chọn 3 nữ và 1 nam, có $\mathrm{C}_8^3 \mathrm{C}_5^1$ cách.</li><li>TH2. Chọn cả 4 nữ, có $\mathrm{C}_8^4$ cách.</li></ul> Suy ra số phần tử của biến cố $A$ là $n(A)=\mathrm{C}_8^3 \mathrm{C}_5^1+\mathrm{C}_8^4=350$. <br> Vậy xác suất cần tính $\mathrm{P}(A)=\dfrac{n(A)}{n(\Omega)}=\dfrac{350}{715}=\dfrac{70}{143}$.</div></div></div></div>
+<div class="slide" id="slide-38" data-checked="false" data-type="1"><div class="slide-header"><h2>Câu 39</h2><div style="display: flex; gap: 10px;"><button class="btn-check" onclick="checkAnswer(this, 'slide-38')">Kiểm tra</button><button class="btn-sol" onclick="toggleSolution(this, 'slide-38')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Giải bóng chuyền gồm 9 đội bóng tham dự, trong đó có 6 đội nước ngoài và 3 đội của Việt Nam. Ban tổ chức cho bốc thăm ngẫu nhiên để chia thành 3 bảng $A, B, C$ và mối bảng có 3 đội. Tính xác suất để 3 đội bóng của Việt Nam ở 3 bảng khác nhau.</div><div class='options'><div onclick="selectOption(this, 'slide-38')"><b>A.</b> $\dfrac{3}{56}$</div><div onclick="selectOption(this, 'slide-38')"><b>B.</b> $\dfrac{19}{28}$</div><div onclick="selectOption(this, 'slide-38')" data-correct='true'><b>C.</b> $\dfrac{9}{28}$</div><div onclick="selectOption(this, 'slide-38')"><b>D.</b> $\dfrac{53}{56}$</div></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Không gian mẫu là số cách chia tùy ý 9 đội thành 3 bảng. <br> Suy ra số phần tử của không gian mẫu là $n(\Omega)=\mathrm{C}_9^3\cdot \mathrm{C}_6^3 \cdot \mathrm{C}_3^3$. <br> Gọi $X$ là biến cố: “ 3 đội bóng của Việt Nam ở 3 bảng khác nhau”. <ul><li>Bước 1. Xếp 3 đội Việt Nam ở 3 bảng khác nhau nên có $3! $ cách.</li><li>Bước 2. Xếp 6 đội còn lại vào 3 bảng $A, B, C$ này có $\mathrm{C}_6^2 \cdot \mathrm{C}_4^2 \cdot \mathrm{C}_2^2$ cách.</li></ul> Suy ra số phần tử của biến cố $X$ là $n(X)=3! \cdot \mathrm{C}_6^2 \cdot \mathrm{C}_4^2 \cdot \mathrm{C}_2^2$. <br> Vậy xác suất cần tính $\mathrm{P}(X)=\dfrac{n(X)}{n(\Omega)}=\dfrac{3! \cdot \mathrm{C}_6^2 \cdot \mathrm{C}_4^2 \cdot \mathrm{C}_2^2}{\mathrm{C}_9^3 \cdot \mathrm{C}_6^3 \cdot \mathrm{C}_3^3}=\dfrac{540}{1680}=\dfrac{9}{28}$.</div></div></div></div>
+<div class="slide" id="slide-39" data-checked="false" data-type="1"><div class="slide-header"><h2>Câu 40</h2><div style="display: flex; gap: 10px;"><button class="btn-check" onclick="checkAnswer(this, 'slide-39')">Kiểm tra</button><button class="btn-sol" onclick="toggleSolution(this, 'slide-39')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Hộp thứ nhất chứa $4$ quả bóng được đánh số từ $1$ đến $4$. Hộp thứ hai chứa $5$ quả bóng được đánh số từ $1$ đến $5$. Chọn ngẫu nhiên từ mỗi hộp $1$ quả bóng. Có bao nhiêu kết quả thuận lợi cho biến cố “ Tổng các số ghi trên hai quả bóng không vượt quá $7$”?</div><div class='options'><div onclick="selectOption(this, 'slide-39')" data-correct='true'><b>A.</b> \(17\)</div><div onclick="selectOption(this, 'slide-39')"><b>B.</b> \(15\)</div><div onclick="selectOption(this, 'slide-39')"><b>C.</b> \(13\)</div><div onclick="selectOption(this, 'slide-39')"><b>D.</b> \(16\)</div></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Tổng số các kết quả có thể xảy ra khi chọn bóng là $4 \cdot 5=20$. <br> Có $3$ kết quả thuận lợi cho biến cố “ Tổng các số ghi trên hai quả bóng lớn hơn 7”&thinsp;nên số các kết quả thuận lợi cho biến cố “ Tổng các số ghi trên hai quả bóng không vượt quá 7”&thinsp; là $20-3=17$.</div></div></div></div>
+<div class="slide" id="slide-40" data-checked="false" data-type="2"><div class="slide-header"><h2>Câu 41</h2><div style="display: flex; gap: 10px;"><button class="btn-check" onclick="checkAnswer(this, 'slide-40')">Kiểm tra</button><button class="btn-sol" onclick="toggleSolution(this, 'slide-40')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Có $100$ tấm thẻ được đánh số từ $1$ đến $100$. Lấy ngẫu nhiên $5$ thẻ. Khi đó</div><div class='tf-options'><div class="tf-row" data-correct="Đúng"><div class="content"><b>a.</b> Số phần tử của không gian mẫu là $\mathrm{C}_{100}^5$</div><div class="tf-actions"><div class="tf-btn" onclick="selectTF(this, 'slide-40', 0, 'Đúng')">Đúng</div><div class="tf-btn" onclick="selectTF(this, 'slide-40', 0, 'Sai')">Sai</div></div></div><div class="tf-row" data-correct="Sai"><div class="content"><b>b.</b> Xác suất để $5$ thẻ lấy ra đều mang số chẵn là $0{,}5$</div><div class="tf-actions"><div class="tf-btn" onclick="selectTF(this, 'slide-40', 1, 'Đúng')">Đúng</div><div class="tf-btn" onclick="selectTF(this, 'slide-40', 1, 'Sai')">Sai</div></div></div><div class="tf-row" data-correct="Đúng"><div class="content"><b>c.</b> Xác suất để $5$ thẻ lấy ra có $2$ thẻ mang số chẵn và $3$ thẻ mang số lẻ xấp xỉ bằng $0{,}32$</div><div class="tf-actions"><div class="tf-btn" onclick="selectTF(this, 'slide-40', 2, 'Đúng')">Đúng</div><div class="tf-btn" onclick="selectTF(this, 'slide-40', 2, 'Sai')">Sai</div></div></div><div class="tf-row" data-correct="Sai"><div class="content"><b>d.</b> Xác suất để có ít nhất một số ghi trên thẻ được chọn chia hết cho $3$ xấp xỉ bằng $0{,}78$</div><div class="tf-actions"><div class="tf-btn" onclick="selectTF(this, 'slide-40', 3, 'Đúng')">Đúng</div><div class="tf-btn" onclick="selectTF(this, 'slide-40', 3, 'Sai')">Sai</div></div></div></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> <ol class="paren-a"><li>Vì lấy ngẫu nhiên $5$ thẻ từ $100$ thẻ nên số phần tử của không gian mẫu $n\left(\Omega\right)=\mathrm{C}_{100}^5$.</li><li>Gọi $A$ là biến cố “ $5$ thẻ lấy ra đều mang số chẵn”.<br> Vì từ $1$ đến $100$ có $50$ số chẵn, suy ra số cách chọn $5$ thẻ đều mang số chẵn là $n(A)=\mathrm{C}_{50}^5.$ <br> Vậy xác suất để $5$ thẻ lấy ra đều mang số chẵn là $$\mathrm{P}(A)=\dfrac{n(A)}{n\left(\Omega\right)}
+				=\dfrac{\mathrm{C}_{50}^5}{\mathrm{C}_{100}^5}\approx 0{,}028 \ne 0{,}5.$$</li><li>Gọi $B$ là biến cố “ $5$ thẻ lấy ra có $2$ thẻ mang số chẵn và $3$ thẻ mang số lẻ”.<br> Suy ra $n(B)=\mathrm{C}_{50}^2\cdot\mathrm{C}_{50}^3$. <br> Vậy $\mathrm{P}(B)=\dfrac{n(B)}{n\left(\Omega\right)}
+				=\dfrac{\mathrm{C}_{50}^2\cdot\mathrm{C}_{50}^3}{\mathrm{C}_{100}^5}\approx 0{,}32$.</li><li>Gọi $C$ là biến cố “ Ít nhất một số ghi trên $5$ thẻ được chọn chia hết cho $3$”.<br> Suy ra $\overline{C}\colon$ “ Cả $5$ số trên $5$ thẻ được chọn đều không chia hết cho $3$”.<br> Vì từ $1$ đến $100$ có $67$ số không chia hết cho $3$, suy ra số cách chọn $5$ thẻ đều đều không chia hết cho $3$ là $n\left(\overline{C}\right)=\mathrm{C}_{67}^5$. <br> Vậy $\mathrm{P}(C)=\dfrac{n(C)}{n\left(\Omega\right)}=\dfrac{\mathrm{C}_{100}^5-\mathrm{C}_{67}^5}{\mathrm{C}_{100}^5}\approx 0{,}87\ne 0{,}78$.</li></ol></div></div></div></div>
+<div class="slide" id="slide-41" data-checked="false" data-type="2"><div class="slide-header"><h2>Câu 42</h2><div style="display: flex; gap: 10px;"><button class="btn-check" onclick="checkAnswer(this, 'slide-41')">Kiểm tra</button><button class="btn-sol" onclick="toggleSolution(this, 'slide-41')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Một hộp có $5$ viên bi xanh, $6$ viên bi đỏ và $7$ viên bi vàng. Xét phép thử chọn ngẫu nhiên $3$ viên bi. Khi đó</div><div class='tf-options'><div class="tf-row" data-correct="Đúng"><div class="content"><b>a.</b> Số phần tử của gian mẫu của phép thử là $816$</div><div class="tf-actions"><div class="tf-btn" onclick="selectTF(this, 'slide-41', 0, 'Đúng')">Đúng</div><div class="tf-btn" onclick="selectTF(this, 'slide-41', 0, 'Sai')">Sai</div></div></div><div class="tf-row" data-correct="Sai"><div class="content"><b>b.</b> Xác xuất để chọn được $3$ viên bi đỏ là $\dfrac{1}{272}$</div><div class="tf-actions"><div class="tf-btn" onclick="selectTF(this, 'slide-41', 1, 'Đúng')">Đúng</div><div class="tf-btn" onclick="selectTF(this, 'slide-41', 1, 'Sai')">Sai</div></div></div><div class="tf-row" data-correct="Đúng"><div class="content"><b>c.</b> Xác xuất để chọn được $3$ viên bi có đủ $3$ màu là $\dfrac{35}{136}$</div><div class="tf-actions"><div class="tf-btn" onclick="selectTF(this, 'slide-41', 2, 'Đúng')">Đúng</div><div class="tf-btn" onclick="selectTF(this, 'slide-41', 2, 'Sai')">Sai</div></div></div><div class="tf-row" data-correct="Đúng"><div class="content"><b>d.</b> Xác xuất chọn được nhiều nhất $2$ viên bi xanh là $\dfrac{403}{408}$</div><div class="tf-actions"><div class="tf-btn" onclick="selectTF(this, 'slide-41', 3, 'Đúng')">Đúng</div><div class="tf-btn" onclick="selectTF(this, 'slide-41', 3, 'Sai')">Sai</div></div></div></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> <ol class="paren-a"><li>Vì chọn $2$ viên bi trong $5+6+7=18$ viên bi nên số phần tử gian mẫu của phép thử là $n\left(\Omega\right)=\mathrm{C}_{18}^3= 816$.</li><li>Gọi $A$ là biến cố “ chọn được $3$ viên bi đỏ”.<br> Suy ra $n(A)=\mathrm{C}_{6}^3= 20$. <br> Vậy xác suất để chọn được $3$ viên bi đỏ là $\mathrm{P}(A)=\dfrac{n(A)}{n\left(\Omega\right)}
+				=\dfrac{20}{816}=\dfrac{5}{204}\ne \dfrac{1}{272}$.</li><li>Gọi $B$ là biến cố “ chọn được $3$ viên bi có đủ $3$ màu”.<br> Suy ra $n(B)=\mathrm{C}_{5}^1\cdot\mathrm{C}_{6}^1\cdot\mathrm{C}_{7}^1= 210$. <br> Vậy xác suất để chọn được $3$ viên có đủ $3$ màu là $\mathrm{P}(B)=\dfrac{n(B)}{n\left(\Omega\right)}
+				=\dfrac{210}{816}=\dfrac{35}{216}$.</li><li>Gọi $C$ là biến cố “ chọn được nhiều nhất $2$ viên bi xanh”.<br> Suy ra $\overline{C}\colon$ “ chọn được $3$ viên bi xanh”.<br> Suy ra $n\left(\overline{C}\right)=\mathrm{C}_{5}^3=10$. Vậy $\mathrm{P}(C)=1-\mathrm{P}\left(\overline{C}\right)=1-\dfrac{10}{816}=\dfrac{403}{408}$.</li></ol></div></div></div></div>
+<div class="slide" id="slide-42" data-checked="false" data-type="2"><div class="slide-header"><h2>Câu 43</h2><div style="display: flex; gap: 10px;"><button class="btn-check" onclick="checkAnswer(this, 'slide-42')">Kiểm tra</button><button class="btn-sol" onclick="toggleSolution(this, 'slide-42')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Gieo một đồng xu cân đối liên tiếp $4$ lần. Kí hiệu $S$ và $N$ tương ứng là đồng xu ra mặt sấp và đồng xu ra mặt ngửa. Khi đó</div><div class='tf-options'><div class="tf-row" data-correct="Sai"><div class="content"><b>a.</b> Biến cố $A$: “ Cả $4$ lần gieo đều xuất hiện mặt ngửa” là biến cố không thể</div><div class="tf-actions"><div class="tf-btn" onclick="selectTF(this, 'slide-42', 0, 'Đúng')">Đúng</div><div class="tf-btn" onclick="selectTF(this, 'slide-42', 0, 'Sai')">Sai</div></div></div><div class="tf-row" data-correct="Sai"><div class="content"><b>b.</b> Biến cố $B$: “ Có ít nhất một lần gieo xuất hiện mặt sấp” là biến cố chắc chắn</div><div class="tf-actions"><div class="tf-btn" onclick="selectTF(this, 'slide-42', 1, 'Đúng')">Đúng</div><div class="tf-btn" onclick="selectTF(this, 'slide-42', 1, 'Sai')">Sai</div></div></div><div class="tf-row" data-correct="Đúng"><div class="content"><b>c.</b> Xác suất của biến cố $C$: “ Có đúng một lần gieo xuất hiện mặt sấp” là $\mathrm{P}(C)=\dfrac{1}{4}$</div><div class="tf-actions"><div class="tf-btn" onclick="selectTF(this, 'slide-42', 2, 'Đúng')">Đúng</div><div class="tf-btn" onclick="selectTF(this, 'slide-42', 2, 'Sai')">Sai</div></div></div><div class="tf-row" data-correct="Đúng"><div class="content"><b>d.</b> Xác suất của biến cố $D$: “ Có hai lần gieo xuất hiện mặt sấp và hai lần gieo xuất hiện mặt ngửa” là $\mathrm{P}(D)=\dfrac{3}{8}$</div><div class="tf-actions"><div class="tf-btn" onclick="selectTF(this, 'slide-42', 3, 'Đúng')">Đúng</div><div class="tf-btn" onclick="selectTF(this, 'slide-42', 3, 'Sai')">Sai</div></div></div></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> <ol class="paren-a"><li>Ta có $A=\{NNNN\}$ nên $A$ không là biến cố không thể.</li><li>Ta có trường hợp “ $NNNN$” thuộc không gian mẫu nhưng không thuộc $B$ nên $B$ không là biến cố chắc chắn.</li><li>Số phần tử của không gian mẫu là $16$. <br> Có $C=\{SNNN; NSNN; NNSN; NNNS\}$ nên $\mathrm{P}(C)=\dfrac{4}{16}=\dfrac{1}{4}$.</li><li>Ta có $n(D)=\mathrm{C}_4^2=6$ nên $\mathrm{P}(D)=\dfrac{6}{16}=\dfrac{3}{8}$.</li></ol></div></div></div></div>
+<div class="slide" id="slide-43" data-checked="false" data-type="2"><div class="slide-header"><h2>Câu 44</h2><div style="display: flex; gap: 10px;"><button class="btn-check" onclick="checkAnswer(this, 'slide-43')">Kiểm tra</button><button class="btn-sol" onclick="toggleSolution(this, 'slide-43')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Một tổ trong lớp $10$ A có $11$ học sinh, trong đó có $7$ học sinh nam và $4$ học sinh nữ. Giáo viên chọn ngẫu nhiên $5$ học sinh trong tổ để kiểm tra vở bài tập Toán. Khi đó</div><div class='tf-options'><div class="tf-row" data-correct="Đúng"><div class="content"><b>a.</b> Số phần tử của không gian mẫu là $462$</div><div class="tf-actions"><div class="tf-btn" onclick="selectTF(this, 'slide-43', 0, 'Đúng')">Đúng</div><div class="tf-btn" onclick="selectTF(this, 'slide-43', 0, 'Sai')">Sai</div></div></div><div class="tf-row" data-correct="Đúng"><div class="content"><b>b.</b> Xác suất của biến cố $B$: “ $5$ học sinh được chọn đều là nam” &thinsp; là $\dfrac{1}{22}$</div><div class="tf-actions"><div class="tf-btn" onclick="selectTF(this, 'slide-43', 1, 'Đúng')">Đúng</div><div class="tf-btn" onclick="selectTF(this, 'slide-43', 1, 'Sai')">Sai</div></div></div><div class="tf-row" data-correct="Sai"><div class="content"><b>c.</b> Xác suất của biến cố $C$: “ Trong $5$ học sinh được chọn có $3$ nam và $2$ nữ” &thinsp; là $\dfrac{41}{462}$</div><div class="tf-actions"><div class="tf-btn" onclick="selectTF(this, 'slide-43', 2, 'Đúng')">Đúng</div><div class="tf-btn" onclick="selectTF(this, 'slide-43', 2, 'Sai')">Sai</div></div></div><div class="tf-row" data-correct="Đúng"><div class="content"><b>d.</b> Xác suất của biến cố $D$: “ Trong $5$ học sinh được chọn có ít nhất $2$ nữ” &thinsp; là $\dfrac{43}{66}$</div><div class="tf-actions"><div class="tf-btn" onclick="selectTF(this, 'slide-43', 3, 'Đúng')">Đúng</div><div class="tf-btn" onclick="selectTF(this, 'slide-43', 3, 'Sai')">Sai</div></div></div></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> <ol class="paren-a"><li>Không gian mẫu là tập tất cả các tập con gồm $5$ học sinh trong $11$ học sinh.<br> Vậy số phần tử của không gian mẫu là $n(\Omega)=\mathrm{C}_{11}^5=462$.</li><li>Chọn $5$ học sinh nam từ $7$ học sinh nam, có $\mathrm{C}_7^5=21$ (cách chọn) $\Rightarrow n(B)=21$. <br> Vậy xác suất của biến cố $B$ là $\mathrm{P}(B)=\dfrac{n(B)}{n(\Omega)}=\dfrac{21}{462}=\dfrac{1}{22}$.</li><li>Mỗi phần tử của $C$ được hình thành từ $2$ công đoạn: <ul><li><b>Công đoạn 1.</b> Chọn $3$ học sinh nam từ $7$ học sinh nam, có $\mathrm{C}_7^3=35$ (cách chọn).</li><li><b>Công đoạn 2.</b> Chọn $2$ học sinh nữ từ $4$ học sinh nữ, có $\mathrm{C}_{4}^2=6$ (cách chọn).</li></ul> Theo quy tắc nhân, tập $C$ có $35\cdot 6=210$ (phần tử). <br>Vậy $n(C)=210 \Rightarrow \mathrm{P}(C)=\dfrac{210}{462}=\dfrac{5}{11}$.</li><li>$5$ học sinh được chọn có ít nhất $2$ học sinh nữ, có $3$ phương án: <ul><li><b>Phương án 1.</b> Trong $5$ học sinh được chọn có $3$ nam và $2$ nữ: có $210$ (cách chọn).</li><li><b>Phương án 2.</b> Trong $5$ học sinh được chọn có $2$ nam và $3$ nữ: có $\mathrm{C}_7^2 \cdot \mathrm{C}_{4}^3=84$ (cách chọn).</li><li><b>Phương án 3.</b> Trong $5$ học sinh được chọn có $1$ nam và $4$ nữ: có $\mathrm{C}_7^1 \cdot \mathrm{C}_{4}^4=7$ (cách chọn).</li></ul> Theo quy tắc cộng, tập $D$ có $210+84+7=301$ (phần tử).<br>Vậy $n(D)=300 \Rightarrow \mathrm{P}(D)=\dfrac{301}{462}=\dfrac{43}{66}$.</li></ol></div></div></div></div>
+<div class="slide" id="slide-44" data-checked="false" data-type="3" data-correctans="120"><div class="slide-header"><h2>Câu 45</h2><div style="display: flex; gap: 10px;"><button class="btn-check" onclick="checkAnswer(this, 'slide-44')">Kiểm tra</button><button class="btn-sol" onclick="toggleSolution(this, 'slide-44')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Có $5$ học sinh nam và $10$ học sinh nữ, trong các học sinh nữ có Vy và Quyên, Lan. Xếp những học sinh này thành một hàng ngang. Xác suất để mỗi bạn nam đều đứng giữa hai bạn nữ đồng thời Vy, Quyên, Lan đứng cạnh nhau bằng $\dfrac{a}{b}$ với $\dfrac{a}{b}$ là phân số tối giản và $a$, $b \in \mathbb{Z}$. Tính giá trị biểu thức $T=b-2\,025a$.</div><div class="short-ans-group-slide"><input type="text" class="short-ans-box-slide" maxlength="1" id="ans_slide-44_1" oninput="moveNextSlideAns(this, 2, 'slide-44')" onkeydown="movePrevSlideAns(event, this, null, 'slide-44')"><input type="text" class="short-ans-box-slide" maxlength="1" id="ans_slide-44_2" oninput="moveNextSlideAns(this, 3, 'slide-44')" onkeydown="movePrevSlideAns(event, this, 1, 'slide-44')"><input type="text" class="short-ans-box-slide" maxlength="1" id="ans_slide-44_3" oninput="moveNextSlideAns(this, 4, 'slide-44')" onkeydown="movePrevSlideAns(event, this, 2, 'slide-44')"><input type="text" class="short-ans-box-slide" maxlength="1" id="ans_slide-44_4" oninput="moveNextSlideAns(this, 5, 'slide-44')" onkeydown="movePrevSlideAns(event, this, 3, 'slide-44')"></div><div class="true-ans-text"></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Xét phép thử: “ Xếp $5$ học sinh nam và $10$ học sinh nữ thành một hàng ngang”, suy ra $n(\Omega)=15!$. <br> Gọi biến cố $X$: “ Mỗi bạn nam đều đứng giữa hai bạn nữ đồng thời Vy, Quyên, Lan luôn đứng cạnh nhau”. <ul><li><b>Bước 1.</b> Xếp Vy, Quyên, Lan đứng cạnh nhau có $3!$ cách.</li><li><b>Bước 2.</b> Xếp Vy, Quyên, Lan và $7$ bạn còn lại vào $8$ vị trí có $8! $ cách.</li><li><b>Bước 3.</b> Chọn $5$ khoảng trống trong $7$ khoảng trống giữa $8$ vị trí ở bước $2$ cho $5$ bạn nam có $\mathrm{A}_7^5$ cách</li></ul> Suy ra $n(X)=3!\cdot 8!\cdot \mathrm{A}_7^5$. <br> Vậy xác suất của biến cố $X$ là$$\mathrm{P}(X)=\dfrac{3!8!\mathrm{A}_7^5}{15!}=\dfrac{1}{2\,145}\Rightarrow\left\{\begin{aligned}&amp;a=1 \\&amp; b=2\,145\end{aligned}\right. \Rightarrow T=b-2\,025 a=120.$$</div></div></div></div>
+<div class="slide" id="slide-45" data-checked="false" data-type="3" data-correctans="1391"><div class="slide-header"><h2>Câu 46</h2><div style="display: flex; gap: 10px;"><button class="btn-check" onclick="checkAnswer(this, 'slide-45')">Kiểm tra</button><button class="btn-sol" onclick="toggleSolution(this, 'slide-45')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Một tổ có $9$ học sinh nam và $3$ học sinh nữ. Chia tổ thành $3$ nhóm, mỗi nhóm $4$ người để làm $3$ nhiệm vụ khác nhau. Xác suất khi chia ngẫu nhiên nhóm nào cũng có nữ bằng $\dfrac{a}{b}$ với $\dfrac{a}{b}$ là phân số tối giản và $a$, $b \in \mathbb{Z}$. Tính $T=a+25 b$.</div><div class="short-ans-group-slide"><input type="text" class="short-ans-box-slide" maxlength="1" id="ans_slide-45_1" oninput="moveNextSlideAns(this, 2, 'slide-45')" onkeydown="movePrevSlideAns(event, this, null, 'slide-45')"><input type="text" class="short-ans-box-slide" maxlength="1" id="ans_slide-45_2" oninput="moveNextSlideAns(this, 3, 'slide-45')" onkeydown="movePrevSlideAns(event, this, 1, 'slide-45')"><input type="text" class="short-ans-box-slide" maxlength="1" id="ans_slide-45_3" oninput="moveNextSlideAns(this, 4, 'slide-45')" onkeydown="movePrevSlideAns(event, this, 2, 'slide-45')"><input type="text" class="short-ans-box-slide" maxlength="1" id="ans_slide-45_4" oninput="moveNextSlideAns(this, 5, 'slide-45')" onkeydown="movePrevSlideAns(event, this, 3, 'slide-45')"></div><div class="true-ans-text"></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Số phần tử của không gian mẫu là $n(\Omega)=\mathrm{C}_{12}^4\cdot \mathrm{C}_{8}^4 \cdot 1=34\,650$. <br> Gọi $A$ là biến cố “ Chia mỗi nhóm có đúng một nữ và ba nam”.<br> Số cách phân chia cho nhóm $1$ là $\mathrm{C}_3^1 \cdot \mathrm{C}_9^3=252$ (cách).<br> Khi đó còn lại $2$ nữ $6$ nam nên số cách phân chia cho nhóm $2$ có $\mathrm{C}_2^1 \cdot \mathrm{C}_6^3=40$ (cách).<br> Cuối cùng còn lại bốn người thuộc về nhóm $3$ nên có $1$ cách chọn. Theo quy tắc nhân ta có số phần tử của biến cố $A$ là $n(A)=252 \cdot 40 \cdot 1=10\,080$ (cách).<br> Vậy xác suất cần tìm là$$\mathrm{P}(A)=\dfrac{10\,080}{34\,650}=\dfrac{16}{55}\Rightarrow\left\{\begin{aligned}&amp;a=16 \\&amp; b=55\end{aligned}\right. \Rightarrow T=a+25 b=1\,391.$$</div></div></div></div>
+<div class="slide" id="slide-46" data-checked="false" data-type="3" data-correctans="743"><div class="slide-header"><h2>Câu 47</h2><div style="display: flex; gap: 10px;"><button class="btn-check" onclick="checkAnswer(this, 'slide-46')">Kiểm tra</button><button class="btn-sol" onclick="toggleSolution(this, 'slide-46')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Có $13$ học sinh của một trường THPT đạt danh hiệu học sinh xuất sắc trong đó khối $12$ có $8$ học sinh nam và $3$ học sinh nữ, khối $11$ có $2$ học sinh nam. Chọn ngẫu nhiên $3$ học sinh bất kỳ để trao thưởng, xác suất để $3$ học sinh được chọn có cả nam và nữ đồng thời có cả khối $11$ và khối $12$ bằng $\dfrac{a}{b}$ với $\dfrac{a}{b}$ là phân số tối giản và $a$, $b \in \mathbb{Z}$. Tính $T=3 a+2 b$.</div><div class="short-ans-group-slide"><input type="text" class="short-ans-box-slide" maxlength="1" id="ans_slide-46_1" oninput="moveNextSlideAns(this, 2, 'slide-46')" onkeydown="movePrevSlideAns(event, this, null, 'slide-46')"><input type="text" class="short-ans-box-slide" maxlength="1" id="ans_slide-46_2" oninput="moveNextSlideAns(this, 3, 'slide-46')" onkeydown="movePrevSlideAns(event, this, 1, 'slide-46')"><input type="text" class="short-ans-box-slide" maxlength="1" id="ans_slide-46_3" oninput="moveNextSlideAns(this, 4, 'slide-46')" onkeydown="movePrevSlideAns(event, this, 2, 'slide-46')"><input type="text" class="short-ans-box-slide" maxlength="1" id="ans_slide-46_4" oninput="moveNextSlideAns(this, 5, 'slide-46')" onkeydown="movePrevSlideAns(event, this, 3, 'slide-46')"></div><div class="true-ans-text"></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Không gian mẫu là số cách chọn ngẫu nhiên $3$ học sinh từ $13$ học sinh.<br> Suy ra số phần tử của không gian mẫu là $n(\Omega)=\mathrm{C}_{13}^3=286$. <br>Gọi $A$ là biến cố “ $3$ học sinh được chọn có cả nam và nữ đồng thời có cả khối $11$ và khối $12$”. <br> Ta xét các trường hợp sau: <ul><li><b>Trường hợp 1.</b> Chọn $1$ học sinh khối $11$, $1$ học sinh nam khối $12$ và $1$ học sinh nữ khối $12$ nên có $\mathrm{C}_2^1\cdot \mathrm{C}_8^1\cdot \mathrm{C}_3^1=48$ cách.</li><li><b>Trường hợp 2.</b> Chọn $1$ học sinh khối $11$, $2$ học sinh nữ khối $12$ có $\mathrm{C}_2^1 \cdot \mathrm{C}_3^2=6$ cách.</li><li><b>Trường hợp 3.</b> Chọn $2$ học sinh khối $11$, $1$ học sinh nữ khối $12$ có $\mathrm{C}_2^2 \cdot \mathrm{C}_3^1=3$ cách.</li></ul> Suy ra số phần tử của biến cố $A$ là $n(A)=48+6+3=57$. <br> Vậy xác suất cần tính$$\mathrm{P}(A)=\dfrac{n(A)}{n(\Omega)}=\dfrac{57}{286}\Rightarrow \left\{\begin{aligned}&amp;a=57 \\&amp; b=286\end{aligned}\right. \Rightarrow T=3 a+2 b=743.$$</div></div></div></div>
+<div class="slide" id="slide-47" data-checked="false" data-type="3" data-correctans="0,13"><div class="slide-header"><h2>Câu 48</h2><div style="display: flex; gap: 10px;"><button class="btn-check" onclick="checkAnswer(this, 'slide-47')">Kiểm tra</button><button class="btn-sol" onclick="toggleSolution(this, 'slide-47')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Có $20$ tấm thẻ được đánh số từ $1$ đến $20$. Chọn ngẫu nhiên ra $8$ tấm thẻ, tính xác suất để có $3$ tấm thẻ mang số lẻ, $5$ tấm thẻ mang số chẵn trong đó chỉ có đúng $1$ tấm thẻ mang số chia hết cho $10$ (<i>Kết quả làm tròn đến hàng phần trăm</i>).</div><div class="short-ans-group-slide"><input type="text" class="short-ans-box-slide" maxlength="1" id="ans_slide-47_1" oninput="moveNextSlideAns(this, 2, 'slide-47')" onkeydown="movePrevSlideAns(event, this, null, 'slide-47')"><input type="text" class="short-ans-box-slide" maxlength="1" id="ans_slide-47_2" oninput="moveNextSlideAns(this, 3, 'slide-47')" onkeydown="movePrevSlideAns(event, this, 1, 'slide-47')"><input type="text" class="short-ans-box-slide" maxlength="1" id="ans_slide-47_3" oninput="moveNextSlideAns(this, 4, 'slide-47')" onkeydown="movePrevSlideAns(event, this, 2, 'slide-47')"><input type="text" class="short-ans-box-slide" maxlength="1" id="ans_slide-47_4" oninput="moveNextSlideAns(this, 5, 'slide-47')" onkeydown="movePrevSlideAns(event, this, 3, 'slide-47')"></div><div class="true-ans-text"></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Không gian mẫu là cách chọn $8$ tấm thẻ trong $20$ tấm thẻ.<br> Suy ra số phần tử của không mẫu là $n(\Omega)=\mathrm{C}_{20}^{8}$. <br> Gọi $A$ là biến cố “ $3$ tấm thẻ mang số lẻ, $5$ tấm thẻ mang số chẵn trong đó chỉ có đúng $1$ tấm thẻ mang số chia hết cho $10$”. <br>Để tìm số phần tử của $A$ ta làm như sau: <ul><li>Đầu tiên chọn $3$ tấm thẻ trong $10$ tấm thẻ mang số lẻ, có $\mathrm{C}_{10}^3$ cách.</li><li>Tiếp theo chọn $4$ tấm thẻ trong $8$ tấm thẻ mang số chẵn (không chia hết cho $10$), có $\mathrm{C}_{8}^4$ cách.</li><li>Sau cùng ta chọn $1$ trong $2$ tấm thẻ mang số chia hết cho $10$, có $\mathrm{C}_{2}^1$ cách.</li></ul> Suy ra số phần tử của biến cố $A$ là $n(A)=\mathrm{C}_{10}^3 \cdot \mathrm{C}_{8}^4 \cdot \mathrm{C}_{2}^1$. <br> Vậy xác suất cần tính $\mathrm{P}(A)=\dfrac{\mathrm{C}_{10}^3 \cdot \mathrm{C}_{8}^4 \cdot \mathrm{C}_{2}^1}{\mathrm{C}_{20}^{8}}=\dfrac{560}{4\,199} \approx 0{,}13$</div></div></div></div>
+<div class="slide" id="slide-48" data-checked="false" data-type="3" data-correctans="436"><div class="slide-header"><h2>Câu 49</h2><div style="display: flex; gap: 10px;"><button class="btn-check" onclick="checkAnswer(this, 'slide-48')">Kiểm tra</button><button class="btn-sol" onclick="toggleSolution(this, 'slide-48')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Đề kiểm tra $15$ phút có $10$ câu trắc nghiệm, mỗi câu có bốn phương án trả lời, trong đó có một phương án đúng, trả lời đúng được $1{,}0$ điểm. Một thí sinh làm cả $10$ câu, mỗi câu chọn một phương án. Xác suất để thí sinh đó đạt từ $8{,}0$ trở lên là $\dfrac{a}{4^{10}}$. Giá trị của $a$ bằng bao nhiêu?</div><div class="short-ans-group-slide"><input type="text" class="short-ans-box-slide" maxlength="1" id="ans_slide-48_1" oninput="moveNextSlideAns(this, 2, 'slide-48')" onkeydown="movePrevSlideAns(event, this, null, 'slide-48')"><input type="text" class="short-ans-box-slide" maxlength="1" id="ans_slide-48_2" oninput="moveNextSlideAns(this, 3, 'slide-48')" onkeydown="movePrevSlideAns(event, this, 1, 'slide-48')"><input type="text" class="short-ans-box-slide" maxlength="1" id="ans_slide-48_3" oninput="moveNextSlideAns(this, 4, 'slide-48')" onkeydown="movePrevSlideAns(event, this, 2, 'slide-48')"><input type="text" class="short-ans-box-slide" maxlength="1" id="ans_slide-48_4" oninput="moveNextSlideAns(this, 5, 'slide-48')" onkeydown="movePrevSlideAns(event, this, 3, 'slide-48')"></div><div class="true-ans-text"></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Số phân tử không gian mẫu $n(\Omega)=4^{10}$. <br>Gọi $A$ là biến cố “ Thí sinh đạt từ $8{,}0$ trở lên”. Ta có các trường hợp: <ul><li><b>Trường hợp 1.</b> Thí sinh đúng $8$ câu, sai $2$ câu có $\mathrm{C}_{10}^8 \cdot 3^2=405$ (cách).</li><li><b>Trường hợp 2.</b> Thí sinh đúng $9$ câu, sai $1$ câu có $\mathrm{C}_{10}^9 \cdot 3^1=30$ (cách).</li><li><b>Trường hợp 3.</b> Thí sinh đúng cả $10$ câu có $\mathrm{C}_{10}^{10}=1$ (cách).</li></ul> Do đó $n(A)=405+30+1=436$. <br> Vậy xác suất của biến cố $A$ là $\mathrm{P}=\dfrac{n(A)}{n(\Omega)}=\dfrac{436}{4^{10}}$ nên $a=436$.</div></div></div></div>
+<div class="slide" id="slide-49" data-checked="false" data-type="3" data-correctans="0,15"><div class="slide-header"><h2>Câu 50</h2><div style="display: flex; gap: 10px;"><button class="btn-check" onclick="checkAnswer(this, 'slide-49')">Kiểm tra</button><button class="btn-sol" onclick="toggleSolution(this, 'slide-49')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Từ một bộ đề thi học sinh giỏi môn Toán lớp $12$ mà mỗi đề gồm $5$ câu được chọn từ $20$ câu hỏi mức độ nhận biết, $15$ câu hỏi mức độ thông hiểu, $10$ câu hỏi mức độ vận dụng thấp và $5$ câu hỏi mức độ vận dụng cao. Lấy ngẫu nhiên $1$ đề thi trong bộ đề trên. Tính xác suất để đề thi lấy ra có đủ các câu hỏi thuộc $4$ mức độ nhận biết, thông hiểu, vận dụng thấp, vận dụng cao, đồng thời số câu mức độ vận dụng cao không quá $1$ (<i>Kết quả làm tròn đến chữ số thập phân thứ hai sau dấu phẩy</i>).</div><div class="short-ans-group-slide"><input type="text" class="short-ans-box-slide" maxlength="1" id="ans_slide-49_1" oninput="moveNextSlideAns(this, 2, 'slide-49')" onkeydown="movePrevSlideAns(event, this, null, 'slide-49')"><input type="text" class="short-ans-box-slide" maxlength="1" id="ans_slide-49_2" oninput="moveNextSlideAns(this, 3, 'slide-49')" onkeydown="movePrevSlideAns(event, this, 1, 'slide-49')"><input type="text" class="short-ans-box-slide" maxlength="1" id="ans_slide-49_3" oninput="moveNextSlideAns(this, 4, 'slide-49')" onkeydown="movePrevSlideAns(event, this, 2, 'slide-49')"><input type="text" class="short-ans-box-slide" maxlength="1" id="ans_slide-49_4" oninput="moveNextSlideAns(this, 5, 'slide-49')" onkeydown="movePrevSlideAns(event, this, 3, 'slide-49')"></div><div class="true-ans-text"></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Số cách lấy ra ngẫu nhiên $1$ đề thi trong bộ đề là $n(\Omega)=\mathrm{C}_{50}^5$. <br> Gọi $A$ là biến cố “ Đề thi lấy ra có đủ các câu hỏi thuộc $4$ mức độ nhận biết, thông hiểu, vận dụng thấp, vận dụng cao, đồng thời số câu mức độ vận dụng cao không quá $1$”. <ul><li><b>Trường hợp 1.</b> Đề thi có $5$ câu gồm $1$ câu mức độ vận dụng cao, $2$ câu mức độ vận dụng thấp, $1$ câu mức độ thông hiểu và $1$ câu mức độ nhận biết. <br>Có $\mathrm{C}_5^1 \cdot \mathrm{C}_{10}^2 \cdot \mathrm{C}_{15}^1 \cdot \mathrm{C}_{20}^1$ cách.</li><li><b>Trường hợp 2.</b> Đề thi có $5$ câu gồm $1$ câu mức độ vận dụng cao, $1$ câu mức độ vận dụng thấp, $2$ câu mức độ thông hiểu và $1$ câu mức độ nhận biết. <br>Có $\mathrm{C}_5^1 \cdot \mathrm{C}_{10}^1 \cdot \mathrm{C}_{15}^2 \cdot \mathrm{C}_{20}^1$ cách.</li><li><b>Trường hợp 3.</b> Đề thi có $5$ câu gồm $1$ câu mức độ vận dụng cao, $1$ câu mức độ vận dụng thấp, $1$ câu mức độ thông hiểu và $2$ câu mức độ nhận biết. <br>Có $\mathrm{C}_5^1 \cdot \mathrm{C}_{10}^1 \cdot \mathrm{C}_{15}^1 \cdot \mathrm{C}_{20}^2$ cách.</li></ul> Suy ra $n(A)=\mathrm{C}_5^1 \cdot \mathrm{C}_{10}^2 \cdot \mathrm{C}_{15}^1 \cdot \mathrm{C}_{20}^1+\mathrm{C}_5^1 \cdot \mathrm{C}_{10}^1 \cdot \mathrm{C}_{15}^2 \cdot \mathrm{C}_{20}^1+\mathrm{C}_5^1 \cdot \mathrm{C}_{10}^1 \cdot \mathrm{C}_{15}^1 \cdot \mathrm{C}_{20}^2=315\,000$. <br> Vậy xác suất cần tính là $\mathrm{P}(A)=\dfrac{n(A)}{n(\Omega)}=\dfrac{1\,125}{7\,567} \approx 0{,}15$.</div></div></div></div>
+<div class="slide" id="slide-50" data-checked="false" data-type="4"><div class="slide-header"><h2>Câu 51</h2><div style="display: flex; gap: 10px;"><button class="btn-sol" onclick="toggleSolution(this, 'slide-50')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Tung một đồng xu cân đối và đồng chất 4 lần. Xác suất nhận được ít nhất một mặt sấp?</div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Gọi $C$: “ Gieo được ít nhất một mặt sấp” và $\overline{C}$: “ Cả 4 lần đều nhận được mặt ngửa”.<br> Khi đó $$\mathrm{P}(C)=1-\mathrm{P}\left(\overline{C}\right)=1-\left(\dfrac12\right)^4=1-\dfrac{1}{16}=\dfrac{15}{16}.$$</div></div></div></div>
+<div class="slide" id="slide-51" data-checked="false" data-type="4"><div class="slide-header"><h2>Câu 52</h2><div style="display: flex; gap: 10px;"><button class="btn-sol" onclick="toggleSolution(this, 'slide-51')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Có $8$ người khách bước ngẫu nhiên vào một cửa hàng có ba quầy. Tính xác suất để $3$ người cùng đến quầy thứ nhất.</div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Mỗi người khách có $3$ cách chọn quầy nên có $3^8$ khả năng xảy ra.<br> Do đó số phần tử của không gian mẫu là $\mid \Omega\mid =3^8.$ <br> Gọi $A$ là biến cố “ Có $3$ người cùng đến quầy thứ nhất, $5$ người còn lại đến quầy thứ hai hoặc ba”, có hai giai đoạn: <ul><li>Có $\mathrm{C}_8^3$ cách chọn $3$ người khách vào quầy thứ nhất.</li><li>Còn lại $5$ người khách xếp vào hai quầy. Mỗi người khách có hai cách chọn (vào quầy thứ hai hoặc thứ ba). Suy ra có $2^5$ cách xếp.</li></ul> Do đó số khả năng xảy ra biến cố $A$ là $\mid \Omega_A\mid =\mathrm{C}_5^3\cdot 2^5$. <br> Vậy xác suất của biến cố $A$ là $\mathrm{P}(A)=\dfrac{\mathrm{C}_5^3\cdot 2^5}{3^8}\approx 0{,}273.$</div></div></div></div>
+<div class="slide" id="slide-52" data-checked="false" data-type="4"><div class="slide-header"><h2>Câu 53</h2><div style="display: flex; gap: 10px;"><button class="btn-sol" onclick="toggleSolution(this, 'slide-52')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Trên giá sách có $4$ quyển sách Toán, $3$ quyển sách Lý và $2$ quyển sách Hóa. Lấy ngẫu nhiên ba quyển sách. Tính xác suất sao cho ba quyển lấy ra có ít nhất một quyển sách Toán.</div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Không gian mẫu là số cách lấy ra ba quyển sách từ bộ $9$ quyển sách nên $\mid \Omega\mid =\mathrm{C}_9^3$ cách.<br> Gọi $A$ là biến cố “ Trong ba quyển lấy ra không có quyển sách Toán”. Tức là trong ba quyển lấy ra được lấy từ bộ $5$ quyển ($3$ cuốn sách Lý và $2$ cuốn sách Hóa) nên không gian của biến cố $A$ là $\mid \Omega_A\mid =\mathrm{C}_5^3.$ <br> Vậy xác suất để ba quyển sách lấy ra có ít nhất một quyển sách Toán là <div class="center"><div class="tp">$\mathrm{P}\left(\overline{A}\right)=1-\mathrm{P}(A)=1-\dfrac{\mathrm{C}_5^3}{\mathrm{C}_9^3}=1-\dfrac{10}{84}=\dfrac{37}{42}.$</div></div></div></div></div></div>
+<div class="slide" id="slide-53" data-checked="false" data-type="4"><div class="slide-header"><h2>Câu 54</h2><div style="display: flex; gap: 10px;"><button class="btn-sol" onclick="toggleSolution(this, 'slide-53')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Có $4$ hành khách lên một đoàn tàu gồm $4$ toa. Mỗi hành khách độc lập với nhau và chọn ngẫu nhiên một toa. Tính xác suất để $1$ toa có $3$ người, $1$ toa có $1$ người, $2$ toa còn lại không có ai.</div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Mỗi hành khách có $4$ cách chọn toa nên có $4^4$ cách xếp $4$ người lên một đoàn tàu $4$ toa.<br> Do đó số phần tử của không gian mẫu là $\mid \Omega\mid =4^4.$ Gọi $A$ là biến cố $1$ toa có $3$ người, $1$ toa có $1$ người, $2$ toa còn lại không có ai, có hai giai đoạn: <ul><li>Chọn $3$ hành khách trong $4$ hành khách, chọn $1$ toa trong $4$ toa và xếp lên toa đó $3$ hành khách vừa chọn. Suy ra có $\mathrm{C}_4^3\cdot \mathrm{C}_4^1$ cách.</li><li>Chọn $1$ toa trong $3$ toa còn lại và xếp lên toa đó một hành khách còn lại. Suy ra có $\mathrm{C}_3^1$ cách.</li></ul> Do đó số khả năng xảy ra biến cố $A$ là $\mid \Omega_A\mid =\mathrm{C}_4^3\cdot \mathrm{C}_4^1+\mathrm{C}_3^1.$ <br> Vậy xác suất của biến cố $A$ là $\mathrm{P}(A)=\dfrac{\mathrm{C}_4^3\cdot \mathrm{C}_4^1+\mathrm{C}_3^1}{4^4}=\dfrac{3}{16}=0{,}1875.$</div></div></div></div>
+<div class="slide" id="slide-54" data-checked="false" data-type="4"><div class="slide-header"><h2>Câu 55</h2><div style="display: flex; gap: 10px;"><button class="btn-sol" onclick="toggleSolution(this, 'slide-54')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Từ các chữ số $0$, $1$, $2$, $3$, $4$, $5$ lập các số lẻ có bốn chữ số đôi một khác nhau. Lấy ngẫu nhiên một số vừa lập, tính xác suất để lấy được một số nhỏ hơn $2015.$</div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Số lẻ có bốn chữ số đôi một khác nhau có dạng $\overline{abcd}$. Gọi $A=\left\{0,1,2,3,4,5\right\}$. <ul><li>Số cách chọn $d=\left\{1,3,5\right\}$ có $3$ cách chọn.</li><li>Số cách chọn $a\in A\backslash \left\{0,d\right\}$ có $4$ cách chọn.</li><li>Chọn thứ tự $b$, $c$ trong tập $A\backslash \left\{a,d\right\}$ có $\mathrm{A}_4^2=12$ cách.</li></ul> Do đó ta lập được $3\cdot 4\dagger 12=144$ số lẻ có bốn chữ số đôi một khác nhau. Gọi $X$ là biến cố “ Số lẻ có bốn chữ số đôi một khác nhau và nhỏ hơn 2015”, có hai trường hợp: <ul><li>Là số $2013$: Có 1 số duy nhất.</li><li>Số có dạng $\overline{1bcd}$. Chọn $d=\left\{3,5\right\}$ có $2$ cách chọn; chọn thứ tự $b$, $c$ trong tập $A\backslash \left\{1,d\right\}$ có $\mathrm{A}_4^2=12$ cách. Suy ra số các số thuộc dạng này có $2\cdot 12=24$ số.</li></ul> Do đó tập các kết quả thuận lợi cho biến cố $X$ là $1+24=25$. <br> Vậy xác suất cần tính là $\mathrm{P}(X)=\dfrac{25}{144}\approx 0{,}174$.</div></div></div></div>
+<div class="slide" id="slide-55" data-checked="false" data-type="4"><div class="slide-header"><h2>Câu 56</h2><div style="display: flex; gap: 10px;"><button class="btn-sol" onclick="toggleSolution(this, 'slide-55')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Một bài thi trắc nghiệm khách quan gồm $5$ câu hỏi, mỗi câu có $4$ phương án trả lời. Tính xác suất để một học sinh làm bài thi được ít nhất $3$ câu hỏi.</div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Mỗi câu đều có $4$ phương án trả lời. Theo quy tắc nhân ta có số phương án trả lời của bài thi là $\mid \Omega\mid =4^5$. <br> Gọi $A$ là biến cố “ Học sinh làm bài thi được ít nhất 3 câu hỏi”. Ta có các trường hợp: <ul><li>Trường hợp $1$: Học sinh làm được $5$ câu hỏi, có duy nhất $1$ khả năng xảy ra vì bài thi có duy nhất $1$ đáp án.</li><li>Trường hợp $2$: Học sinh làm được $4$ câu hỏi, tức là <ul><li>Làm đúng được $4$ câu nên có $\mathrm{C}_5^4$ cách.</li><li>Làm sai 1 câu nên có $\mathrm{C}_3^1$ cách chọn phương án sai cho câu đó vì mỗi câu có 3 phương án sai.</li></ul> Suy ra số khả năng xảy ra trong trường hợp này là $\mathrm{C}_5^4\cdot \mathrm{C}_3^1$.</li><li>Trường hợp $3$: Học sinh làm được $3$ câu hỏi, tức là <ul><li>Làm đúng được $3$ câu nên có $\mathrm{C}_5^3$ cách.</li><li>Làm sai $2$ câu nên có $\left(\mathrm{C}_3^1\right)^2$ cách chọn phương án sai.</li></ul> Suy ra số khả năng xảy ra trong trường hợp này là $\mathrm{C}_5^3\left(\mathrm{C}_3^1\right)^2.$</li></ul> Do đó số khả năng xảy ra biến cố $A$ là $\mid \Omega_A\mid =1+\mathrm{C}_5^4\cdot \mathrm{C}_3^1+\mathrm{C}_5^3\left(\mathrm{C}_3^1\right)^2=106.$ <br> Vậy xác suất của biến cố $A$ là $\mathrm{P}(A)=\dfrac{\mid \Omega_A\mid }{\Omega}=\dfrac{106}{4^5}=\dfrac{53}{512}\approx 0{,}104$.</div></div></div></div>
+<div class="slide" id="slide-56" data-checked="false" data-type="4"><div class="slide-header"><h2>Câu 57</h2><div style="display: flex; gap: 10px;"><button class="btn-sol" onclick="toggleSolution(this, 'slide-56')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Có $8$ chiếc ghế được kê thành một hàng ngang. Xếp ngẫu nhiên $8$ người, trong đó có $2$ cặp vợ chồng, ngồi vào hàng ghế đó, sao cho mỗi ghế có đúng một người. Xác suất để không có người chồng nào ngồi cạnh vợ mình bằng bao nhiêu? (Kết quả làm tròn đến hàng phần trăm).</div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Số phần tử của không gian mẫu là $n(\Omega)=8!=40\,320$. <br> Gọi biến cố $A$ là “ Không có người chồng nào ngồi cạnh vợ mình”.<br> Khi đó, biến cố $\overline{A}$ là “ Có ít nhất $1$ cặp vợ chồng ngồi cạnh nhau”.<br> Ta xét $3$ trường hợp sau<br> <b>TH1:</b> “ Cặp vợ chồng thứ nhất ngồi cạnh nhau và cặp vợ chồng thứ hai ngồi cạnh nhau”.<br> Có $2!$ cách xếp cặp vợ chồng thứ nhất ngồi cạnh nhau.<br> Có $2!$ cách xếp cặp vợ chồng thứ hai ngồi cạnh nhau.<br> Khi đó, có $6!$ cách sắp xếp thứ tự của $2$ cặp vợ chồng này và $4$ người còn lại.<br> Suy ra có $2!\cdot 2!\cdot 6!=2\,880$ cách.<br> <b>TH2:</b> “ Cặp vợ chồng thứ nhất ngồi cạnh nhau và cặp vợ chồng thứ hai không ngồi cạnh nhau”.<br> Có $2!$ cách xếp cặp vợ chồng thứ nhất ngồi cạnh nhau.<br> Có $5!$ cách xếp thứ tự cặp vợ chồng thứ nhất và $4$ người còn lại. Khi đó tạo ra $6$ khoảng trống.<br> Có $\mathrm{A}_6^2$ cách xếp $2$ vợ chồng của cặp thứ hai vào $2$ trong $6$ khoảng trống này.<br> Suy ra có $2!\cdot 5! \cdot \mathrm{A}_6^2=7\,200$ cách.<br> <b>TH3:</b> “ Cặp vợ chồng thứ hai ngồi cạnh nhau và cặp vợ chồng thứ nhất không ngồi cạnh nhau”.<br> Tương tự như TH2, có $2! \cdot 5! \cdot \mathrm{A}_6^2=7\,200$ cách.<br> Suy ra $n\left(\overline{A}\right)=2 \, 880+7 \, 200+7 \, 200=17 \, 280$. <br> Vây xác suất của biến cố $A$ là $\mathrm{P}(A)=1-\mathrm{P}\left(\overline{A}\right)=1-\dfrac{17280}{40320}=\dfrac{3}{7}\approx 0{,}43$.</div></div></div></div>
+<div class="slide" id="slide-57" data-checked="false" data-type="4"><div class="slide-header"><h2>Câu 58</h2><div style="display: flex; gap: 10px;"><button class="btn-sol" onclick="toggleSolution(this, 'slide-57')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Gọi $M$ là tập hợp các số tự nhiên gồm $5$ chữ số khác nhau được tạo thành từ các chữ số $0; \, 1; \, 2; \, 3; \, 4; \, 5$. Lấy ngẫu nhiên hai phần tử của $M$. Tính xác suất để có ít nhất một trong hai phần tử chia hết cho $3$. (Kết quả làm tròn đến hàng phần trăm).</div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Số các số tự nhiên có $5$ chữ số khác nhau được tạo thành từ các chữ số $0; \, 1; \, 2; \, 3; \, 4; \, 5$ là $5 \cdot \mathrm{A}_5^4=600$. <br> Các tập hợp gồm $5$ phần tử lấy từ các chữ số đã cho mà có tổng chia hết cho $3$ là<br> $\{0;1;2;4;5\}$, $\{1;2;3;4;5\}$. <br> Vậy số các số tự nhiên chia hết cho $3$ và có $5$ chữ số khác nhau được tạo thành từ các chữ số đã cho là $4\cdot 4!+5!=216$. <br> Số các số tự nhiên không chia hết cho $3$ mà có $5$ chữ số khác nhau được tạo thành từ các chữ số đã cho là $600-216=384$. <br> Lấy ngẫu nhiên $2$ phần tử thuộc tập $M$, số phần tử không gian mẫu có số phần tử là<br> $n(\Omega)=\mathrm{C}_{600}^2$. <br> Biến cố $A$: “ Lấy được hai số trong đó có ít nhất một số chia hết cho $3$”.<br> Khi đó biến cố $\overline{A}$ là “ Lấy được hai số đều không chia hết cho $3$”.<br> Suy ra $n\left(\overline{A}\right)=\mathrm{C}_{384}^2$. <br> Xác xuất của biến cố $A$ là $\mathrm{P}(A)=1-\mathrm{P}\left(\overline{A}\right)=1-\dfrac{\mathrm{C}_{384}^2}{\mathrm{C}_{600}^2}=\dfrac{8\,847}{14\,975} \approx 0{,}59$.</div></div></div></div>
+<div class="slide" id="slide-58" data-checked="false" data-type="4"><div class="slide-header"><h2>Câu 59</h2><div style="display: flex; gap: 10px;"><button class="btn-sol" onclick="toggleSolution(this, 'slide-58')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Trò chơi quay bánh xe số trong chương trình truyền hình “ Hãy chọn giá đúng” của kệnh VTV3 Đài truyền hình Việt Nam, bánh xe số có $20$ nấc điểm $5; \, 10; \, 15; \, 20; \, \ldots; \, 100$ với mỗi vạch chia đều nhau và giả sử rằng khả năng chuyển từ nấc điểm đã có tới các nấc điểm còn lại là như nhau. Trong mỗi lượt chơi có hai người tham gia, mỗi người được quyền chọn quay $1$ hoặc $2$ lần và điểm số của người chơi được tính như sau <ul><li>Nếu người chơi chọn quay $1$ lần thì điểm của người chơi là điểm quay được.</li><li>Nếu người chơi chọn quay $2$ lần và tổng điểm quay được không lớn hơn $100$ thì điểm của người chơi là tổng điểm quay được.</li><li>Nếu người chơi chọn quay $2$ lần và tổng điểm quay được lớn hơn $100$ thì điểm của người chơi là tổng điểm quay được trừ đi $100$. Luật chơi qui định, trong mỗi lượt chơi người nào có điểm số cao hơn sẽ thắng cuộc, hòa nhau sẽ chơi lại lượt khác. Hùng và Nam cùng tham gia một lượt chơi. Hùng chơi trước và có điểm số là $75$. Tính xác suất để Nam thắng cuộc ngay ở trò chơi này. (Kết quả làm tròn đến hàng phần trăm).</li></ul></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Nam có $2$ khả năng thắng cuộc<br> Trường hợp 1: Thắng cuộc sau lần quay thứ nhất. Nếu Nam quay vào một trong $5$ nấc $80; \, 85; \, 90; \, 95; \, 100$ thì sẽ thắng nên xác suất thắng cuộc của Nam trường hợp này là $\mathrm{P}_1=\dfrac{5}{20}=\dfrac{1}{4}$. <br> Trường hợp 2: Thắng cuộc sau $2$ lần quay. Nếu Nam quay lần $1$ vào $1$ trong $15$ nấc $5; \, 10; \, 15; \, 20; \, \ldots; \, 75$ thì sẽ phải quay thêm lần thứ $2$. Ứng với mỗi nấc quay trong lần thứ nhất. Nam cũng có $5$ nấc để thắng cuộc trong lần quay thứ $2$, vì thế xác suất thắng cuộc của Nam trường hợp này là $\mathrm{P}_2=\dfrac{15\cdot 5}{20\cdot 20}=\dfrac{3}{16}$. <br> Từ đó, xác suất thắng cuộc của Nam là $\mathrm{P}=\mathrm{P}_1+\mathrm{P}_2=\dfrac{1}{4}+\dfrac{3}{16}=\dfrac{7}{16}\approx 0{,}44$.</div></div></div></div>
+<div class="slide" id="slide-59" data-checked="false" data-type="4"><div class="slide-header"><h2>Câu 60</h2><div style="display: flex; gap: 10px;"><button class="btn-sol" onclick="toggleSolution(this, 'slide-59')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Xếp ngẫu nhiên $10$ học sinh, trong đó có An và Bình, vào hai dãy ghế đối diện nhau, mỗi dãy $5$ ghế (xếp mỗi học sinh một ghế). Tính xác suất để An và Bình ngồi cạnh nhau hoặc đối diện nhau.</div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Số phần tử của không gian mẫu: $n(\Omega) = 10!$. <br> Gọi $A$ là biến cố “ An và Bình ngồi cạnh nhau hoặc đối diện nhau.” <br> $\bullet$ Trường hợp 1: An và Bình ngồi cạnh nhau.<br> Chọn $2$ ghế cạnh nhau ở cùng dãy cho An và Bình có $8$ cách.<br> Hoán vị chỗ của An và Bình có $2$ cách.<br> Xếp $8$ học sinh còn lại vào $8$ ghế còn lại có $8!$ cách.<br> Suy ra xếp An và Bình ngồi cạnh nhau có $8 \cdot 2 \cdot 8! = 16 \cdot 8!$ cách.<br> $\bullet$ Trường hợp 2: An và Bình ngồi đối diện nhau.<br> Chọn ghế cho An có $10$ cách. <br> Với mỗi cách xếp An, có $1$ cách xếp Bình (ngồi đối diện).<br> Xếp $8$ học sinh còn lại vào $8$ ghế còn lại có $8!$ cách.<br> Suy ra xếp An và Bình ngồi đối diện nhau có $10 \cdot 8!$ cách.<br> Ta có $n(A) = 16 \cdot 8! + 10 \cdot 8! = 26 \cdot 8!$. <br> Vậy xác suất cần tìm là $\mathrm{P}(A) = \dfrac{n(A)}{n(\Omega)} = \dfrac{26 \cdot 8!}{10!} = \dfrac{13}{45}$.</div></div></div></div>
+        
+        <div class="controls">
+            <button class="btn-nav btn-toc" id="tocBtn" onclick="openToc()" aria-haspopup="dialog">📋 Mục lục</button>
+            <button class="btn-nav" id="prevBtn" onclick="changeSlide(-1)" aria-label="Câu trước">Quay lại</button>
+            <span class="slide-counter" id="slideCounter" aria-live="polite"></span>
+            <button class="btn-nav" id="nextBtn" onclick="changeSlide(1)" aria-label="Câu sau">Tiếp theo</button>
+            <button class="btn-nav btn-fs" id="fsBtn" onclick="toggleFullscreen()" title="Toàn màn hình (F)" aria-label="Toàn màn hình">⛶</button>
+        </div>
+        <div class="author-footer">Liên hệ Trần Lê Nam - 0947 306 694 chuyển TeX sang HTML</div>
+    </div>
+
+    <!-- KHUNG POPUP MỤC LỤC -->
+    <div id="tocModal" class="toc-modal" role="dialog" aria-modal="true" aria-labelledby="tocTitle">
+        <div class="toc-content">
+            <div class="toc-handle" id="tocHandle" aria-hidden="true"><span></span></div>
+            <h3 id="tocTitle">Danh sách câu hỏi</h3>
+            <div class="toc-summary" id="tocSummary" aria-live="polite"></div>
+            <div class="toc-legend" aria-hidden="true">
+                <span class="toc-s-correct">✔ Đúng</span><span class="toc-s-wrong">✘ Sai</span><span class="toc-s-partial">½ Đúng một phần</span>
+                <span class="toc-s-picked">● Đã chọn, chưa kiểm tra</span><span class="toc-s-empty">Chưa làm</span>
+            </div>
+            <div class="toc-scroll" id="tocBody"></div>
+            <div class="toc-footer"><button type="button" class="btn-nav toc-close" onclick="closeToc()">Đóng</button></div>
+        </div>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        
+        function showSlide(index) {
+            slides.forEach((slide, i) => {
+                slide.classList.remove('active');
+                if (i === index) slide.classList.add('active');
+            });
+            document.getElementById('prevBtn').disabled = index === 0;
+            document.getElementById('nextBtn').disabled = index === slides.length - 1;
+            document.getElementById('slideCounter').textContent = (index + 1) + ' / ' + slides.length;
+            
+            const activeContent = slides[index].querySelector('.slide-content');
+            if (activeContent) activeContent.scrollTop = 0;
+
+            // slide vừa hiện ra mới đo được kích thước SVG/ảnh
+            requestAnimationFrame(initMedia);
+        }
+        
+        function changeSlide(step) {
+            currentSlide += step;
+            if (currentSlide < 0) currentSlide = 0;
+            if (currentSlide >= slides.length) currentSlide = slides.length - 1;
+            showSlide(currentSlide);
+        }
+        
+        function selectOption(element, slideId) {
+            const slide = document.getElementById(slideId);
+            if (slide.dataset.checked === "true") return; 
+            const options = slide.querySelectorAll('.options div');
+            options.forEach(opt => opt.classList.remove('selected'));
+            element.classList.add('selected');
+        }
+
+        function selectTF(btn, slideId, rowIndex, value) {
+            const slide = document.getElementById(slideId);
+            if (slide.dataset.checked === "true") return;
+            const row = slide.querySelectorAll('.tf-row')[rowIndex];
+            row.querySelectorAll('.tf-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            btn.dataset.val = value;
+        }
+
+        function moveNextSlideAns(current, nextIdx, slideId) {
+            current.value = current.value.replace('.', ',');
+            if (current.value.length > 1) current.value = current.value.slice(0, 1);
+            if (current.value.length === 1) {
+                const nextInput = document.getElementById(`ans_${slideId}_${nextIdx}`);
+                if(nextInput) nextInput.focus();
+            }
+        }
+        function movePrevSlideAns(e, current, prevIdx, slideId) {
+            if (e.key === "Backspace" && current.value === "" && prevIdx >= 1) {
+                const prevInput = document.getElementById(`ans_${slideId}_${prevIdx}`);
+                if(prevInput) prevInput.focus();
+            }
+        }
+
+        function checkAnswer(btn, slideId) {
+            const slide = document.getElementById(slideId);
+            if (slide.dataset.checked === "true") return; 
+            const type = slide.dataset.type;
+
+            if (type === "1") { 
+                const selected = slide.querySelector('.options div.selected');
+                if (!selected) { alert("Vui lòng chọn một phương án!"); return; }
+                const isCorrect = selected.getAttribute('data-correct') === 'true';
+                if (isCorrect) selected.classList.add('correct');
+                else {
+                    selected.classList.add('incorrect');
+                    const correctOption = slide.querySelector('.options div[data-correct="true"]');
+                    if (correctOption) correctOption.classList.add('correct');
+                }
+                slide.querySelectorAll('.options div').forEach(opt => opt.classList.add('disabled'));
+            } 
+            else if (type === "2") { 
+                const rows = slide.querySelectorAll('.tf-row');
+                let allSelected = true;
+                rows.forEach(row => { if (!row.querySelector('.tf-btn.selected')) allSelected = false; });
+                if (!allSelected) { alert("Vui lòng chọn Đúng hoặc Sai cho tất cả các ý!"); return; }
+
+                rows.forEach(row => {
+                    const selectedBtn = row.querySelector('.tf-btn.selected');
+                    const correctVal = row.dataset.correct;
+                    if (selectedBtn.dataset.val === correctVal) {
+                        selectedBtn.classList.add('correct');
+                    } else {
+                        selectedBtn.classList.add('incorrect');
+                        row.querySelectorAll('.tf-btn').forEach(b => {
+                            if (b.innerText === correctVal) b.classList.add('correct');
+                        });
+                    }
+                    row.querySelectorAll('.tf-btn').forEach(b => {
+                        b.style.pointerEvents = 'none';
+                        if(!b.classList.contains('selected') && !b.classList.contains('correct')) b.style.opacity = '0.5';
+                    });
+                });
+            } 
+            else if (type === "3") { 
+                const inputs = slide.querySelectorAll('.short-ans-box-slide');
+                let userAns = "";
+                inputs.forEach(inp => userAns += inp.value);
+                if (userAns.trim() === "") { alert("Vui lòng nhập đáp án!"); return; }
+
+                const correctAns = slide.dataset.correctans;
+                let studentAnsClean = userAns.replace(/,/g, '.').replace(/\s+/g, '');
+                let trueAnsClean = correctAns.replace(/,/g, '.').replace(/\s+/g, '');
+
+                const isCorrect = (studentAnsClean === trueAnsClean);
+                inputs.forEach(inp => {
+                    inp.readOnly = true;
+                    if (isCorrect) inp.classList.add('correct');
+                    else inp.classList.add('incorrect');
+                });
+                
+                const trueAnsDiv = slide.querySelector('.true-ans-text');
+                trueAnsDiv.innerHTML = "Đáp án đúng: " + correctAns;
+                trueAnsDiv.style.display = 'block';
+            }
+
+            // ghi lại kết quả để mục lục tô màu
+            if (type === "1") slide.dataset.result = slide.querySelector('.options div.selected.correct') ? 'correct' : 'wrong';
+            else if (type === "2") {
+                let ok = 0;
+                const rs = slide.querySelectorAll('.tf-row');
+                rs.forEach(r => { const sb = r.querySelector('.tf-btn.selected'); if (sb && sb.dataset.val === r.dataset.correct) ok++; });
+                slide.dataset.result = ok === rs.length ? 'correct' : (ok === 0 ? 'wrong' : 'partial');
+            }
+            else if (type === "3") slide.dataset.result = slide.querySelector('.short-ans-box-slide.correct') ? 'correct' : 'wrong';
+
+            slide.dataset.checked = "true";
+            btn.disabled = true;
+        }
+        
+        function toggleSolution(btn, slideId) {
+            const slide = document.getElementById(slideId);
+            const solBox = slide.querySelector('.solution-box');
+            const contentDiv = slide.querySelector('.slide-content');
+            
+            if (!solBox) { alert("Câu hỏi này chưa có lời giải!"); return; }
+            
+            if (solBox.style.display === 'none' || solBox.style.display === '') {
+                solBox.style.display = 'block';
+                btn.innerHTML = "Ẩn lời giải";
+                btn.style.background = "#dc3545";
+                contentDiv.classList.add('scale-down'); 
+                requestAnimationFrame(initMedia);   // lời giải vừa hiện, đo lại SVG/ảnh bên trong
+            } else {
+                solBox.style.display = 'none';
+                btn.innerHTML = "Xem lời giải";
+                btn.style.background = "#28a745";
+                contentDiv.classList.remove('scale-down');
+            }
+        }
+
+        const MEDIA_SCOPE = '.slide';
+        // =====================================================================
+        // XỬ LÝ SVG / ẢNH (dùng chung cho quiz và trình chiếu)
+        // Mỗi template khai báo trước: const MEDIA_SCOPE = '.vung-chua-hinh, ...';
+        // =====================================================================
+        const MEDIA_SVG_SEL = MEDIA_SCOPE.split(',').map(s => s.trim() + ' svg').join(', ');
+        const MEDIA_ALL_SEL = MEDIA_SCOPE.split(',').map(s => s.trim()).flatMap(s => [s + ' svg', s + ' img']).join(', ');
+
+        // Chỉ nhận số thuần hoặc "px"; "10cm", "50%", "auto"... trả về NaN để không đọc sai đơn vị
+        function svgNum(v) {
+            if (v == null) return NaN;
+            const m = String(v).trim().match(/^([0-9]*\.?[0-9]+)(px)?$/i);
+            return m ? parseFloat(m[1]) : NaN;
+        }
+
+        // Đổi id trong từng SVG thành duy nhất để các hình không dùng nhầm clipPath/marker/gradient của nhau
+        let __svgSeq = 0;
+        function uniquifySvgIds(svg) {
+            if (svg.dataset.idsDone) return;
+            svg.dataset.idsDone = '1';
+            const withId = svg.querySelectorAll('[id]');
+            if (!withId.length) return;
+            const prefix = 'svg' + (++__svgSeq) + '_';
+            const map = {};
+            withId.forEach(n => { map[n.id] = prefix + n.id; });
+            const ids = Object.keys(map);
+            const esc = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const urlRe = /url\(\s*(['"]?)#([^)'"\s]+)\1\s*\)/g;
+            const fixUrls = str => str.replace(urlRe, (m, q, id) => map[id] ? `url(${q}#${map[id]}${q})` : m);
+
+            svg.querySelectorAll('*').forEach(n => {
+                if (n.tagName.toLowerCase() === 'style') {
+                    let css = fixUrls(n.textContent);
+                    css = css.replace(new RegExp('#(' + ids.map(esc).join('|') + ')(?![\\w-])', 'g'), '#' + prefix + '$1');
+                    n.textContent = css;
+                    return;
+                }
+                Array.from(n.attributes).forEach(a => {
+                    if (a.name === 'id' || a.value.indexOf('#') < 0) return;
+                    if ((a.name === 'href' || a.name === 'xlink:href') && a.value.charAt(0) === '#') {
+                        const id = a.value.slice(1);
+                        if (map[id]) n.setAttribute(a.name, '#' + map[id]);
+                    } else {
+                        const nv = fixUrls(a.value);
+                        if (nv !== a.value) n.setAttribute(a.name, nv);
+                    }
+                });
+            });
+            withId.forEach(n => { n.id = map[n.id]; });
+        }
+
+        // Chuẩn hóa SVG: id duy nhất + thêm viewBox nếu thiếu để SVG co giãn đúng
+        function normalizeSvgs() {
+            document.querySelectorAll(MEDIA_SVG_SEL).forEach(svg => {
+                if (svg.closest('mjx-container')) return;
+                uniquifySvgIds(svg);
+                if (svg.dataset.normalized) return;
+                const w = svgNum(svg.getAttribute('width'));
+                const h = svgNum(svg.getAttribute('height'));
+
+                if (!svg.hasAttribute('viewBox')) {
+                    if (w > 0 && h > 0) {
+                        svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
+                    } else {
+                        try {   // đang bị ẩn thì getBBox lỗi -> sẽ thử lại khi phần chứa nó hiện ra
+                            const b = svg.getBBox();
+                            if (b.width && b.height)
+                                svg.setAttribute('viewBox', `${b.x - 2} ${b.y - 2} ${b.width + 4} ${b.height + 4}`);
+                        } catch (e) { return; }
+                    }
+                }
+                if (svg.hasAttribute('viewBox')) {
+                    if (w > 0) { svg.style.width = '100%'; svg.style.maxWidth = w + 'px'; }  // kích thước gốc làm trần
+                    svg.removeAttribute('height');
+                    svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+                    svg.dataset.normalized = '1';
+                }
+            });
+        }
+
+        // Zoom: phóng to bằng cách tăng chiều rộng thật, khung tự cao theo, cuộn bằng thanh cuộn gốc
+        const __zoomRefresh = new Set();
+        let __zoomResizeTimer;
+        window.addEventListener('resize', () => {
+            clearTimeout(__zoomResizeTimer);
+            __zoomResizeTimer = setTimeout(() => __zoomRefresh.forEach(fn => fn()), 150);
+        });
+
+        function setupImageZoom() {
+            document.querySelectorAll(MEDIA_ALL_SEL).forEach(el => {
+                if (el.closest('.zoom-container') || el.closest('mjx-container') || el.classList.contains('no-zoom')) return;
+
+                const wrapper = document.createElement('div');
+                wrapper.className = 'zoom-container';
+                const viewport = document.createElement('div');
+                viewport.className = 'zoom-viewport';
+                el.parentNode.insertBefore(wrapper, el);
+                viewport.appendChild(el);
+                wrapper.appendChild(viewport);
+                el.classList.add('zoom-media');
+
+                let scale = 1;
+                const STEP = 0.25, MIN = 1, MAX = 4;
+
+                const toolbar = document.createElement('div');
+                toolbar.className = 'zoom-toolbar';
+                const mk = (txt, title) => {
+                    const b = document.createElement('button');
+                    b.type = 'button'; b.className = 'zoom-btn'; b.innerHTML = txt; b.title = title;
+                    b.setAttribute('aria-label', title);
+                    return b;
+                };
+                const btnIn = mk('➕', 'Phóng to'), btnOut = mk('➖', 'Thu nhỏ'), btnReset = mk('↺', 'Mặc định');
+
+                function apply(newScale) {
+                    const cx = viewport.scrollWidth ? (viewport.scrollLeft + viewport.clientWidth / 2) / viewport.scrollWidth : 0.5;
+                    const cy = viewport.scrollHeight ? (viewport.scrollTop + viewport.clientHeight / 2) / viewport.scrollHeight : 0.5;
+
+                    scale = Math.min(MAX, Math.max(MIN, Math.round(newScale * 100) / 100));
+
+                    el.classList.remove('zoomed');
+                    el.style.removeProperty('--zw');
+                    const base = el.getBoundingClientRect().width;   // chiều rộng vừa khung hiện tại
+                    if (scale > 1 && base > 0) {
+                        el.style.setProperty('--zw', (base * scale) + 'px');
+                        el.classList.add('zoomed');
+                        viewport.scrollLeft = cx * viewport.scrollWidth - viewport.clientWidth / 2;
+                        viewport.scrollTop = cy * viewport.scrollHeight - viewport.clientHeight / 2;
+                    }
+                    viewport.classList.toggle('can-pan', el.classList.contains('zoomed'));
+                    btnIn.disabled = scale >= MAX;
+                    btnOut.disabled = scale <= MIN;
+                }
+
+                btnIn.onclick = () => apply(scale + STEP);
+                btnOut.onclick = () => apply(scale - STEP);
+                btnReset.onclick = () => apply(1);
+                __zoomRefresh.add(() => { if (scale > 1) apply(scale); });
+
+                // Ctrl + lăn chuột để zoom, nhấp đúp để phóng to/reset
+                viewport.addEventListener('wheel', e => {
+                    if (!e.ctrlKey) return;
+                    e.preventDefault();
+                    apply(scale + (e.deltaY < 0 ? STEP : -STEP));
+                }, { passive: false });
+                viewport.addEventListener('dblclick', () => apply(scale > 1 ? 1 : 2));
+
+                // Kéo thả bằng chuột (cảm ứng dùng cuộn gốc của trình duyệt)
+                let dragging = false, sx = 0, sy = 0, sl = 0, st = 0;
+                viewport.addEventListener('pointerdown', e => {
+                    if (e.pointerType !== 'mouse' || !el.classList.contains('zoomed')) return;
+                    dragging = true; sx = e.clientX; sy = e.clientY; sl = viewport.scrollLeft; st = viewport.scrollTop;
+                    viewport.setPointerCapture(e.pointerId);
+                    viewport.classList.add('dragging');
+                });
+                viewport.addEventListener('pointermove', e => {
+                    if (!dragging) return;
+                    viewport.scrollLeft = sl - (e.clientX - sx);
+                    viewport.scrollTop = st - (e.clientY - sy);
+                });
+                const stop = () => { dragging = false; viewport.classList.remove('dragging'); };
+                viewport.addEventListener('pointerup', stop);
+                viewport.addEventListener('pointercancel', stop);
+
+                toolbar.append(btnIn, btnOut, btnReset);
+                wrapper.appendChild(toolbar);
+                apply(1);
+            });
+        }
+
+        // Bọc từng <table> trong khung cuộn ngang (bỏ qua bảng của MathJax hoặc bảng đã được bọc)
+        const MEDIA_TABLE_SEL = MEDIA_SCOPE.split(',').map(s => s.trim() + ' table').join(', ');
+        function wrapTables() {
+            document.querySelectorAll(MEDIA_TABLE_SEL).forEach(t => {
+                if (t.closest('mjx-container, .table-scroll, .table-responsive')) return;
+                if (!t.parentNode) return;
+                const w = document.createElement('div');
+                w.className = 'table-scroll';
+                t.parentNode.insertBefore(w, t);
+                w.appendChild(t);
+            });
+        }
+
+        function initMedia() { wrapTables(); normalizeSvgs(); setupImageZoom(); }
+
+        window.addEventListener('load', () => setTimeout(initMedia, 300));
+
+
+        // --- MỤC LỤC ---
+        const TOC_GROUPS = { '1': 'Phần I · Trắc nghiệm', '2': 'Phần II · Đúng/Sai', '3': 'Phần III · Trả lời ngắn', '4': 'Phần IV · Tự luận', 'other': 'Câu khác' };
+        const TOC_MARK = { correct: '✔', wrong: '✘', partial: '½', picked: '●', empty: '', none: '' };
+        const TOC_TEXT = { correct: 'đúng', wrong: 'sai', partial: 'đúng một phần', picked: 'đã chọn, chưa kiểm tra', empty: 'chưa làm', none: '' };
+        let tocOpener = null;
+
+        // Trạng thái một câu: correct | wrong | partial | picked | empty | none (câu không chấm điểm)
+        function slideState(slide) {
+            const type = slide.dataset.type;
+            if (type !== '1' && type !== '2' && type !== '3') return 'none';
+            if (slide.dataset.checked === 'true') return slide.dataset.result || 'none';
+            if (type === '1' && slide.querySelector('.options div.selected')) return 'picked';
+            if (type === '2' && slide.querySelector('.tf-btn.selected')) return 'picked';
+            if (type === '3' && Array.from(slide.querySelectorAll('.short-ans-box-slide')).some(i => i.value.trim() !== '')) return 'picked';
+            return 'empty';
+        }
+
+        function buildToc() {
+            const body = document.getElementById('tocBody');
+            body.textContent = '';
+            const groups = {};
+            const n = { total: 0, done: 0, correct: 0, wrong: 0, partial: 0 };
+
+            slides.forEach((slide, i) => {
+                const st = slideState(slide);
+                const key = TOC_GROUPS[slide.dataset.type] && slide.dataset.type !== 'other' ? slide.dataset.type : 'other';
+                (groups[key] = groups[key] || []).push({ i, st });
+                if (st !== 'none') {
+                    n.total++;
+                    if (st === 'correct' || st === 'wrong' || st === 'partial') { n.done++; n[st]++; }
+                }
+            });
+
+            const keys = ['1', '2', '3', '4', 'other'].filter(k => groups[k]);
+            keys.forEach(k => {
+                if (keys.length > 1) {
+                    const h = document.createElement('h4');
+                    h.className = 'toc-group-title';
+                    h.textContent = TOC_GROUPS[k];
+                    body.appendChild(h);
+                }
+                const grid = document.createElement('div');
+                grid.className = 'toc-grid';
+                groups[k].forEach(({ i, st }) => {
+                    const b = document.createElement('button');
+                    b.type = 'button';
+                    b.className = 'toc-item toc-s-' + st + (i === currentSlide ? ' current' : '');
+                    b.dataset.idx = i;
+                    const label = 'Câu ' + (i + 1) + (TOC_TEXT[st] ? ', ' + TOC_TEXT[st] : '') + (i === currentSlide ? ' (đang xem)' : '');
+                    b.setAttribute('aria-label', label);
+                    b.title = label;
+                    if (i === currentSlide) b.setAttribute('aria-current', 'true');
+                    const num = document.createElement('span'); num.textContent = i + 1;
+                    const mark = document.createElement('span'); mark.className = 'm'; mark.setAttribute('aria-hidden', 'true'); mark.textContent = TOC_MARK[st];
+                    b.append(num, mark);
+                    b.onclick = () => { currentSlide = i; showSlide(i); closeToc(true); };
+                    grid.appendChild(b);
+                });
+                body.appendChild(grid);
+            });
+
+            let txt = 'Đã kiểm tra ' + n.done + '/' + n.total + ' câu';
+            if (n.done) txt += ' · Đúng ' + n.correct + ' · Sai ' + n.wrong + (n.partial ? ' · Một phần ' + n.partial : '');
+            document.getElementById('tocSummary').textContent = n.total ? txt : '';
+        }
+
+        function openToc() {
+            const modal = document.getElementById('tocModal');
+            if (modal.classList.contains('active')) return;
+            tocOpener = document.activeElement;
+            buildToc();
+            modal.classList.add('active');
+            // đợi hộp hiện ra rồi mới chuyển tiêu điểm vào câu đang xem
+            setTimeout(() => {
+                const cur = modal.querySelector('.toc-item.current') || modal.querySelector('.toc-item');
+                if (cur) { cur.focus({ preventScroll: true }); cur.scrollIntoView({ block: 'center', inline: 'nearest' }); }
+            }, 60);
+        }
+
+        // toSlides = true khi vừa chọn một câu: đưa tiêu điểm về vùng trình chiếu để Space/mũi tên tiếp tục chuyển câu
+        function closeToc(toSlides) {
+            const modal = document.getElementById('tocModal');
+            if (!modal.classList.contains('active')) return;
+            modal.classList.remove('active');
+            if (toSlides) document.getElementById('mainContainer').focus({ preventScroll: true });
+            else if (tocOpener && document.contains(tocOpener) && tocOpener.focus) tocOpener.focus({ preventScroll: true });
+            tocOpener = null;
+        }
+
+        (function () {
+            const modal = document.getElementById('tocModal');
+
+            // bấm vào nền tối để đóng (bỏ qua khi kéo chuột từ trong hộp ra ngoài)
+            let downOnBackdrop = false;
+            modal.addEventListener('pointerdown', e => { downOnBackdrop = (e.target === modal); });
+            modal.addEventListener('click', e => { if (e.target === modal && downOnBackdrop) closeToc(); });
+
+            // bàn phím: mũi tên di chuyển giữa các ô, Tab quay vòng trong hộp thoại
+            function vertical(items, cur, dir) {
+                const r = items[cur].getBoundingClientRect(), cx = r.left + r.width / 2;
+                let best = null, bestDy = Infinity, bestDx = Infinity;
+                items.forEach(it => {
+                    if (it === items[cur]) return;
+                    const b = it.getBoundingClientRect();
+                    const dy = dir > 0 ? b.top - r.top : r.top - b.top;
+                    if (dy <= 4) return;                           // chỉ xét các hàng phía dưới (hoặc phía trên)
+                    const dx = Math.abs(b.left + b.width / 2 - cx);
+                    if (dy < bestDy - 4 || (Math.abs(dy - bestDy) <= 4 && dx < bestDx)) { best = it; bestDy = dy; bestDx = dx; }
+                });
+                return best;
+            }
+            modal.addEventListener('keydown', e => {
+                if (e.ctrlKey || e.metaKey || e.altKey) return;
+                if (e.key === 'Tab') {
+                    const f = Array.from(modal.querySelectorAll('button'));
+                    if (e.shiftKey && document.activeElement === f[0]) { f[f.length - 1].focus(); e.preventDefault(); }
+                    else if (!e.shiftKey && document.activeElement === f[f.length - 1]) { f[0].focus(); e.preventDefault(); }
+                    return;
+                }
+                const items = Array.from(modal.querySelectorAll('.toc-item'));
+                const cur = items.indexOf(document.activeElement);
+                if (cur < 0) return;
+                let target;
+                switch (e.key) {
+                    case 'ArrowRight': target = items[cur + 1]; break;
+                    case 'ArrowLeft': target = items[cur - 1]; break;
+                    case 'ArrowDown': target = vertical(items, cur, 1); break;
+                    case 'ArrowUp': target = vertical(items, cur, -1); break;
+                    case 'Home': target = items[0]; break;
+                    case 'End': target = items[items.length - 1]; break;
+                    default: return;
+                }
+                if (target) target.focus();
+                e.preventDefault();
+            });
+
+            // điện thoại: vuốt thanh nắm xuống để đóng
+            const content = modal.querySelector('.toc-content'), handle = document.getElementById('tocHandle');
+            let y0 = 0, dy = 0, dragging = false;
+            handle.addEventListener('touchstart', e => { y0 = e.touches[0].clientY; dy = 0; dragging = true; content.style.transition = 'none'; }, { passive: true });
+            handle.addEventListener('touchmove', e => { if (!dragging) return; dy = Math.max(0, e.touches[0].clientY - y0); content.style.transform = 'translateY(' + dy + 'px)'; }, { passive: true });
+            const endDrag = () => {
+                if (!dragging) return;
+                dragging = false;
+                content.style.transition = ''; content.style.transform = '';
+                if (dy > 90) closeToc();
+            };
+            handle.addEventListener('touchend', endDrag);
+            handle.addEventListener('touchcancel', endDrag);
+        })();
+
+                // --- ĐIỀU HƯỚNG BẰNG BÀN PHÍM, VUỐT VÀ TOÀN MÀN HÌNH ---
+        function toggleFullscreen() {
+            if (!document.fullscreenEnabled) return;
+            if (document.fullscreenElement) document.exitFullscreen();
+            else document.documentElement.requestFullscreen().catch(() => {});
+        }
+        if (!document.fullscreenEnabled) document.getElementById('fsBtn').style.display = 'none';
+
+        document.addEventListener('keydown', e => {
+            if (e.ctrlKey || e.metaKey || e.altKey) return;
+            const t = e.target, tag = t && t.tagName;
+            if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || (t && t.isContentEditable)) return;   // đang gõ đáp án
+            const tocOpen = document.getElementById('tocModal').classList.contains('active');
+
+            if (e.key === 'Escape') { if (tocOpen) { closeToc(); e.preventDefault(); } return; }
+            if (e.key === 't' || e.key === 'T') { tocOpen ? closeToc() : openToc(); e.preventDefault(); return; }
+            if (tocOpen) return;
+
+            switch (e.key) {
+                case 'ArrowRight': case 'PageDown': changeSlide(1); break;
+                case 'ArrowLeft': case 'PageUp': changeSlide(-1); break;
+                case ' ': if (tag === 'BUTTON') return; changeSlide(e.shiftKey ? -1 : 1); break;
+                case 'Home': currentSlide = 0; showSlide(0); break;
+                case 'End': currentSlide = slides.length - 1; showSlide(currentSlide); break;
+                case 'f': case 'F': toggleFullscreen(); break;
+                default: return;
+            }
+            e.preventDefault();
+        });
+
+        // Vuốt ngang để chuyển câu (bỏ qua khi vuốt trong ảnh đang phóng to, công thức, bảng, ô nhập)
+        (function () {
+            let x0 = 0, y0 = 0, t0 = 0, track = false;
+            const box = document.getElementById('mainContainer');
+            box.addEventListener('touchstart', e => {
+                const blocked = e.target.closest('.zoom-viewport.can-pan, mjx-container, .table-responsive, .table-scroll, input, textarea, .controls');
+                if (e.touches.length !== 1 || blocked) { track = false; return; }
+                x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; t0 = Date.now(); track = true;
+            }, { passive: true });
+            box.addEventListener('touchend', e => {
+                if (!track) return;
+                track = false;
+                const dx = e.changedTouches[0].clientX - x0, dy = e.changedTouches[0].clientY - y0;
+                if (Math.abs(dx) > 60 && Math.abs(dx) > 1.5 * Math.abs(dy) && Date.now() - t0 < 800) changeSlide(dx < 0 ? 1 : -1);
+            }, { passive: true });
+        })();
+
+        if (slides.length) showSlide(currentSlide);
+    </script>
+</body>
+</html>
