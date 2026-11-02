@@ -8,14 +8,14 @@
         * { box-sizing: border-box; }
         [hidden] { display: none !important; }
         html { scroll-behavior: smooth; }
-        body { margin: 0; font-family: Arial, sans-serif; background: #f7fbff; color: #1c2b3a; line-height: 1.6; padding-bottom: 72px; }
+        body { margin: 0; font-family: Arial, sans-serif; background: #fef9f9; color: #1c2b3a; line-height: 1.6; padding-bottom: 72px; }
 
-        .topbar { position: sticky; top: 0; z-index: 50; background: #1e88e5; color: #fff; padding: 8px 14px; box-shadow: 0 2px 6px rgba(30,136,229,.25); }
+        .topbar { position: sticky; top: 0; z-index: 50; background: #a62222; color: #fff; padding: 8px 14px; box-shadow: 0 2px 6px rgba(166,34,34,.25); }
         .topbar .row { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; max-width: 860px; margin: auto; }
         .topbar h1 { margin: 0; font-size: 16px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1 1 200px; min-width: 0; }
         .tools { display: flex; gap: 8px; flex-wrap: wrap; }
-        .tbtn { background: #fff; color: #1565c0; border: none; border-radius: 4px; padding: 5px 12px; font-weight: bold; cursor: pointer; font-size: 13px; white-space: nowrap; }
-        .tbtn:hover { background: #e3f0fb; }
+        .tbtn { background: #fff; color: #7c1919; border: none; border-radius: 4px; padding: 5px 12px; font-weight: bold; cursor: pointer; font-size: 13px; white-space: nowrap; }
+        .tbtn:hover { background: #f9e1e1; }
 
         main { max-width: 860px; margin: auto; padding: 14px; }
         mjx-container { max-width: 100%; overflow-x: auto; overflow-y: hidden; }
@@ -23,19 +23,19 @@
         .txt { margin: 8px 0; }
 
         /* ---- tiêu đề ---- */
-        h2.hd1 { color: #1565c0; border-bottom: 3px solid #b3d4fc; padding-bottom: 6px; margin: 30px 0 12px; font-size: 21px; }
-        h3.hd2 { color: #1565c0; border-bottom: 2px solid #b3d4fc; padding-bottom: 4px; margin: 24px 0 10px; font-size: 18px; }
-        h4.hd3 { color: #0d47a1; margin: 20px 0 8px; font-size: 16px; }
+        h2.hd1 { color: #7c1919; border-bottom: 3px solid #f2c0c0; padding-bottom: 6px; margin: 30px 0 12px; font-size: 21px; }
+        h3.hd2 { color: #7c1919; border-bottom: 2px solid #f2c0c0; padding-bottom: 4px; margin: 24px 0 10px; font-size: 18px; }
+        h4.hd3 { color: #511111; margin: 20px 0 8px; font-size: 16px; }
         .hd { scroll-margin-top: 104px; }
 
         /* ---- khung lý thuyết ---- */
-        .box { border: 2px solid var(--bc, #b3d4fc); background: var(--bg, #eef6fc); border-radius: 8px; margin: 12px 0; overflow: hidden; }
-        .box .bh { background: var(--bc, #b3d4fc); color: var(--fg, #0d47a1); font-weight: bold; padding: 5px 12px; display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+        .box { border: 2px solid var(--bc, #f2c0c0); background: var(--bg, #fceeee); border-radius: 8px; margin: 12px 0; overflow: hidden; }
+        .box .bh { background: var(--bc, #f2c0c0); color: var(--fg, #511111); font-weight: bold; padding: 5px 12px; display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
         .box .bsub { font-weight: normal; }
         .box .bb { padding: 8px 14px; overflow-x: auto; }
         .box .box { margin: 8px 0; }
         .box .bb > .tp:first-child { margin-top: 2px; }
-        .k-def  { --bc: #b3d4fc; --bg: #eef6fc; --fg: #0d47a1; }
+        .k-def  { --bc: #f2c0c0; --bg: #fceeee; --fg: #511111; }
         .k-thm  { --bc: #c5b3f5; --bg: #f5f1fe; --fg: #3b1e8a; }
         .k-note { --bc: #ffe08a; --bg: #fffbea; --fg: #7a5600; }
         .k-warn { --bc: #ffb4a8; --bg: #fff3f0; --fg: #9a2410; }
@@ -45,24 +45,24 @@
         .k-ask  { --bc: #d5d5d5; --bg: #f7f7f7; --fg: #333; }
 
         /* ---- dạng toán ---- */
-        .dang { border: 2px solid #1e88e5; border-radius: 8px; margin: 22px 0 12px; background: #fff; overflow: hidden; scroll-margin-top: 104px; }
-        .dang .dh { background: #1e88e5; color: #fff; padding: 7px 14px; font-weight: bold; display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
-        .dang .dno { background: #fff; color: #1565c0; border-radius: 12px; padding: 0 10px; white-space: nowrap; }
+        .dang { border: 2px solid #a62222; border-radius: 8px; margin: 22px 0 12px; background: #fff; overflow: hidden; scroll-margin-top: 104px; }
+        .dang .dh { background: #a62222; color: #fff; padding: 7px 14px; font-weight: bold; display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+        .dang .dno { background: #fff; color: #7c1919; border-radius: 12px; padding: 0 10px; white-space: nowrap; }
         .dang .db { padding: 8px 14px; overflow-x: auto; }
 
         /* ---- ví dụ / câu hỏi ---- */
-        .q { background: #fff; border: 2px solid #b3d4fc; border-radius: 8px; padding: 12px 14px; margin: 14px 0; overflow-x: auto; }
+        .q { background: #fff; border: 2px solid #f2c0c0; border-radius: 8px; padding: 12px 14px; margin: 14px 0; overflow-x: auto; }
         .q.s-correct { border-color: #28a745; }
         .q.s-wrong { border-color: #dc3545; }
         .q.s-partial { border-color: #ff9800; }
         .q .eh { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; flex-wrap: wrap; }
-        .q .el { background: #1e88e5; color: #fff; font-weight: bold; padding: 2px 12px; border-radius: 14px; }
+        .q .el { background: #a62222; color: #fff; font-weight: bold; padding: 2px 12px; border-radius: 14px; }
         .q.ex .el { background: #00897b; }
-        .q .tag { font-size: 12px; color: #1565c0; border: 1px solid #b3d4fc; border-radius: 10px; padding: 0 8px; background: #eef6fc; }
+        .q .tag { font-size: 12px; color: #7c1919; border: 1px solid #f2c0c0; border-radius: 10px; padding: 0 8px; background: #fceeee; }
         .qtext { margin-bottom: 8px; word-wrap: break-word; }
 
-        .opt { display: flex; gap: 8px; align-items: flex-start; background: #fff; border: 1px solid #b3d4fc; border-radius: 4px; padding: 8px 11px; margin: 6px 0; cursor: pointer; transition: .2s; }
-        .opt:hover:not(.locked):not(.static) { background: #e3f0fb; border-color: #1e88e5; }
+        .opt { display: flex; gap: 8px; align-items: flex-start; background: #fff; border: 1px solid #f2c0c0; border-radius: 4px; padding: 8px 11px; margin: 6px 0; cursor: pointer; transition: .2s; }
+        .opt:hover:not(.locked):not(.static) { background: #f9e1e1; border-color: #a62222; }
         .opt:focus-visible, .tfb button:focus-visible { outline: 3px solid #ff9800; outline-offset: 1px; }
         .opt.static { cursor: default; }
         .opt.locked { cursor: default; }
@@ -72,19 +72,19 @@
         .lab { font-weight: bold; min-width: 1.7em; }
         .ob { flex: 1; min-width: 0; overflow-x: auto; }
 
-        .tfrow { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; background: #fff; border: 1px solid #b3d4fc; border-radius: 4px; padding: 7px 10px; margin: 6px 0; }
+        .tfrow { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; background: #fff; border: 1px solid #f2c0c0; border-radius: 4px; padding: 7px 10px; margin: 6px 0; }
         .tfrow.r-ok { border-color: #28a745; }
         .tfrow.r-bad { border-color: #dc3545; }
         .tfc { flex: 1 1 60%; min-width: 0; overflow-x: auto; }
         .tfb { display: flex; gap: 8px; }
-        .tfb button { padding: 6px 16px; font-weight: bold; border: 2px solid #b3d4fc; background: #fff; border-radius: 5px; cursor: pointer; }
-        .tfb button:hover:not(:disabled) { background: #e3f0fb; }
+        .tfb button { padding: 6px 16px; font-weight: bold; border: 2px solid #f2c0c0; background: #fff; border-radius: 5px; cursor: pointer; }
+        .tfb button:hover:not(:disabled) { background: #f9e1e1; }
         .tfb button:disabled { cursor: default; }
         .tfb button.correct { background: #d4edda; border-color: #28a745; color: #155724; }
         .tfb button.wrong { background: #f8d7da; border-color: #dc3545; color: #721c24; }
 
         .shortrow { display: flex; gap: 8px; flex-wrap: wrap; }
-        .sans { width: 190px; max-width: 100%; padding: 8px 12px; font-size: 17px; font-weight: bold; border: 2px solid #1e88e5; border-radius: 5px; color: #1565c0; }
+        .sans { width: 190px; max-width: 100%; padding: 8px 12px; font-size: 17px; font-weight: bold; border: 2px solid #a62222; border-radius: 5px; color: #7c1919; }
         .sans.correct { background: #d4edda; border-color: #28a745; color: #155724; }
         .sans.wrong { background: #f8d7da; border-color: #dc3545; color: #721c24; }
         .chk { background: #ffc107; border: none; border-radius: 5px; padding: 0 18px; font-weight: bold; cursor: pointer; min-height: 40px; }
@@ -96,18 +96,18 @@
         .qtools { margin-top: 6px; display: flex; gap: 8px; flex-wrap: wrap; }
         .sol-btn { background: #17a2b8; color: #fff; border: none; border-radius: 4px; padding: 6px 14px; cursor: pointer; font-weight: bold; }
         .sol-btn:hover { background: #138496; }
-        .redo-btn { background: #fff; color: #1565c0; border: 1px solid #1e88e5; border-radius: 4px; padding: 6px 12px; cursor: pointer; font-weight: bold; }
-        .solution-box { display: none; margin-top: 10px; padding: 12px 14px; background: #e8f4fc; border-left: 5px solid #0288d1; border-radius: 4px; overflow-x: auto; }
+        .redo-btn { background: #fff; color: #7c1919; border: 1px solid #a62222; border-radius: 4px; padding: 6px 12px; cursor: pointer; font-weight: bold; }
+        .solution-box { display: none; margin-top: 10px; padding: 12px 14px; background: #fae8e8; border-left: 5px solid #0288d1; border-radius: 4px; overflow-x: auto; }
 
         /* ---- mục lục (ngăn kéo) ---- */
         .drawer { position: fixed; top: 0; bottom: 0; left: 0; width: min(360px, 88vw); z-index: 80; background: #fff; box-shadow: 4px 0 18px rgba(0,0,0,.25); transform: translateX(-105%); transition: transform .25s; display: flex; flex-direction: column; }
         .drawer.open { transform: none; }
-        .drawer .dtop { background: #1e88e5; color: #fff; padding: 10px 14px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
+        .drawer .dtop { background: #a62222; color: #fff; padding: 10px 14px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
         .drawer .dtop button { background: none; border: none; color: #fff; font-size: 20px; cursor: pointer; }
         .toc { overflow-y: auto; padding: 8px 6px 20px; }
         .toc a { display: block; padding: 5px 10px; color: #1c2b3a; text-decoration: none; border-radius: 4px; font-size: 14px; line-height: 1.4; }
-        .toc a:hover { background: #e3f0fb; }
-        .toc a.l1 { font-weight: bold; color: #1565c0; margin-top: 8px; }
+        .toc a:hover { background: #f9e1e1; }
+        .toc a.l1 { font-weight: bold; color: #7c1919; margin-top: 8px; }
         .toc a.l2 { padding-left: 18px; }
         .toc a.l3 { padding-left: 30px; font-size: 13px; }
         .toc a.l4 { padding-left: 30px; font-size: 13px; color: #00695c; }
@@ -121,11 +121,11 @@
         /* ---- góc dưới phải: [ℹ️ tác giả  ▶️ số điện thoại] + nút tròn lên đầu trang ---- */
         .fab { position: fixed; right: 14px; bottom: 14px; z-index: 40; display: flex; align-items: center; gap: 8px; max-width: calc(100vw - 28px); pointer-events: none; }
         .fab > * { pointer-events: auto; }
-        .credit { display: flex; align-items: center; flex-wrap: wrap; gap: 0 12px; min-height: 42px; padding: 4px 14px; background: #fff; color: #1565c0; border: 1px solid #b3d4fc; border-radius: 21px; font-size: 12px; line-height: 1.35; box-shadow: 0 2px 8px rgba(30,136,229,.18); min-width: 0; }
+        .credit { display: flex; align-items: center; flex-wrap: wrap; gap: 0 12px; min-height: 42px; padding: 4px 14px; background: #fff; color: #7c1919; border: 1px solid #f2c0c0; border-radius: 21px; font-size: 12px; line-height: 1.35; box-shadow: 0 2px 8px rgba(166,34,34,.18); min-width: 0; }
         .credit:empty { display: none; }
         .credit .cr-i { white-space: nowrap; }
         .credit .cr-i b { font-weight: bold; }
-        #toTop { flex: 0 0 42px; background: #1e88e5; color: #fff; border: none; border-radius: 50%; width: 42px; height: 42px; font-size: 18px; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,.3); }
+        #toTop { flex: 0 0 42px; background: #a62222; color: #fff; border: none; border-radius: 50%; width: 42px; height: 42px; font-size: 18px; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,.3); }
 
 
         /* ---- tiến độ học tập (thanh trên cùng) ---- */
@@ -133,7 +133,7 @@
         .ptxt { font-weight: bold; white-space: nowrap; }
         .ptrack { flex: 1 1 90px; min-width: 70px; height: 8px; background: rgba(255,255,255,.35); border-radius: 4px; overflow: hidden; }
         .pfill { height: 100%; width: 0; background: #fff; transition: width .3s; }
-        .fsel { background: #fff; color: #1565c0; border: none; border-radius: 4px; padding: 3px 6px; font-weight: bold; font-size: 13px; max-width: 100%; }
+        .fsel { background: #fff; color: #7c1919; border: none; border-radius: 4px; padding: 3px 6px; font-weight: bold; font-size: 13px; max-width: 100%; }
         .lswarn { background: #fff3cd; color: #7a5600; border-radius: 4px; padding: 0 8px; font-size: 12px; }
         .fltnote { margin: 4px 0 10px; padding: 6px 12px; background: #fff6ec; border: 1px solid #f5c18c; border-radius: 6px; color: #8a4a00; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
 
@@ -143,34 +143,34 @@
         .s-correct .stt { color: #155724; background: #d4edda; border-color: #28a745; }
         .s-partial .stt { color: #8a4a00; background: #fff3e0; border-color: #ff9800; }
         .s-wrong .stt { color: #721c24; background: #f8d7da; border-color: #dc3545; }
-        .tfb button.sel { background: #e3f0fb; border-color: #1e88e5; color: #1565c0; }
+        .tfb button.sel { background: #f9e1e1; border-color: #a62222; color: #7c1919; }
         .tf-chk { background: #ffc107; border: none; border-radius: 5px; padding: 0 18px; font-weight: bold; cursor: pointer; min-height: 40px; margin-top: 6px; }
         .tf-chk:disabled { background: #ccc; cursor: default; }
         .rv-btn { background: #fff; color: #8a4a00; border: 1px solid #f5c18c; border-radius: 4px; padding: 6px 12px; cursor: pointer; font-weight: bold; }
         .rv-btn.on { background: #fff6ec; border-color: #ff9800; }
-        .rate { margin-top: 10px; padding: 8px 12px; background: #f7fbff; border: 1px dashed #b3d4fc; border-radius: 6px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-        .rate .rq { font-weight: bold; color: #1565c0; margin-right: 4px; }
-        .rb { border: 2px solid #b3d4fc; background: #fff; border-radius: 5px; padding: 5px 14px; font-weight: bold; cursor: pointer; }
-        .rb:hover { background: #e3f0fb; }
+        .rate { margin-top: 10px; padding: 8px 12px; background: #fef9f9; border: 1px dashed #f2c0c0; border-radius: 6px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+        .rate .rq { font-weight: bold; color: #7c1919; margin-right: 4px; }
+        .rb { border: 2px solid #f2c0c0; background: #fff; border-radius: 5px; padding: 5px 14px; font-weight: bold; cursor: pointer; }
+        .rb:hover { background: #f9e1e1; }
         .rb.ok.on { background: #d4edda; border-color: #28a745; color: #155724; }
         .rb.near.on { background: #fff3e0; border-color: #ff9800; color: #8a4a00; }
         .rb.no.on { background: #f8d7da; border-color: #dc3545; color: #721c24; }
 
         /* ---- tổng kết ---- */
-        .dsum { margin-top: 10px; padding: 6px 12px; background: #eef6fc; border: 1px solid #b3d4fc; border-radius: 6px; font-size: 14px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+        .dsum { margin-top: 10px; padding: 6px 12px; background: #fceeee; border: 1px solid #f2c0c0; border-radius: 6px; font-size: 14px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
         .dsum:empty { display: none; }
-        .dbtn { background: #fff; color: #1565c0; border: 1px solid #1e88e5; border-radius: 4px; padding: 3px 10px; cursor: pointer; font-weight: bold; }
+        .dbtn { background: #fff; color: #7c1919; border: 1px solid #a62222; border-radius: 4px; padding: 3px 10px; cursor: pointer; font-weight: bold; }
         .dbtn:disabled { color: #999; border-color: #ccc; cursor: default; }
         .sumsec { margin: 34px 0 10px; scroll-margin-top: 104px; }
-        .sumsec .sline { font-weight: bold; color: #0d47a1; }
+        .sumsec .sline { font-weight: bold; color: #511111; }
         .sgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(118px, 1fr)); gap: 8px; margin: 10px 0 14px; }
-        .scard { background: #fff; border: 2px solid #b3d4fc; border-radius: 8px; padding: 8px 10px; text-align: center; }
-        .scard b { display: block; font-size: 22px; color: #1565c0; }
+        .scard { background: #fff; border: 2px solid #f2c0c0; border-radius: 8px; padding: 8px 10px; text-align: center; }
+        .scard b { display: block; font-size: 22px; color: #7c1919; }
         .scard span { font-size: 12px; color: #5f7b94; }
         .swrap { overflow-x: auto; }
         .stab { border-collapse: collapse; width: 100%; background: #fff; }
-        .stab th, .stab td { border: 1px solid #b3d4fc; padding: 5px 10px; text-align: center; }
-        .stab th { background: #e8f4fc; color: #0d47a1; }
+        .stab th, .stab td { border: 1px solid #f2c0c0; padding: 5px 10px; text-align: center; }
+        .stab th { background: #fae8e8; color: #511111; }
         .stab td:first-child { text-align: left; }
         .skind { margin: 6px 0; padding-left: 20px; }
         .sbtns { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0 6px; }
@@ -179,8 +179,8 @@
 
         /* --- SVG / ẢNH + KHUNG ZOOM DÙNG CHUNG (khung tự co giãn, không đặt chiều cao cố định) --- */
         :root {
-            --zoom-accent: #1e88e5; --zoom-accent-hover: #1565c0;
-            --zoom-border: #b3d4fc; --zoom-bar-bg: #eef6fc; --zoom-max-h: none;
+            --zoom-accent: #a62222; --zoom-accent-hover: #7c1919;
+            --zoom-border: #f2c0c0; --zoom-bar-bg: #fceeee; --zoom-max-h: none;
         }
         svg { max-width: 100%; height: auto; display: block; margin: 10px auto; overflow: visible; }
         svg text { font-family: Arial, sans-serif; }
