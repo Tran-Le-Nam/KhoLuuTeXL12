@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Lớp 11 Chương 4 Bài 4</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: auto; padding: 15px; line-height: 1.6; padding-top: 70px; overflow-x: hidden; background: #f7fbff; }
+        .header-bar { position: fixed; top: 0; left: 0; width: 100%; background: #1e88e5; color: white; padding: 10px 15px; z-index: 1000; display: flex; justify-content: space-between; align-items: center; box-sizing: border-box; box-shadow: 0 2px 6px rgba(30,136,229,0.2); }
+        .header-bar h2 { margin: 0; font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 65%; }
+        #timer { font-size: 16px; font-weight: bold; background: #e53935; padding: 5px 10px; border-radius: 4px; white-space: nowrap; }
+        
+        .zalo-warning { background: #eef6fc; color: #1565c0; padding: 10px; border: 1px solid #b3d4fc; border-radius: 4px; margin-bottom: 15px; font-weight: bold; text-align: justify; font-size: 14px; }
+        
+        h3 { color: #1565c0; border-bottom: 2px solid #b3d4fc; padding-bottom: 5px; margin-top: 30px; text-transform: uppercase; font-size: 18px; }
+        .info-group { margin-bottom: 15px; }
+        .info-group input { width: 100%; padding: 12px; box-sizing: border-box; border: 1px solid #b3d4fc; border-radius: 4px; font-size: 16px; background: #fff; }
+        .info-group input:focus { border-color: #1e88e5; outline: none; box-shadow: 0 0 0 3px rgba(30,136,229,0.12); }
+        
+        .question { background: #eef6fc; padding: 15px; margin-bottom: 20px; border-radius: 5px; border: 1px solid #b3d4fc; box-sizing: border-box; width: 100%; overflow-x: auto; }
+        .question-text { margin-bottom: 15px; word-wrap: break-word; } 
+        
+        mjx-container { max-width: 100%; overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; }
+        
+        .options label { display: block; padding: 10px; margin: 8px 0; background: #ffffff; border: 1px solid #b3d4fc; border-radius: 4px; cursor: pointer; transition: 0.3s; }
+        .options label:hover { background: #e3f0fb; border-color: #1e88e5; }
+        
+        .table-responsive { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 15px 0; }
+        .tf-table { width: 100%; border-collapse: collapse; background: #fff; min-width: 320px; }
+        .tf-table td { padding: 10px; border: 1px solid #b3d4fc; }
+        .tf-radio-group { display: flex; gap: 10px; justify-content: center; }
+        .tf-radio-group label { cursor: pointer; font-weight: bold; padding: 5px; border-radius: 3px; transition: 0.3s; }
+        
+        .short-ans-group { display: flex; gap: 8px; margin-top: 5px; flex-wrap: wrap; }
+        .short-ans-box { width: 50px; height: 55px; font-size: 24px; text-align: center; border: 2px solid #1e88e5; border-radius: 5px; box-sizing: border-box; font-weight: bold; color: #1565c0; background: #fff; transition: 0.3s; }
+        .short-ans-box:focus { border-color: #0d47a1; outline: none; box-shadow: 0 0 6px rgba(30,136,229,0.3); }
+        
+        .essay-input { width: 100%; padding: 12px; font-size: 16px; border: 2px solid #b3d4fc; border-radius: 4px; box-sizing: border-box; height: 150px; resize: vertical; background: #fff; }
+        .essay-input:focus { border-color: #1e88e5; outline: none; }
+        
+        .solution-box { display: none; margin-top: 15px; padding: 15px; background: #e8f4fc; border-left: 5px solid #0288d1; border-radius: 4px; overflow-x: auto; }
+        
+        button.submit-btn { width: 100%; padding: 15px; background: #1e88e5; color: white; border: none; border-radius: 4px; font-size: 18px; cursor: pointer; margin-top: 15px; font-weight: bold; margin-bottom: 5px; }
+        button.submit-btn:hover { background: #1565c0; }
+        #result { display: none; margin-top: 20px; padding: 15px; border-radius: 4px; text-align: center; font-weight: bold; font-size: 18px; background: #eef6fc; color: #0d47a1; border: 1px solid #b3d4fc; margin-bottom: 20px;}
+        
+        #passwordPrompt { display: none; margin-top: 20px; padding: 20px; background: #eef6fc; border: 1px solid #b3d4fc; border-radius: 5px; text-align: center; margin-bottom: 40px; }
+        #passwordPrompt h4 { color: #1565c0; margin-top: 0; margin-bottom: 10px; }
+        #passwordPrompt input { padding: 10px; width: 60%; max-width: 250px; border: 1px solid #b3d4fc; border-radius: 4px; font-size: 16px; }
+        #passwordPrompt button { width: auto; padding: 10px 20px; background: #1e88e5; color: white; border: none; border-radius: 4px; font-size: 16px; cursor: pointer; font-weight: bold; margin-top: 10px; margin-left: 10px; }
+        
+        /* --- SVG / ẢNH + KHUNG ZOOM DÙNG CHUNG (khung tự co giãn, không đặt chiều cao cố định) --- */
+        :root {
+            --zoom-accent: #1e88e5; --zoom-accent-hover: #1565c0;
+            --zoom-border: #b3d4fc; --zoom-bar-bg: #eef6fc; --zoom-max-h: none;
+        }
+        svg { max-width: 100%; height: auto; display: block; margin: 10px auto; overflow: visible; }
+        svg text { font-family: Arial, sans-serif; }
+        img { max-width: 100%; height: auto; }
+        .zoom-container { display: flex; align-items: flex-start; gap: 10px; margin: 15px 0; }
+        .zoom-viewport {
+            flex: 1 1 auto; min-width: 0;
+            overflow: auto; -webkit-overflow-scrolling: touch;
+            border: 1px solid var(--zoom-border); border-radius: 4px; background: #fff;
+            box-sizing: border-box; padding: 4px;
+        }
+        /* chỉ giới hạn chiều cao và giữ cuộn bên trong khi ảnh đang được phóng to */
+        .zoom-viewport.can-pan { cursor: grab; max-height: var(--zoom-max-h); overscroll-behavior: contain; }
+        .zoom-viewport.dragging { cursor: grabbing; user-select: none; }
+        .zoom-toolbar { display: flex; flex-direction: column; gap: 5px; background: var(--zoom-bar-bg); padding: 5px; border-radius: 4px; border: 1px solid var(--zoom-border); flex-shrink: 0; }
+        .zoom-btn { background: var(--zoom-accent); color: #fff; border: none; padding: 6px 10px; font-size: 14px; border-radius: 4px; cursor: pointer; transition: background .2s, opacity .2s; white-space: nowrap; }
+        .zoom-btn:hover:not(:disabled) { background: var(--zoom-accent-hover); }
+        .zoom-btn:disabled { background: #ccc; cursor: not-allowed; opacity: .6; }
+        .zoom-media { display: block; margin: 0 auto; max-width: 100%; height: auto; user-select: none; -webkit-user-drag: none; }
+        .zoom-media.zoomed { width: var(--zw) !important; max-width: none !important; height: auto !important; }
+        /* --- BẢNG DÀI: bọc trong khung cuộn ngang, không làm tràn lề --- */
+        .table-scroll { display: block; width: 100%; max-width: 100%; min-width: 0; box-sizing: border-box; overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain; margin: 10px 0; }
+        .table-scroll > table { margin: 0; max-width: 100%; border-collapse: collapse; }
+        .table-scroll th, .table-scroll td { overflow-wrap: break-word; }
+        /* .table-responsive do TeX2HTML tạo ra: trước đây chỉ mẫu làm bài có CSS này nên bảng rộng bị tràn ở trình chiếu / luyện tập */
+        .table-responsive { display: block; width: 100%; max-width: 100%; min-width: 0; box-sizing: border-box; overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain; margin: 15px 0; }
+        /* --- BẢNG RỘNG TRÊN ĐIỆN THOẠI: gợi ý vuốt ngang, cột đầu cố định, xem toàn màn hình --- */
+        .tbl-box { position: relative; margin: 12px 0; max-width: 100%; min-width: 0; }
+        .tbl-box > .tbl-wrap { position: relative; }
+        .tbl-box .table-responsive, .tbl-box .table-scroll { margin: 0; }
+        .tbl-hint { display: none; align-items: center; justify-content: space-between; gap: 8px; margin: 0 0 4px; font-size: 12.5px; color: #5f7b94; }
+        .tbl-box.has-scroll > .tbl-hint { display: flex; }
+        .tbl-open { font: inherit; font-size: 12.5px; padding: 4px 10px; border-radius: 14px; border: 1px solid var(--zoom-border); background: var(--zoom-bar-bg); color: var(--zoom-accent-hover); cursor: pointer; white-space: nowrap; }
+        .tbl-fade { display: none; position: absolute; top: 0; right: 0; bottom: 0; width: 30px; pointer-events: none; background: linear-gradient(to right, rgba(255,255,255,0), rgba(120,140,160,.28)); }
+        .tbl-box.has-scroll:not(.at-end) .tbl-fade { display: block; }
+        .tbl-box.has-scroll table.sticky-first tr > :first-child { position: sticky; left: 0; z-index: 2; background: #fff; box-shadow: 2px 0 4px -2px rgba(0,0,0,.35); }
+        @media (max-width: 600px) {
+            .tbl-box td, .tbl-box th { font-size: 14px; padding: 4px 7px !important; }
+        }
+        #tblOverlay { position: fixed; inset: 0; z-index: 99999; background: #fff; display: none; flex-direction: column; }
+        #tblOverlay.open { display: flex; }
+        .tbl-ov-bar { display: flex; align-items: center; gap: 8px; padding: 8px 10px; background: var(--zoom-bar-bg); border-bottom: 1px solid var(--zoom-border); }
+        .tbl-ov-bar .ttl { flex: 1; min-width: 0; font-size: 13px; font-weight: bold; color: #333; }
+        .tbl-ov-body { flex: 1; overflow: auto; -webkit-overflow-scrolling: touch; padding: 10px; touch-action: pan-x pan-y; }
+        .tbl-ov-body table { margin: 0; width: auto; max-width: none; border-collapse: collapse; font-size: calc(15px * var(--tbl-s, 1)); }
+        .tbl-ov-body td, .tbl-ov-body th { font-size: inherit !important; padding: 5px 9px; }
+
+        
+        /* ===== Bổ sung của bộ chuyển đổi TeX2HTML (PyQt6) ===== */
+        .tp { margin: 6px 0; }
+        .center { text-align: center; }
+        /* Huy hiệu mức độ khó (suy ra từ ID câu hỏi, HTML bài giảng) */
+        .lvl { display: inline-block; margin-left: 8px; padding: 1px 10px; border-radius: 12px; border: 1px solid; font-size: 12px; font-weight: bold; line-height: 1.6; white-space: nowrap; vertical-align: middle; cursor: help; }
+        .lvl .dots { letter-spacing: 1px; margin-right: 4px; }
+        .lvl.lv1 { background: #e6f4ea; border-color: #34a853; color: #1b6b32; }
+        .lvl.lv2 { background: #e3f0fb; border-color: #4a90d9; color: #0d47a1; }
+        .lvl.lv3 { background: #fff3e0; border-color: #fb8c00; color: #8a4b00; }
+        .lvl.lv4 { background: #fdeaea; border-color: #e53935; color: #a31515; }
+        .figure svg, .figure img { max-width: 100%; height: auto; }
+        .fig-error { color: #b00020; border: 1px dashed #b00020; padding: 6px 10px; text-align: center; margin: 8px 0; font-size: 14px; }
+        .fbox { border: 1px solid currentColor; padding: 0 4px; }
+        blockquote { margin: 8px 20px; }
+        img { max-width: 100%; height: auto; }
+        ul, ol { margin: 6px 0; padding-left: 24px; }
+        ul.desc, li.cl { list-style: none; }
+        li.cl .lbl { font-weight: bold; margin-right: .4em; }
+        ol[class^="paren-"] { list-style: none; counter-reset: pc; padding-left: 2.2em; }
+        ol[class^="paren-"] > li { counter-increment: pc; position: relative; margin: 4px 0; }
+        ol[class^="paren-"] > li::before { position: absolute; left: -2.2em; width: 2em; text-align: right; font-weight: bold; }
+        ol.paren-a > li::before { content: counter(pc, lower-alpha) ")"; }
+        ol.paren-A > li::before { content: counter(pc, upper-alpha) ")"; }
+        ol.paren-i > li::before { content: counter(pc, lower-roman) ")"; }
+        ol.paren-I > li::before { content: counter(pc, upper-roman) ")"; }
+        ol.paren-1 > li::before { content: counter(pc, decimal) ")"; }
+        table.tex-table { border-collapse: collapse; margin: 8px auto; }
+        table.tex-table td { padding: 4px 10px; }
+        table.tex-table.bordered td { border: 1px solid #555; }
+        .tex-fa { margin: 0 .25em; font-style: normal; }
+
+
+
+        .author-footer { margin: 30px 0 10px; padding-top: 10px; border-top: 1px solid #b3d4fc; text-align: center; color: #5f7b94; font-size: 13px; }
+        .author-footer:empty { display: none; }
+    </style>
+    
+    <script>
+        window.MathJax = {
+          tex: {
+            inlineMath: [['$','$'], ['\\(','\\)']],
+            displayMath: [['$$','$$'], ['\\[','\\]']],
+            processEscapes: true,
+            macros: {"wideparen": ["\\overset{\\frown}{#1}", 1], "overarc": ["\\overset{\\frown}{#1}", 1], "colorInterval": "white", "skipInterval": "0.4cm", "Interval": ["\\coordinate [label={center:$#1$},label=below:$\\rule{0pt}{\\skipInterval}#2$] (a) at (#2,0); \n \\coordinate [label={center:$#3$},label=below:$\\rule{0pt}{\\skipInterval}#4$] (b) at (#4,0); \n \\draw[color=\\colorInterval] decorate[decoration={ticks,amplitude=3pt,segment length=1mm}] {(a)--(b)};\n", 4], "IntervalR": ["\\coordinate [label={center:$#1$},label=below:$\\rule{0pt}{\\skipInterval}#2$] (a) at (#2,0); \n \\coordinate [label={center:$#3$},label=below:$\\rule{0pt}{\\skipInterval}#4$] (b) at (#4,0); \n \\draw decorate[decoration={markings,mark=between positions 0 and 1 step 1mm\n with\n {\n\\draw[color=\\colorInterval] (-3pt,-3pt) -- (3pt,3pt);\n }}] {(a)--(b)};\n", 4], "IntervalL": ["\\coordinate [label={center:$#1$},label=below:$\\rule{0pt}{\\skipInterval}#2$] (a) at (#2,0); \n \\coordinate [label={center:$#3$},label=below:$\\rule{0pt}{\\skipInterval}#4$] (b) at (#4,0); \n \\draw decorate[decoration={\n\t\tmarkings,\n\t\tmark=between positions 0 and 1 step 1mm\n with\n {\n\t\t\\draw[color=\\colorInterval] (-3pt,3pt) -- (3pt,-3pt);\n }\n\t\t}\n\t\t] {(a)--(b)};\n", 4], "IntervalLF": ["\\coordinate [label={center:$#1$},label=below:$\\rule{0pt}{\\skipInterval}#2$] (a) at (#2,0); \n \\coordinate [label={center:$#3$},label=below:$\\rule{0pt}{\\skipInterval}#4$] (b) at (#4,0); \n \\fill[pattern=north west lines,pattern color=\\colorInterval](#2,-3pt)rectangle(#4,3pt);\n", 4], "IntervalRF": ["\\coordinate [label={center:$#1$},label=below:$\\rule{0pt}{\\skipInterval}#2$] (a) at (#2,0); \n \\coordinate [label={center:$#3$},label=below:$\\rule{0pt}{\\skipInterval}#4$] (b) at (#4,0); \n \\fill[pattern=north east lines,pattern color=\\colorInterval](#2,-3pt)rectangle(#4,3pt);\n", 4], "pre": "0", "next": "2", "IntervalLR": ["\n\\def\\pre{#1}\n\\def\\next{#2}\n", 2], "IntervalG": ["\\coordinate [label={center:$#1$},label=below:$\\rule{0pt}{\\skipInterval}#2$] (a) at (\\pre,0); \n \\coordinate [label={center:$#3$},label=below:$\\rule{0pt}{\\skipInterval}#4$] (b) at (\\next,0); \n \\draw[color=\\colorInterval] decorate[decoration={ticks,amplitude=3pt,segment length=1mm}] {(a)--(b)};\n", 4], "IntervalGL": ["\\coordinate [label={center:$#1$},label=below:$\\rule{0pt}{\\skipInterval}#2$] (a) at (\\pre,0); \n \\coordinate [label={center:$#3$},label=below:$\\rule{0pt}{\\skipInterval}#4$] (b) at (\\next,0); \n \\draw decorate[decoration={markings,mark=between positions 0 and 1 step 1mm\n with\n {\n\\draw[color=\\colorInterval] (-3pt,3pt) -- (3pt,-3pt);\n }}] {(a)--(b)};\n", 4], "IntervalGR": ["\\coordinate [label={center:$#1$},label=below:$\\rule{0pt}{\\skipInterval}#2$] (a) at (\\pre,0); \n \\coordinate [label={center:$#3$},label=below:$\\rule{0pt}{\\skipInterval}#4$] (b) at (\\next,0); \n \\draw decorate[decoration={markings,mark=between positions 0 and 1 step 1mm\n with\n {\n\\draw[color=\\colorInterval] (-3pt,-3pt) -- (3pt,3pt);\n }}] {(a)--(b)};\n", 4], "IntervalGLF": ["\\coordinate [label={center:$#1$},label=below:$\\rule{0pt}{\\skipInterval}#2$] (a) at (\\pre,0); \n \\coordinate [label={center:$#3$},label=below:$\\rule{0pt}{\\skipInterval}#4$] (b) at (\\next,0); \n \\fill[pattern=north west lines,pattern color=\\colorInterval](\\pre,-3pt)rectangle(\\next,3pt);\n", 4], "IntervalGRF": ["\\coordinate [label={center:$#1$},label=below:$\\rule{0pt}{\\skipInterval}#2$] (a) at (\\pre,0); \n \\coordinate [label={center:$#3$},label=below:$\\rule{0pt}{\\skipInterval}#4$] (b) at (\\next,0); \n \\fill[pattern=north east lines,pattern color=\\colorInterval](\\pre,-3pt)rectangle(\\next,3pt);\n", 4], "tikzsetnextfilename": ["", 1], "phone": "0947 306 694", "facenhom": "\\raisebox{-1pt}{\\scriptsize\\faFacebook}\\ LaTeX\\ Theme and Related Topics"}
+          },
+          options: { enableMenu: false }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-chtml.min.js"></script>
+</head>
+<body>
+    <div class="header-bar">
+        <h2>Lớp 11 Chương 4 Bài 4</h2>
+        <div id="timer">Đang tải...</div>
+    </div>
+    
+    <div class="zalo-warning" id="zaloWarning">
+        ⚠️ CHÚ Ý: Nếu em đang mở bài này trực tiếp trên Zalo/Messenger, hãy bấm vào biểu tượng "Dấu 3 chấm" ở góc phải màn hình và chọn "Mở bằng trình duyệt" (Chrome/Safari) để không bị lỗi kết nối.
+    </div>
+
+    <div class="info-group">
+        <label>Họ và tên học sinh:</label>
+        <input type="text" id="studentName" placeholder="Nhập họ và tên..." required>
+    </div>
+    <div class="info-group">
+        <label>Lớp:</label>
+        <input type="text" id="studentClass" placeholder="Nhập lớp..." required>
+    </div>
+
+    <hr>
+    <form id="quizForm" onsubmit="return false;">
+        <h3>PHẦN 1. Câu trắc nghiệm nhiều phương án lựa chọn</h3>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 1:</b> Cho $0&lt;a\neq 1$, $x&gt;0$, $y&gt;0$. Khẳng định nào sau đây <b>sai</b>?</div></div><div class="options"><label><input type="radio" name="P1_Cau_1" value="A"> <b>A.</b> $\log_a x^{\alpha}=\alpha\log_a x$</label><label><input type="radio" name="P1_Cau_1" value="B"> <b>B.</b> $\log_a(xy)=\log_a x+\log_a y$</label><label><input type="radio" name="P1_Cau_1" value="C"> <b>C.</b> $\log_a \sqrt{x}=\dfrac{1}{2}\log_a x$</label><label><input type="radio" name="P1_Cau_1" value="D"> <b>D.</b> $\log_{\sqrt{a}}x=\dfrac{1}{2}\log_a x$</label></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Do $\log_{\sqrt{a}}x=2\log_a x$.</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 2:</b> Với $a$ là số thực dương tùy ý, $\log_7 (7a)$ bằng</div></div><div class="options"><label><input type="radio" name="P1_Cau_2" value="A"> <b>A.</b> $1-\log_7 a$</label><label><input type="radio" name="P1_Cau_2" value="B"> <b>B.</b> $1+\log_7 a$</label><label><input type="radio" name="P1_Cau_2" value="C"> <b>C.</b> $1+a$</label><label><input type="radio" name="P1_Cau_2" value="D"> <b>D.</b> $a$</label></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Ta có $\log_7 (7a)=\log_7 7+\log_7 a=1+\log_7 a$.</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 3:</b> Với $a$ là số thực dương tùy ý, $4\log\sqrt{a}$ bằng</div></div><div class="options"><label><input type="radio" name="P1_Cau_3" value="A"> <b>A.</b> $-4\log a$</label><label><input type="radio" name="P1_Cau_3" value="B"> <b>B.</b> $8\log a$</label><label><input type="radio" name="P1_Cau_3" value="C"> <b>C.</b> $2\log a$</label><label><input type="radio" name="P1_Cau_3" value="D"> <b>D.</b> $-2\log a$</label></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Ta có $4\log\sqrt{a}=4\log a^{\tfrac{1}{2}}=2\log a$.</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 4:</b> Với $a$ là số thực dương tùy ý, $\log_5 a^3$ bằng</div></div><div class="options"><label><input type="radio" name="P1_Cau_4" value="A"> <b>A.</b> $\dfrac{1}{3}\log_5 a$</label><label><input type="radio" name="P1_Cau_4" value="B"> <b>B.</b> $\dfrac{1}{3}+\log_5 a$</label><label><input type="radio" name="P1_Cau_4" value="C"> <b>C.</b> $3+\log_5 a$</label><label><input type="radio" name="P1_Cau_4" value="D"> <b>D.</b> $3\log_5 a$</label></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Ta có $\log_5 a^3=3\log_5 a$.</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 5:</b> Cho $a$ là số thực dương tùy ý khác $1$. Mệnh đề nào dưới đây đúng?</div></div><div class="options"><label><input type="radio" name="P1_Cau_5" value="A"> <b>A.</b> $\log_2 a=\log_a 2$</label><label><input type="radio" name="P1_Cau_5" value="B"> <b>B.</b> $\log_2 a=\dfrac{1}{\log_2 a}$</label><label><input type="radio" name="P1_Cau_5" value="C"> <b>C.</b> $\log_2 a=\dfrac{1}{\log_a 2}$</label><label><input type="radio" name="P1_Cau_5" value="D"> <b>D.</b> $\log_2 a=-\log_a 2$</label></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Áp dụng công thức đổi cơ số ta có $\log_2 a=\dfrac{1}{\log_a 2}$.</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 6:</b> Với $a$, $b$ là các số thực dương tùy ý thỏa mãn $a\neq 1$ và $\log_a b~=~2$, giá trị của $\log_{a^2}\left(a\cdot b^2\right)$ bằng</div></div><div class="options"><label><input type="radio" name="P1_Cau_6" value="A"> <b>A.</b> $2$</label><label><input type="radio" name="P1_Cau_6" value="B"> <b>B.</b> $\dfrac{3}{2}$</label><label><input type="radio" name="P1_Cau_6" value="C"> <b>C.</b> $\dfrac{1}{2}$</label><label><input type="radio" name="P1_Cau_6" value="D"> <b>D.</b> $\dfrac{5}{2}$</label></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Ta có $\log_{a^2}(a\cdot b^2)=\dfrac{\log_a (ab^2)}{\log_a a^2}=\dfrac{1+\log_a b^2}{2}=\dfrac{1+2\log_a b}{2}=\dfrac{1+2\cdot 2}{2}=\dfrac{5}{2}$.</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 7:</b> Mức cường độ âm $L$ đo bằng decibel (viết tắt là $dB$, đọc là đề-xi-ben) của âm thanh có cường độ $I$ (đo bằng oát trên mét vuông, kí hiệu là $W/\mathrm{~m}^2$) được định nghĩa $L=10\log\dfrac{I}{I_0}$, trong đó $I_0=10^{-12} W/\mathrm{~m}^2$ là cường độ âm thanh nhỏ nhất mà tai người có thể phát hiện được (gọi là ngưỡng nghe). Xác định mức cường độ âm của âm thanh giao thông thành phố đông đúc có cường độ $I=10^{-3} W/\mathrm{~m}^2$?</div></div><div class="options"><label><input type="radio" name="P1_Cau_7" value="A"> <b>A.</b> $90$</label><label><input type="radio" name="P1_Cau_7" value="B"> <b>B.</b> $130$</label><label><input type="radio" name="P1_Cau_7" value="C"> <b>C.</b> $110$</label><label><input type="radio" name="P1_Cau_7" value="D"> <b>D.</b> $150$</label></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Ta có $L=10\log\dfrac{I}{I_0}=10\log\dfrac{10^{-3}}{10^{-12}}=10\log 10^9=90 dB$.<br> Vậy mức cường độ âm của âm thanh $I=10^{-3} W/\mathrm{~m}^2$ bằng 90 $dB$.</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 8:</b> Độ lớn $M$ của một trận động đất theo thang Richter được tính theo công thức $M=\log\dfrac{A}{A_0}$, trong đó $A$ là biên độ lớn nhất ghi được bởi máy đo địa chất, $A_0=1$ (đơn vị là micro mét, kí hiệu là $\mu m$) là biên độ tiêu chuẩn được sử dụng để hiệu chỉnh độ lệch gây ra bởi khoảng cách của máy đo địa chấn so với tâm chấn. Năm 2011 tại Nhật Bản đã xảy ra một trận động đất độ lớn $8{,}9$ độ Richter. Dự đoán tương lại nước Nhật Bản vào năm 2025 sẽ hứng chịu một trận động đất có biên độ lớn nhất gấp đôi năm 2011, hỏi độ lớn trận động đất là bao nhiêu?</div></div><div class="options"><label><input type="radio" name="P1_Cau_8" value="A"> <b>A.</b> $17{,}8$</label><label><input type="radio" name="P1_Cau_8" value="B"> <b>B.</b> $10{,}9$</label><label><input type="radio" name="P1_Cau_8" value="C"> <b>C.</b> $9{,}2$</label><label><input type="radio" name="P1_Cau_8" value="D"> <b>D.</b> $8{,}6$</label></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Năm 2011, độ lớn là $M=\log\dfrac{A}{A_0}=8{,}9$.<br> Năm 2025, độ lớn là $M'=\log\dfrac{2A}{A_0}=\log 2+\log\dfrac{A}{A_0}=\log 2+8{,}9\approx 9{,}2$.<br> Vậy độ lớn trận động đất được dự báo vào năm 2025 là $9{,}2$ độ Richter.</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 9:</b> Cho $a &gt; 0$ và $a\ne 1$ và $b &gt; 0$. Rút gọn biểu thức <div class="center"><div class="tp">$P=\sqrt{\log_a^2(ab)-\dfrac{2\log b}{\log a}-1}\cdot$</div></div></div></div><div class="options"><label><input type="radio" name="P1_Cau_9" value="A"> <b>A.</b> $P=\left|\log_a b+1\right|$</label><label><input type="radio" name="P1_Cau_9" value="B"> <b>B.</b> $P=\left|\log_a b-1\right|$</label><label><input type="radio" name="P1_Cau_9" value="C"> <b>C.</b> $P=\left|\log_a b\right|$</label><label><input type="radio" name="P1_Cau_9" value="D"> <b>D.</b> $P=0$</label></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Ta có: \begin{align*}
+				P&amp;= \sqrt{\log_a^2(ab)-\dfrac{2\log b}{\log a}-1}=\sqrt{\left[\log_a (ab)\right]^2-2\log_a b-1}\\
+				&amp;= \sqrt{\left(1+\log_a b\right)^2-2\log_a b-1}=\sqrt{\log_a^2b}=\left|\log_a b\right|.
+		\end{align*}</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 10:</b> Cho các số thực dương $a$, $b$ với $a\ne 1$. Khẳng định nào sau đây là khẳng định đúng?</div></div><div class="options"><label><input type="radio" name="P1_Cau_10" value="A"> <b>A.</b> $\log _{a^2} (ab)=\dfrac{1}{2} \log_a b$</label><label><input type="radio" name="P1_Cau_10" value="B"> <b>B.</b> $\log _{a^2} (ab)=\dfrac{1}{2}+\dfrac{1}{2} \log_a b$</label><label><input type="radio" name="P1_Cau_10" value="C"> <b>C.</b> $\log _{a^2} (ab)=2+\log_a b$</label><label><input type="radio" name="P1_Cau_10" value="D"> <b>D.</b> $\log _{a^2} (ab)=\dfrac{1}{4} \log_a b$</label></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Ta có $\log _{a^2} (ab)=\dfrac{1}{2} \left(\log_a (ab)\right)=\dfrac{1}{2} \left(\log_a a+\log_a b\right)
+			=\dfrac{1}{2}+\dfrac{1}{2} \log_a b$.</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 11:</b> Cho $2$ số thực dương $a$, $b$ thỏa mãn $\sqrt{a} \ne b$, $a\ne 1$, $\log_a b=2$. Tính $T=\log _{\tfrac{\sqrt{a}}{b}} \sqrt[3]{ba}$</div></div><div class="options"><label><input type="radio" name="P1_Cau_11" value="A"> <b>A.</b> $T=-\dfrac{2}{5}$</label><label><input type="radio" name="P1_Cau_11" value="B"> <b>B.</b> $T=\dfrac{2}{5}$</label><label><input type="radio" name="P1_Cau_11" value="C"> <b>C.</b> $T=\dfrac{2}{3}$</label><label><input type="radio" name="P1_Cau_11" value="D"> <b>D.</b> $T=-\dfrac{2}{3}$</label></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Ta có: $\log_a b=2\Rightarrow \log_b a=\dfrac{1}{2}$. \begin{align*}
+				&amp;T=\log _{\tfrac{\sqrt{a}}{b}} \sqrt[3]{ba}=\log _{\tfrac{\sqrt{a}}{b}} \sqrt[3]b+\log _{\tfrac{\sqrt{a}}{b}} \sqrt[3]a\\
+				&amp;=\dfrac{1}{\log _{\sqrt[3]b} \tfrac{\sqrt{a}}{b}}+\dfrac{1}{\log _{\sqrt[3]a} \tfrac{\sqrt{a}}{b}}\\
+				&amp;=\dfrac{1}{\log _{\sqrt[3]b} \sqrt{a}-\log _{\sqrt[3]b} b}+\dfrac{1}{\log _{\sqrt[3]a} \sqrt{a}-\log _{\sqrt[3]a} b}\\
+				&amp;=\dfrac{1}{\dfrac{3}{2} \log_b a-3}+\dfrac{1}{\dfrac{3}{2}-3\log_a b}\\
+				&amp;=\dfrac{1}{\dfrac{3}{2}\cdot \dfrac{1}{2}-3}+\dfrac{1}{\dfrac{3}{2}-3\cdot 2}=-\dfrac{2}{3}.
+		\end{align*}</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 12:</b> Cho $a$, $b$ là các số thực dương thỏa mãn $\log _{\sqrt{ab}} \left(a\sqrt[3]b \right)=3$. Tính $\log _{\sqrt{ab}} \left(b\sqrt[3]a \right)$.</div></div><div class="options"><label><input type="radio" name="P1_Cau_12" value="A"> <b>A.</b> $-3$</label><label><input type="radio" name="P1_Cau_12" value="B"> <b>B.</b> $\dfrac{1}{3}$</label><label><input type="radio" name="P1_Cau_12" value="C"> <b>C.</b> $3$</label><label><input type="radio" name="P1_Cau_12" value="D"> <b>D.</b> $-\dfrac{1}{3}$</label></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Ta có \begin{align*}
+				\log _{\sqrt{ab}} \left(a\sqrt[3]b \right)=3&amp;\Leftrightarrow \dfrac{\log_a \left(a\sqrt[3]b \right)}{\log_a \sqrt{ab}}=3\\
+				&amp;\Leftrightarrow \dfrac{\log_a a+\dfrac{1}{3} \log_a b}{\dfrac{1}{2} \left(\log_a a+\log_a b\right)}=3\\
+				&amp;\Leftrightarrow \dfrac{2}{3}\cdot \dfrac{3+\log_a b}{1+\log_a b}=3\\
+				&amp;\Leftrightarrow 6+2\log_a b=9+9\log_a b\\
+				&amp;\Leftrightarrow \log_a b=-\dfrac{3}{7}.
+		\end{align*} Khi đó $\log _{\sqrt{ab}} \left(b\sqrt[3]a \right)=\dfrac{\log_a \left(b\sqrt[3]a \right)}{\log_a \sqrt{ab}}=\dfrac{\log_a b+\dfrac{1}{3} \log_a a}{\dfrac{1}{2} \left(\log_a a+\log_a b\right)}=\dfrac{-\dfrac{3}{7}+\dfrac{1}{3}}{\dfrac{1}{2} \left(1-\dfrac{3}{7} \right)}=-\dfrac{1}{3}$.</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 13:</b> Với mọi số thực dương $a$ và $b$ thỏa mãn $a^2+b^2=8ab$, mệnh đề nào dưới đây đúng?</div></div><div class="options"><label><input type="radio" name="P1_Cau_13" value="A"> <b>A.</b> $\log(a+b)=\dfrac{1}{2} (\log a+\log b)$</label><label><input type="radio" name="P1_Cau_13" value="B"> <b>B.</b> $\log(a+b)=\dfrac{1}{2}+\log a+\log b$</label><label><input type="radio" name="P1_Cau_13" value="C"> <b>C.</b> $\log(a+b)=\dfrac{1}{2} (1+\log a+\log b)$</label><label><input type="radio" name="P1_Cau_13" value="D"> <b>D.</b> $\log(a+b)=1+\log a+\log b$</label></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Ta có $a^2+b^2=8ab\Leftrightarrow (a+b)^2=10ab$.<br> Lấy log cơ số $10$ hai vế ta được: $\log(a+b)^2=\log(10ab)\Leftrightarrow 2\log(a+b)=\log 10+\log a+\log b$.<br> Hay $\log(a+b)=\dfrac{1}{2} (1+\log a+\log b)$.</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 14:</b> Xét tất cả các số dương $a$ và $b$ thỏa mãn $\log_2 a=\log_8 (ab)$. Mệnh đề nào dưới đây đúng?</div></div><div class="options"><label><input type="radio" name="P1_Cau_14" value="A"> <b>A.</b> $a=b^2$</label><label><input type="radio" name="P1_Cau_14" value="B"> <b>B.</b> $a^3=b$</label><label><input type="radio" name="P1_Cau_14" value="C"> <b>C.</b> $a=b$</label><label><input type="radio" name="P1_Cau_14" value="D"> <b>D.</b> $a^2=b$</label></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Theo đề ta có: \begin{align*}
+				&amp; \log_2a=\log_8(ab)\Leftrightarrow \log_2a=\dfrac{1}{3} \log_2(ab)\Leftrightarrow 3\log_2a=\log_2(ab) \\
+				&amp;\Leftrightarrow  \log_2a^3=\log_2(ab)\Leftrightarrow a^3=ab\Leftrightarrow a^2=b.
+		\end{align*}</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 15:</b> Cho $\log_8 |x|+\log_4 y^2=5$ và $\log_8 |y|+\log_4 x^2=7$. Tìm giá trị của biểu thức $P=|x|-|y|$.</div></div><div class="options"><label><input type="radio" name="P1_Cau_15" value="A"> <b>A.</b> $P=56$</label><label><input type="radio" name="P1_Cau_15" value="B"> <b>B.</b> $P=16$</label><label><input type="radio" name="P1_Cau_15" value="C"> <b>C.</b> $P=8$</label><label><input type="radio" name="P1_Cau_15" value="D"> <b>D.</b> $P=64$</label></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Điều kiên: $x,y\ne 0$.<br> Cộng vế với vế của hai phương trình, ta được: \[\log_8 |xy|+\log_4 x^2y^2=12\Leftrightarrow \log_2 |xy|=9\Leftrightarrow |xy|=512.\qquad (1)\] Trừ vế với vế của hai phương trình, ta được: \[\log_8 |\dfrac{x}{y} |+\log_4 \dfrac{y^2}{x^2}=-2\Leftrightarrow \log_2 |\dfrac{x}{y} |=3\Leftrightarrow |\dfrac{x}{y} |=8\Leftrightarrow |x|=8|y|. \qquad (2)\] Từ (1) và (2) suy ra $|y|=8\Rightarrow |x|=64\Leftrightarrow P=56$.</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 16:</b> Cho $a$, $b$, $c&gt; 1$. Biết rằng biểu thức <div class="center"><div class="tp">$P=\log_a (bc)+\log_b (ac)+4\log_c (ab)$</div></div> đạt giá trị lớn nhất $m$ khi $\log_b c=n$. Tính giá trị $m+n$.</div></div><div class="options"><label><input type="radio" name="P1_Cau_16" value="A"> <b>A.</b> $m+n=10$</label><label><input type="radio" name="P1_Cau_16" value="B"> <b>B.</b> $m+n=\dfrac{25}{2}$</label><label><input type="radio" name="P1_Cau_16" value="C"> <b>C.</b> $m+n=14$</label><label><input type="radio" name="P1_Cau_16" value="D"> <b>D.</b> $m+n=12$</label></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Ta có $\begin{aligned}[t]
+				P &amp;= \log_a b+\log_a c+\log_b a+\log_b c+4\log_c a+4\log_c b \Leftrightarrow P\\
+				&amp; = \left(\log_a b+\dfrac{1}{\log_a b} \right)+\left(\log_a c+\dfrac{4}{\log_a c} \right)+\left(\log_b c+\dfrac{4}{\log_b c} \right) \ge 2+4+4\\
+				&amp; = 10.
+		\end{aligned}$<br> Suy ra $m= 10$.<br> Dấu đẳng xảy ra khi $\log_a b=1$, $\log_a c=2$, $\log_b c=2 \Rightarrow n=2$.<br> Vậy $m+n=12$.</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 17:</b> Với các số thực dương $x$, $y$ tùy ý, đặt $\log_3 x= \alpha$, $\log_3 y=\beta$. Mệnh đề nào dưới đây đúng?</div></div><div class="options"><label><input type="radio" name="P1_Cau_17" value="A"> <b>A.</b> $\log_{27}\left(\dfrac{\sqrt{x}}{y}\right)^3=\dfrac{\alpha}{2}+\beta$</label><label><input type="radio" name="P1_Cau_17" value="B"> <b>B.</b> $\log_{27}\left(\dfrac{\sqrt{x}}{y}\right)^3=9\left(\dfrac{\alpha}{2}+\beta\right)$</label><label><input type="radio" name="P1_Cau_17" value="C"> <b>C.</b> $\log_{27}\left(\dfrac{\sqrt{x}}{y}\right)^3=\dfrac{\alpha}{2}-\beta$</label><label><input type="radio" name="P1_Cau_17" value="D"> <b>D.</b> $\log_{27}\left(\dfrac{\sqrt{x}}{y}\right)^3=9\left(\dfrac{\alpha}{2}-\beta\right)$</label></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Ta có \[\log_{27}\left(\dfrac{\sqrt{x}}{y}\right)^3=\dfrac{3}{2}\log_{27}x-3\log_{27}y=\dfrac{1}{2}\log_3 x-\log_3 y=\dfrac{\alpha}{2}-\beta.\]</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 18:</b> Với các số thực dương $a$, $b$ bất kỳ. Mệnh đề nào dưới đây đúng?</div></div><div class="options"><label><input type="radio" name="P1_Cau_18" value="A"> <b>A.</b> $\log_2 \dfrac{2a^3}{b}=1+3\log_2 a-\log_2 b$</label><label><input type="radio" name="P1_Cau_18" value="B"> <b>B.</b> $\log_2 \dfrac{2a^3}{b}=1+\dfrac{1}{3} \log_2 a-\log_2 b$</label><label><input type="radio" name="P1_Cau_18" value="C"> <b>C.</b> $\log_2 \dfrac{2a^3}{b}=1+3\log_2 a+\log_2 b$</label><label><input type="radio" name="P1_Cau_18" value="D"> <b>D.</b> $\log_2 \dfrac{2a^3}{b}=1+\dfrac{1}{3} \log_2 a+\log_2 b$</label></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Ta có: $\log_2 \dfrac{2a^3}{b}=\log_2 2+\log_2 a^3-\log_2 b=1+3\log_2 a-\log_2 b$.</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 19:</b> Cho $a$, $b$ là các số thực dương thỏa mãn $a\neq 1$, $a\neq \sqrt{b}$ và $\log_a b=\sqrt{3}$. Tính $P=\log_{\frac{\sqrt{b}}{a}}\sqrt{\dfrac{b}{a}}$.</div></div><div class="options"><label><input type="radio" name="P1_Cau_19" value="A"> <b>A.</b> $P=-5+3\sqrt{3}$</label><label><input type="radio" name="P1_Cau_19" value="B"> <b>B.</b> $P=-1+\sqrt{3}$</label><label><input type="radio" name="P1_Cau_19" value="C"> <b>C.</b> $P=-1-\sqrt{3}$</label><label><input type="radio" name="P1_Cau_19" value="D"> <b>D.</b> $P=-5-3\sqrt{3}$</label></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Ta có \begin{align*}
+				P&amp;= \dfrac{\log_a \sqrt{\dfrac{b}{a}}}{\log_a \dfrac{\sqrt{b}}{a}}\\
+				&amp;= \dfrac{\dfrac{1}{2}\log_a \dfrac{b}{a}}{\log_a \sqrt{b}-\log_a a}\\
+				&amp;= \dfrac{\dfrac{1}{2}\left(\log_a b-\log_a a\right)}{\dfrac{1}{2}\log_a b-1}\\
+				&amp;= \dfrac{\dfrac{1}{2}\left(\sqrt{3}-1\right)}{\dfrac{1}{2}\cdot\sqrt{3}-1}\\
+				&amp;= \dfrac{\sqrt{3}-1}{\sqrt{3}-2}\\&amp;=  -1-\sqrt{3}.
+		\end{align*}</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 20:</b> Cho $a$ và $b$ là hai số thực dương thỏa mãn $a^2b^3=16$. Giá trị của $2\log_2 a+3\log_2 b$ bằng</div></div><div class="options"><label><input type="radio" name="P1_Cau_20" value="A"> <b>A.</b> $2$</label><label><input type="radio" name="P1_Cau_20" value="B"> <b>B.</b> $8$</label><label><input type="radio" name="P1_Cau_20" value="C"> <b>C.</b> $16$</label><label><input type="radio" name="P1_Cau_20" value="D"> <b>D.</b> $4$</label></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Ta có $2\log_2 a+3\log_2 b=\log_2\left(a^2b^3\right)=\log_2 16=4$.</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 21:</b> Với các số thực dương $a$, $b$ bất kì. Mệnh đề nào dưới đây đúng?</div></div><div class="options"><label><input type="radio" name="P1_Cau_21" value="A"> <b>A.</b> $\log_2\left(\dfrac{2a^3}{b}\right)=1+3\log_2 a+\log_2 b$</label><label><input type="radio" name="P1_Cau_21" value="B"> <b>B.</b> $\log_2\left(\dfrac{2a^3}{b}\right)=1+\dfrac{1}{3}\log_2 a+\log_2 b$</label><label><input type="radio" name="P1_Cau_21" value="C"> <b>C.</b> $\log_2\left(\dfrac{2a^3}{b}\right)=1+3\log_2 a-\log_2 b$</label><label><input type="radio" name="P1_Cau_21" value="D"> <b>D.</b> $\log_2\left(\dfrac{2a^3}{b}\right)=1+\dfrac{1}{3}\log_2 a-\log_2 b$</label></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Ta có \[\log_2\left(\dfrac{2a^3}{b}\right)=\log_2 (2a^3)-\log_2 (b)=\log_2 2+\log_2 a^3-\log_2 b=1+3\log_2 a+\log_2 b.\]</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 22:</b> Cho $\log_3 a=2$ và $\log_2 b=\dfrac{1}{2}$.<br> Tính $I=2\log_3 \left[\log_3 (3a)\right]+\log _{\tfrac{1}{4}} b^2$.</div></div><div class="options"><label><input type="radio" name="P1_Cau_22" value="A"> <b>A.</b> $I=\dfrac{5}{4}$</label><label><input type="radio" name="P1_Cau_22" value="B"> <b>B.</b> $I=0$</label><label><input type="radio" name="P1_Cau_22" value="C"> <b>C.</b> $I=4$</label><label><input type="radio" name="P1_Cau_22" value="D"> <b>D.</b> $I=\dfrac{3}{2}$</label></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Ta có \[I=2\log_3 \left[\log_3 (3a)\right]+\log _{\tfrac{1}{4}} b^2=2\log_3 \left(\log_3 3+\log_3 a\right)+2\log _{2^{-2}} b=2-\dfrac{1}{2}=\dfrac{3}{2}.\]</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 23:</b> Giá trị của biểu thức $M=\log_2 2+\log_2 4+\log_2 8+\cdots+\log_2 256$ bằng</div></div><div class="options"><label><input type="radio" name="P1_Cau_23" value="A"> <b>A.</b> $48$</label><label><input type="radio" name="P1_Cau_23" value="B"> <b>B.</b> $56$</label><label><input type="radio" name="P1_Cau_23" value="C"> <b>C.</b> $36$</label><label><input type="radio" name="P1_Cau_23" value="D"> <b>D.</b> $8\log_2 256$</label></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Ta có: $\begin{aligned}[t]
+				M&amp;=\log_2 2+\log_2 4+\log_2 8+\cdots+\log_2 256\\
+				&amp; =\log_2\left(2^1\cdot2^2\cdot2^3\cdots 2^8\right)\\
+				&amp;=\log_2\left(2^{1+2+3+\cdots+8} \right)\\
+				&amp;=\left(1+2+3+\cdots+8\right)\cdot\log_22\\
+				&amp;=1+2+3+\cdots+8=36.
+		\end{aligned}$</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 24:</b> Tính $P=\log _{a^2} \left(a^{10} b^2\right)+\log _{\sqrt{a}} \left(\dfrac{a}{\sqrt{b}} \right)+\log _{\sqrt[3]b} b^{-2}$ với $0&lt; a\ne 1$ và $0&lt; b\ne 1$.</div></div><div class="options"><label><input type="radio" name="P1_Cau_24" value="A"> <b>A.</b> $P=2$</label><label><input type="radio" name="P1_Cau_24" value="B"> <b>B.</b> $P=1$</label><label><input type="radio" name="P1_Cau_24" value="C"> <b>C.</b> $P=\sqrt{3}$</label><label><input type="radio" name="P1_Cau_24" value="D"> <b>D.</b> $P=\sqrt{3}$</label></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Ta có: \begin{align*}
+				P&amp;= \log _{a^2} \left(a^{10} b^2\right)+\log _{\sqrt{a}} \left(\dfrac{a}{\sqrt{b}} \right)+\log _{\sqrt[3]b} b^{-2}\\
+				&amp;= \left(5+\log_a b\right)+2\log_a \left(\dfrac{a}{\sqrt{b}} \right)-6\\
+				&amp;= 5+\log_a b+2-\log_a b-6=1.
+		\end{align*}</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 25:</b> Cho $a$ là số thực dương khác $4$. Tính $I=\log _{\dfrac{a}{4}} \left(\dfrac{a^3}{64} \right)$.</div></div><div class="options"><label><input type="radio" name="P1_Cau_25" value="A"> <b>A.</b> $I=3$</label><label><input type="radio" name="P1_Cau_25" value="B"> <b>B.</b> $I=\dfrac{1}{3}$</label><label><input type="radio" name="P1_Cau_25" value="C"> <b>C.</b> $I=-3$</label><label><input type="radio" name="P1_Cau_25" value="D"> <b>D.</b> $I=-\dfrac{1}{3}$</label></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Ta có $I=\log _{\dfrac{a}{4}} \left(\dfrac{a^3}{64} \right) = \log _{\dfrac{a}{4}} \left(\dfrac{a}{4} \right)^3 = 3$.</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 26:</b> Nếu $\log_2 3=a$ thì $\log _{72} 108$ bằng</div></div><div class="options"><label><input type="radio" name="P1_Cau_26" value="A"> <b>A.</b> $\dfrac{2+a}{3+a}$</label><label><input type="radio" name="P1_Cau_26" value="B"> <b>B.</b> $\dfrac{2+3a}{3+2a}$</label><label><input type="radio" name="P1_Cau_26" value="C"> <b>C.</b> $\dfrac{ab}{a+b}$</label><label><input type="radio" name="P1_Cau_26" value="D"> <b>D.</b> $\dfrac{2+3a}{2+2a}$</label></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Ta có $\begin{aligned}[t]
+				\log _{72} 108 &amp;= \dfrac{\log_2 108}{\log_2 72}\\
+				&amp; = \dfrac{\log_2 \left(2^2.3^3\right)}{\log_2 \left(2^3.3^2\right)}\\
+				&amp; = \dfrac{2+3\log_2 3}{3+2\log_2 3}\\
+				&amp; = \dfrac{2+3a}{3+2a}.
+		\end{aligned}
+		$</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 27:</b> Cho $\log _{30} 3=a$, $\log _{30} 5=b$.<br> Tính $\log _{30} 1350$ theo $a,b$; $\log _{30} 1350$ bằng</div></div><div class="options"><label><input type="radio" name="P1_Cau_27" value="A"> <b>A.</b> $2a+b$</label><label><input type="radio" name="P1_Cau_27" value="B"> <b>B.</b> $2a+b+1$</label><label><input type="radio" name="P1_Cau_27" value="C"> <b>C.</b> $2a+b-1$</label><label><input type="radio" name="P1_Cau_27" value="D"> <b>D.</b> $2a+b-2$</label></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Ta có $1350=30\cdot45=30\cdot9\cdot5=30\cdot3^2\cdot5$<br> Nên $\begin{aligned}[t]
+				\log _{30} 1350 &amp;= \log _{30} 30\cdot3^2\cdot5\\
+				&amp; = \log _{30} 30+\log _{30} 3^2+\log _{30} 5\\
+				&amp; = 1+2\log _{30} 3+\log _{30} 5\\
+				&amp; = 1+2a+b.
+		\end{aligned}$</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 28:</b> Chọn mệnh đề <b>sai</b>?</div></div><div class="options"><label><input type="radio" name="P1_Cau_28" value="A"> <b>A.</b> $1+\log_2 2&lt; \log_3 3$</label><label><input type="radio" name="P1_Cau_28" value="B"> <b>B.</b> $\log_2 \sqrt{2} &lt; \log_2 2$</label><label><input type="radio" name="P1_Cau_28" value="C"> <b>C.</b> $\log_2 8&gt; \log_2 4$</label><label><input type="radio" name="P1_Cau_28" value="D"> <b>D.</b> $\log_2 \dfrac{1}{2} &gt; \log_2 \dfrac{1}{4}$</label></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Vì<br> $\left. \begin{array}{l}1+\log_2 2=1+1=2 \\ \log_3 3=1
+		\end{array}\right\}\Rightarrow
+		1+\log_2 2&gt; \log_3 3$ nên $1+\log_2 2&lt; \log_3 3$ là khẳng định sai.<br> Vì<br> $\left. \begin{array}{l} \log_2 \sqrt{2}=\log_2 2^{\tfrac{1}{2}}=\dfrac{1}{2} \\
+			\log_2 2=1
+		\end{array}\right\}\Rightarrow \log_2 \sqrt{2} &lt; \log_2 2$ nên $\log_2 \sqrt{2} &lt; \log_2 2$ là khẳng định đúng.<br> Vì<br> $\left. \begin{array}{l} \log_2 8=\log_2 2^3=3 \\
+			\log_2 4=\log_2 2^2=2
+		\end{array}\right\}\Rightarrow \log_2 8&gt; \log_2 4$ nên $\log_2 8&gt; \log_2 4$ là khẳng định đúng.<br> Vì<br> $\left. \begin{array}{l} \log_2 \dfrac{1}{2}=\log_2 2^{-1}=-1 \\
+			\log_2 \dfrac{1}{4}=\log_2 2^{-2}=-2
+		\end{array}\right\}\Rightarrow \log_2 \dfrac{1}{2} &gt; \log_2 \dfrac{1}{4}$ nên $\log_2 \dfrac{1}{2} &gt; \log_2 \dfrac{1}{4}$ là khẳng định đúng.</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 29:</b> Cho $a=\log_2 3$ và $b=\log_2 5$. Biểu diễn $\log 60$ theo $a$, $b$?</div></div><div class="options"><label><input type="radio" name="P1_Cau_29" value="A"> <b>A.</b> $\log 60=\dfrac{a+b+2}{1+b}$</label><label><input type="radio" name="P1_Cau_29" value="B"> <b>B.</b> $\log 60=\dfrac{a+b+2}{1+a}$</label><label><input type="radio" name="P1_Cau_29" value="C"> <b>C.</b> $\log 60=\dfrac{a+b+1}{1+a}$</label><label><input type="radio" name="P1_Cau_29" value="D"> <b>D.</b> $\log 60=\dfrac{a+b+1}{1+b}$</label></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Ta có $\log 60=\dfrac{\log_2 60}{\log_2 10}=\dfrac{\log_2 (3\cdot 5\cdot 4)}{\log_2 (2\cdot 5)}=\dfrac{\log_2 3+\log_2 5+2}{l+\log_2 5}=\dfrac{a+b+2}{1+b}$.</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 30:</b> Cho $\log_6 3=a$, $\log_6 5=b$. Biểu diễn $\log _{54} 50$ theo $a$, $b$?</div></div><div class="options"><label><input type="radio" name="P1_Cau_30" value="A"> <b>A.</b> $\dfrac{2b-a+1}{2a+1}$</label><label><input type="radio" name="P1_Cau_30" value="B"> <b>B.</b> $\dfrac{2a-b+1}{2a+1}$</label><label><input type="radio" name="P1_Cau_30" value="C"> <b>C.</b> $\dfrac{2b+1+a}{2a+1}$</label><label><input type="radio" name="P1_Cau_30" value="D"> <b>D.</b> $\dfrac{2a+b+1}{2a+1}$</label></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Ta có $\log _{54} 50=\dfrac{\log_6 \left(5^2\cdot \dfrac{6}{3} \right)}{\log_6 \left(3^2\cdot 6\right)}=\dfrac{2\log_6 5+\log_6 6-\log_6 3}{2\log_6 3+\log_6 6}=\dfrac{2b+1-a}{2a+1}$.</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 31:</b> Cho $a$ và $b$ là hai số thực dương thỏa mãn $a^2\cdot b^3=16$. Giá trị của $2\log_2 a+3\log_2 b$ bằng</div></div><div class="options"><label><input type="radio" name="P1_Cau_31" value="A"> <b>A.</b> $2$</label><label><input type="radio" name="P1_Cau_31" value="B"> <b>B.</b> $8$</label><label><input type="radio" name="P1_Cau_31" value="C"> <b>C.</b> $16$</label><label><input type="radio" name="P1_Cau_31" value="D"> <b>D.</b> $4$</label></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Ta có $2\log_2 a+3\log_2 b=\log_2\left(a^2\cdot b^3\right)=\log_2 16=4$.</div></div></div>
+<h3>PHẦN 2. Câu trắc nghiệm đúng sai</h3>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 1:</b> Cho $a$, $b$, $c &gt; 0$, $a\ne 1$ và $m$, $n\in \mathbb{R}$. Xét tính đúng sai của các mệnh đề sau.</div></div><div class="options"><div class="table-responsive"><table class="tf-table"><tr><td><b>a.</b> $\log_a 1=1$</td><td style="width: 120px;"><div class="tf-radio-group"><label><input type="radio" name="P2_Cau_1_a" value="Đúng"> Đ</label><label><input type="radio" name="P2_Cau_1_a" value="Sai"> S</label></div></td></tr><tr><td><b>b.</b> $a^{\log_a b}=b$</td><td style="width: 120px;"><div class="tf-radio-group"><label><input type="radio" name="P2_Cau_1_b" value="Đúng"> Đ</label><label><input type="radio" name="P2_Cau_1_b" value="Sai"> S</label></div></td></tr><tr><td><b>c.</b> $\log_a a^m=\dfrac{1}{m}$</td><td style="width: 120px;"><div class="tf-radio-group"><label><input type="radio" name="P2_Cau_1_c" value="Đúng"> Đ</label><label><input type="radio" name="P2_Cau_1_c" value="Sai"> S</label></div></td></tr><tr><td><b>d.</b> $\log_a b^m c^n=m\log_a b+n\log_a c$</td><td style="width: 120px;"><div class="tf-radio-group"><label><input type="radio" name="P2_Cau_1_d" value="Đúng"> Đ</label><label><input type="radio" name="P2_Cau_1_d" value="Sai"> S</label></div></td></tr></table></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> <ol class="paren-a"><li>Ta có $\log_a 1=1$.</li><li>Ta có $a^{\log_a b}=b$.</li><li>Ta có $\log_a a^m=m\log_a a=m$.</li><li>Ta có $\log_a b^m c^n=\log_a b^m+\log_a c^n=m\log_a b+n\log_a c$.</li></ol></div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 2:</b> Công thức $\log x=11{,}8+1{,}5M$ cho biết mối liên hệ giữa năng lượng $x$ tạo ra (tính theo erg, $1$ erg tương đương $10^{-7}$ jun) với độ lớn $M$ theo thang Richter của một trận động đất.</div></div><div class="options"><div class="table-responsive"><table class="tf-table"><tr><td><b>a.</b> Trận động đất có độ lớn $2$ độ Richter tạo ra năng lượng khoảng $6{,}3\cdot 10^{34}$ erg</td><td style="width: 120px;"><div class="tf-radio-group"><label><input type="radio" name="P2_Cau_2_a" value="Đúng"> Đ</label><label><input type="radio" name="P2_Cau_2_a" value="Sai"> S</label></div></td></tr><tr><td><b>b.</b> Trận động đất có độ lớn $3$ độ Richter tạo ra năng lượng khoảng $2\cdot 10^9$ jun</td><td style="width: 120px;"><div class="tf-radio-group"><label><input type="radio" name="P2_Cau_2_b" value="Đúng"> Đ</label><label><input type="radio" name="P2_Cau_2_b" value="Sai"> S</label></div></td></tr><tr><td><b>c.</b> Trận động đất có độ lớn $5$ độ Richter tạo ra năng lượng gấp $100$ lần so với trận động đất có độ lớn $3$ độ Richter</td><td style="width: 120px;"><div class="tf-radio-group"><label><input type="radio" name="P2_Cau_2_c" value="Đúng"> Đ</label><label><input type="radio" name="P2_Cau_2_c" value="Sai"> S</label></div></td></tr><tr><td><b>d.</b> Người ta ước lượng rằng một trận động đất có độ lớn khoảng từ $4$ đến $6$ độ Richter. Năng lượng do trận động đất đó tạo ra nằm trong khoảng $10^{17{,}8} \le x\le 10^{20{,}8}$ erg</td><td style="width: 120px;"><div class="tf-radio-group"><label><input type="radio" name="P2_Cau_2_d" value="Đúng"> Đ</label><label><input type="radio" name="P2_Cau_2_d" value="Sai"> S</label></div></td></tr></table></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> <ol class="paren-a"><li><b>Sai</b>.<br> Ta có $\log x=11{,}8+1{,}5M$.<br> Với $M=2$ ta được $\log x=14{,}8\Leftrightarrow x\approx 6{,}3\cdot 10^{14}$ erg.</li><li><b>Đúng</b>.<br> Với $M=3$ ta được $\log x=16{,}3\Leftrightarrow x\approx 2\cdot 10^{16}$ erg $=2\cdot 10^9$ jun.</li><li><b>Sai</b>.<br> Gọi $x_1$, $x_2$ (erg) lần lượt là năng lượng tạo ra của hai trận động đất có độ lớn lần lượt là $M_1=5$, $M_2=3$ (độ Richter).<br> Ta có $\left\{\begin{aligned}&amp;\log x_1=11{,}8+1{,}5M_1\\&amp; \log x_2=11{,}8+1{,}5M_2.\end{aligned}\right.$<br> $\Rightarrow \log x_1-\log x_2=1{,}5\left(M_1-M_2 \right)\Rightarrow \log\dfrac{x_1}{x_2}=3\Rightarrow \dfrac{x_1}{x_2}=10^3=1000$.</li><li><b>Đúng</b>.<br> Ta được \begin{align*}
+					&amp;11{,}8+1{,}5\cdot 4\le \log x\le 11{,}8+1{,}5\cdot 6\\
+					\Rightarrow&amp; 17{,}8\le \log x\le 20{,}8\\
+					\Rightarrow&amp; 10^{17{,}8} \le x\le 10^{20{,}8}\,(\text{erg}).
+			\end{align*}</li></ol></div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 3:</b> Cho $a$, $b$, $c &gt; 0$, $a\ne 1$ và $m$, $n\in \mathbb{R}$. Xét tính đúng sai của các mệnh đề sau.</div></div><div class="options"><div class="table-responsive"><table class="tf-table"><tr><td><b>a.</b> $\log_a 1=1$</td><td style="width: 120px;"><div class="tf-radio-group"><label><input type="radio" name="P2_Cau_3_a" value="Đúng"> Đ</label><label><input type="radio" name="P2_Cau_3_a" value="Sai"> S</label></div></td></tr><tr><td><b>b.</b> $a^{\log_a b}=b$</td><td style="width: 120px;"><div class="tf-radio-group"><label><input type="radio" name="P2_Cau_3_b" value="Đúng"> Đ</label><label><input type="radio" name="P2_Cau_3_b" value="Sai"> S</label></div></td></tr><tr><td><b>c.</b> $\log_a a^m=\dfrac{1}{m}$</td><td style="width: 120px;"><div class="tf-radio-group"><label><input type="radio" name="P2_Cau_3_c" value="Đúng"> Đ</label><label><input type="radio" name="P2_Cau_3_c" value="Sai"> S</label></div></td></tr><tr><td><b>d.</b> $\log_a b^m c^n=m\log_a b+n\log_a c$</td><td style="width: 120px;"><div class="tf-radio-group"><label><input type="radio" name="P2_Cau_3_d" value="Đúng"> Đ</label><label><input type="radio" name="P2_Cau_3_d" value="Sai"> S</label></div></td></tr></table></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> <ol class="paren-a"><li><b>Sai</b>.<br> Ta có $\log_a 1=1$.</li><li><b>Đúng</b>.<br> Ta có $a^{\log_a b}=b$.</li><li><b>Sai</b>.<br> Ta có $\log_a a^m=m\log_a a=m$.</li><li><b>Đúng</b>.<br> Ta có $\log_a b^m c^n=\log_a b^m+\log_a c^n=m\log_a b+n\log_a c$.</li></ol></div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 4:</b> Xét tính đúng, sai trong các khẳng định sau</div></div><div class="options"><div class="table-responsive"><table class="tf-table"><tr><td><b>a.</b> $\log 8-\log 27=3\log\dfrac{2}{3}$</td><td style="width: 120px;"><div class="tf-radio-group"><label><input type="radio" name="P2_Cau_4_a" value="Đúng"> Đ</label><label><input type="radio" name="P2_Cau_4_a" value="Sai"> S</label></div></td></tr><tr><td><b>b.</b> $\log _{16} 3\cdot \log_9 64\cdot \log_4 27=\dfrac{8}{9}$</td><td style="width: 120px;"><div class="tf-radio-group"><label><input type="radio" name="P2_Cau_4_b" value="Đúng"> Đ</label><label><input type="radio" name="P2_Cau_4_b" value="Sai"> S</label></div></td></tr><tr><td><b>c.</b> $\log _{\sqrt{2}} 5+\log_4 \dfrac{1}{\sqrt{25}}+\log _{\tfrac{1}{2}} 125=\dfrac{-3}{2} \log_2 5$</td><td style="width: 120px;"><div class="tf-radio-group"><label><input type="radio" name="P2_Cau_4_c" value="Đúng"> Đ</label><label><input type="radio" name="P2_Cau_4_c" value="Sai"> S</label></div></td></tr><tr><td><b>d.</b> $3\log_3 \sqrt[3]7+\log _{\sqrt[3]3} 21=4\log_3 7+3$</td><td style="width: 120px;"><div class="tf-radio-group"><label><input type="radio" name="P2_Cau_4_d" value="Đúng"> Đ</label><label><input type="radio" name="P2_Cau_4_d" value="Sai"> S</label></div></td></tr></table></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> <ol class="paren-a"><li><b>Đúng</b>.<br> Ta có $\log 8-\log 27=\log 2^3-\log 3^3=2\log 2-3\log 3=3\log\dfrac{2}{3}$.</li><li><b>Sai</b>.<br> Ta có $\log _{16} 3\cdot \log_9 64\cdot \log_4 27=\dfrac{1}{4} \log_2 3\cdot \dfrac{6}{2} \log_3 2\cdot \dfrac{3}{2} \log_2 3=\dfrac{9}{8} \log_2 3$.</li><li><b>Đúng</b>.<br> Ta có \begin{align*}
+					\log _{\sqrt{2}} 5+\log_4 \dfrac{1}{\sqrt{25}}+\log _{\tfrac{1}{2}} 125
+					&amp;= 2\log_2 5+\dfrac{1}{2}\cdot \left(-1\right)\log_2 5-3\log_2 5\\
+					&amp;= -\dfrac{3}{2} \log_2 5.
+			\end{align*}</li><li><b>Đúng</b>.<br> Ta có $3\log_3 \sqrt[3]7+\log _{\sqrt[3]3} 21=\log_3 7+3\left(\log_3 7+1\right)=4\log_3 7+3$.</li></ol></div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 5:</b> Cho $a$, $b$, $c&gt;1$ và $m$, $n\in \mathbb{R}$. Xét tính đúng, sai trong các khẳng định sau</div></div><div class="options"><div class="table-responsive"><table class="tf-table"><tr><td><b>a.</b> $\log_a \sqrt{a\sqrt{a}}=\dfrac{3}{4}$</td><td style="width: 120px;"><div class="tf-radio-group"><label><input type="radio" name="P2_Cau_5_a" value="Đúng"> Đ</label><label><input type="radio" name="P2_Cau_5_a" value="Sai"> S</label></div></td></tr><tr><td><b>b.</b> $\log_a b^2\cdot \log _{\sqrt{b}} c\cdot \log _{c^2} a^3=\dfrac{1}{6}$</td><td style="width: 120px;"><div class="tf-radio-group"><label><input type="radio" name="P2_Cau_5_b" value="Đúng"> Đ</label><label><input type="radio" name="P2_Cau_5_b" value="Sai"> S</label></div></td></tr><tr><td><b>c.</b> Cho $\log 3=m,\log 7=n$. Khi đó $\log_3 70=\dfrac{n+1}{m}$</td><td style="width: 120px;"><div class="tf-radio-group"><label><input type="radio" name="P2_Cau_5_c" value="Đúng"> Đ</label><label><input type="radio" name="P2_Cau_5_c" value="Sai"> S</label></div></td></tr><tr><td><b>d.</b> Cho $\log_5 2=m,\log_5 3=n$. Khi đó $\log _{250} 30=\left(m+n+1\right)\left(3+m\right)$</td><td style="width: 120px;"><div class="tf-radio-group"><label><input type="radio" name="P2_Cau_5_d" value="Đúng"> Đ</label><label><input type="radio" name="P2_Cau_5_d" value="Sai"> S</label></div></td></tr></table></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> <ol class="paren-a"><li><b>Đúng</b>.<br> Ta có $\log_a \sqrt{a\sqrt{a}}=\log_a \sqrt{a^{\tfrac{3}{2}}}=\log_a a^{\tfrac{3}{4}}=\dfrac{3}{4}$.</li><li><b>Sai</b>.<br> Ta có $\log_a b^2\cdot \log _{\sqrt{b}} c\cdot \log _{c^2} a^3=2\cdot \log_a b\cdot 2\cdot \log_b c\cdot \dfrac{3}{2}\cdot \log_c a=6$.</li><li><b>Đúng</b>.<br> Cho $\log 3=m$, $\log 7=n$.<br> Ta có $\log_3 70=\dfrac{\log 70}{\log 3}=\dfrac{\log 7+1}{\log 3}=\dfrac{n+1}{m}$.</li><li><b>Sai</b>.<br> Cho $\log_5 2=m$, $\log_5 3=n$.<br> Khi đó $\log _{250} 30=\dfrac{\log_5 \left(3\cdot 2\cdot 5\right)}{\log_5 \left(5^3\cdot 2\right)}=\dfrac{m+n+1}{3+m}$.</li></ol></div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 6:</b> Cho hai số thực $a$ và $b$, với $1&lt; a &lt; b$. Xét tính đúng, sai trong các khẳng định sau</div></div><div class="options"><div class="table-responsive"><table class="tf-table"><tr><td><b>a.</b> $\log_a b &lt; 1&lt; \log_b a$</td><td style="width: 120px;"><div class="tf-radio-group"><label><input type="radio" name="P2_Cau_6_a" value="Đúng"> Đ</label><label><input type="radio" name="P2_Cau_6_a" value="Sai"> S</label></div></td></tr><tr><td><b>b.</b> $1&lt; \log_a b &lt; \log_b a$</td><td style="width: 120px;"><div class="tf-radio-group"><label><input type="radio" name="P2_Cau_6_b" value="Đúng"> Đ</label><label><input type="radio" name="P2_Cau_6_b" value="Sai"> S</label></div></td></tr><tr><td><b>c.</b> $\log_b a &lt; \log_a b &lt; 1$</td><td style="width: 120px;"><div class="tf-radio-group"><label><input type="radio" name="P2_Cau_6_c" value="Đúng"> Đ</label><label><input type="radio" name="P2_Cau_6_c" value="Sai"> S</label></div></td></tr><tr><td><b>d.</b> $\log_b a &lt; 1&lt; \log_a b$</td><td style="width: 120px;"><div class="tf-radio-group"><label><input type="radio" name="P2_Cau_6_d" value="Đúng"> Đ</label><label><input type="radio" name="P2_Cau_6_d" value="Sai"> S</label></div></td></tr></table></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Ta có $b&gt;a&gt;1\Leftrightarrow \left\{\begin{aligned}&amp;{\log_a b &gt; \log_a a\Leftrightarrow \log_a b &gt; 1} \\&amp;{\log_b b &gt; \log_b a\Leftrightarrow 1&gt; \log_b a}
+			\end{aligned}\right. \Leftrightarrow \log_b a &lt; 1&lt; \log_a b$. <ol class="paren-a"><li><b>Sai</b>.<br> Ta có $\log_a b &lt; 1&lt; \log_b a$.</li><li><b>Sai</b>.<br> Ta có $1&lt; \log_a b &lt; \log_b a$.</li><li><b>Sai</b>. $\log_b a &lt; \log_a b &lt; 1$.</li><li><b>Đúng</b>.<br> Ta có $\log_b a &lt; 1&lt; \log_a b$.</li></ol></div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 7:</b> Cho hai số thực $a$ và $b$, với $1&lt; a &lt; b$. Xét tính đúng, sai trong các khẳng định sau</div></div><div class="options"><div class="table-responsive"><table class="tf-table"><tr><td><b>a.</b> $\log_a b &lt; 1&lt; \log_b a$</td><td style="width: 120px;"><div class="tf-radio-group"><label><input type="radio" name="P2_Cau_7_a" value="Đúng"> Đ</label><label><input type="radio" name="P2_Cau_7_a" value="Sai"> S</label></div></td></tr><tr><td><b>b.</b> $1&lt; \log_a b &lt; \log_b a$</td><td style="width: 120px;"><div class="tf-radio-group"><label><input type="radio" name="P2_Cau_7_b" value="Đúng"> Đ</label><label><input type="radio" name="P2_Cau_7_b" value="Sai"> S</label></div></td></tr><tr><td><b>c.</b> $\log_b a &lt; \log_a b &lt; 1$</td><td style="width: 120px;"><div class="tf-radio-group"><label><input type="radio" name="P2_Cau_7_c" value="Đúng"> Đ</label><label><input type="radio" name="P2_Cau_7_c" value="Sai"> S</label></div></td></tr><tr><td><b>d.</b> $\log_b a &lt; 1&lt; \log_a b$</td><td style="width: 120px;"><div class="tf-radio-group"><label><input type="radio" name="P2_Cau_7_d" value="Đúng"> Đ</label><label><input type="radio" name="P2_Cau_7_d" value="Sai"> S</label></div></td></tr></table></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Ta có $b&gt;a&gt;1\Leftrightarrow \left\{\begin{aligned}&amp;{\log_a b &gt; \log_a a} \\&amp;{\log_b b &gt; \log_b a}
+			\end{aligned}\right. \Leftrightarrow \left\{\begin{aligned}&amp;{\log_a b &gt; 1}\\&amp;{1&gt; \log_b a}\end{aligned}\right.
+			\Leftrightarrow
+			\log_b a &lt; 1&lt; \log_a b$. <ol class="paren-a"><li>Ta có $\log_a b &lt; 1&lt; \log_b a$.</li><li>Ta có $1&lt; \log_a b &lt; \log_b a$.</li><li>Ta có $\log_b a &lt; \log_a b &lt; 1$.</li><li>Ta có $\log_b a &lt; 1&lt; \log_a b$.</li></ol></div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 8:</b> Công thức $\log x=11{,}8+1{,}5M$ cho biết mối liên hệ giữa năng lượng $x$ tạo ra (tính theo erg, $1$ erg tương đương $10^{-7}$ jun) với độ lớn $M$ theo thang Richter của một trận động đất.</div></div><div class="options"><div class="table-responsive"><table class="tf-table"><tr><td><b>a.</b> Trận động đất có độ lớn $2$ độ Richter tạo ra năng lượng khoảng $6{,}3\cdot 10^{34}$ erg</td><td style="width: 120px;"><div class="tf-radio-group"><label><input type="radio" name="P2_Cau_8_a" value="Đúng"> Đ</label><label><input type="radio" name="P2_Cau_8_a" value="Sai"> S</label></div></td></tr><tr><td><b>b.</b> Trận động đất có độ lớn $3$ độ Richter tạo ra năng lượng khoảng $2\cdot 10^9$ jun</td><td style="width: 120px;"><div class="tf-radio-group"><label><input type="radio" name="P2_Cau_8_b" value="Đúng"> Đ</label><label><input type="radio" name="P2_Cau_8_b" value="Sai"> S</label></div></td></tr><tr><td><b>c.</b> Trận động đất có độ lớn $5$ độ Richter tạo ra năng lượng gấp $100$ lần so với trận động đất có độ lớn $3$ độ Richter</td><td style="width: 120px;"><div class="tf-radio-group"><label><input type="radio" name="P2_Cau_8_c" value="Đúng"> Đ</label><label><input type="radio" name="P2_Cau_8_c" value="Sai"> S</label></div></td></tr><tr><td><b>d.</b> Người ta ước lượng rằng một trận động đất có độ lớn khoảng từ $4$ đến $6$ độ Richter. Năng lượng do trận động đất đó tạo ra nằm trong khoảng $10^{17{,}8} \le x\le 10^{20{,}8}$ erg</td><td style="width: 120px;"><div class="tf-radio-group"><label><input type="radio" name="P2_Cau_8_d" value="Đúng"> Đ</label><label><input type="radio" name="P2_Cau_8_d" value="Sai"> S</label></div></td></tr></table></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> <ol class="paren-a"><li>Ta có $\log x=11{,}8+1{,}5M$.<br> Với $M=2$ ta được $\log x=14{,}8\Leftrightarrow x\approx 6{,}3\cdot 10^{14}$ erg.</li><li>Với $M=3$ ta được $\log x=16{,}3\Leftrightarrow x\approx 2\cdot 10^{16}$ erg $=2\cdot 10^9$ jun.</li><li>Gọi $x_1$, $x_2$ (erg) lần lượt là năng lượng tạo ra của hai trận động đất có độ lớn lần lượt là $M_1=5$, $M_2=3$ (độ Richter).<br> Ta có \begin{align*}
+					&amp;\left\{\begin{aligned}&amp;\log x_1=11{,}8+1{,}5M_1\\&amp; \log x_2=11{,}8+1{,}5M_2.\end{aligned}\right.\\
+					\Leftrightarrow &amp; \log x_1-\log x_2=1{,}5\left(M_1-M_2 \right)\\\Leftrightarrow&amp; \log\dfrac{x_1}{x_2}=3\\\Leftrightarrow&amp; \dfrac{x_1}{x_2}=1000.
+			\end{align*}</li><li>Ta có \begin{align*}
+				&amp;11{,}8+1{,}5\cdot 4\le \log x\le 11{,}8+1{,}5\cdot 6\\
+				&amp;\Rightarrow 17{,}8\le \log x\le 20{,}8\\
+				&amp;\Rightarrow 10^{17{,}8} \le x\le 10^{20{,}8}\,(\text{erg}).
+			\end{align*}</li></ol></div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 9:</b> Mức cường độ âm $L$ (đo bằng dB) được tính bởi công thức $L=10\log\dfrac{I}{I_0}$, trong đó $I$ là cường độ âm (tính theo $\text{ W/m}^2$) và $I_0=10^{-12}\,\text{ W/m}^2$ là cường độ âm chuẩn.</div></div><div class="options"><div class="table-responsive"><table class="tf-table"><tr><td><b>a.</b> Một cuộc nói chuyện thì thầm có mức cường độ âm $20$ dB thì có cường độ âm khoảng $10^{-9}\,\text{ W/m}^2$</td><td style="width: 120px;"><div class="tf-radio-group"><label><input type="radio" name="P2_Cau_9_a" value="Đúng"> Đ</label><label><input type="radio" name="P2_Cau_9_a" value="Sai"> S</label></div></td></tr><tr><td><b>b.</b> Một bản nhạc rock có mức cường độ âm $110$ dB tại 1 buổi biểu diễn tương ứng với cường độ âm $0{,}1\,\text{ W/m}^2$</td><td style="width: 120px;"><div class="tf-radio-group"><label><input type="radio" name="P2_Cau_9_b" value="Đúng"> Đ</label><label><input type="radio" name="P2_Cau_9_b" value="Sai"> S</label></div></td></tr><tr><td><b>c.</b> Nếu mức cường độ âm tăng thêm $20$ dB thì cường độ âm $I$ sẽ tăng lên gấp $20$ lần</td><td style="width: 120px;"><div class="tf-radio-group"><label><input type="radio" name="P2_Cau_9_c" value="Đúng"> Đ</label><label><input type="radio" name="P2_Cau_9_c" value="Sai"> S</label></div></td></tr><tr><td><b>d.</b> Khu vực an toàn cho tai người là khu vực có mức cường độ âm dưới $80$ dB. Cường độ âm tương ứng thuộc khoảng $0 &lt; I &lt; 10^{-4}\,\text{ W/m}^2$</td><td style="width: 120px;"><div class="tf-radio-group"><label><input type="radio" name="P2_Cau_9_d" value="Đúng"> Đ</label><label><input type="radio" name="P2_Cau_9_d" value="Sai"> S</label></div></td></tr></table></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> <ol class="paren-a"><li>Ta có $L=10\log\dfrac{I}{10^{-12}}$.<br> Với $L=20$ ta được $20=10\log\dfrac{I}{10^{-12}} \Leftrightarrow \log\dfrac{I}{10^{-12}}=2 \Leftrightarrow I=10^2\cdot 10^{-12}=10^{-10}\,\text{ W/m}^2$.</li><li>Với $L=110$ ta được $110=10\log\dfrac{I}{10^{-12}} \Leftrightarrow \log\dfrac{I}{10^{-12}}=11 \Leftrightarrow I=10^{11}\cdot 10^{-12}=10^{-1}=0{,}1\,\text{ W/m}^2$.</li><li>Gọi $I_1$, $I_2$ ($\text{ W/m}^2$) lần lượt là cường độ âm ứng với các mức cường độ âm $L_1$, $L_2$ (dB).<br> Theo giả thiết $L_2 = L_1 + 20 \Rightarrow L_2 - L_1 = 20$.<br> Ta có $\left\{\begin{aligned}&amp; L_1=10\log\dfrac{I_1}{I_0} \\ &amp; L_2=10\log\dfrac{I_2}{I_0}\end{aligned}\right.$<br> Suy ra&nbsp;$ L_2 - L_1 = 10\left(\log\dfrac{I_2}{I_0} - \log\dfrac{I_1}{I_0} \right) = 10\log\dfrac{I_2}{I_1}$.<br> Thay số&nbsp; $20 = 10\log\dfrac{I_2}{I_1} \Leftrightarrow \log\dfrac{I_2}{I_1} = 2 \Leftrightarrow \dfrac{I_2}{I_1} = 10^2 = 100$.<br> Vậy cường độ âm tăng gấp $100$ lần.</li><li>Theo giả thiết $L &lt; 80$, ta được \begin{align*}
+					&amp; 10\log\dfrac{I}{10^{-12}} &lt; 80 \\
+					\Leftrightarrow &amp; \log\dfrac{I}{10^{-12}} &lt; 8 \\
+					\Leftrightarrow &amp; \dfrac{I}{10^{-12}} &lt; 10^8 \\
+					\Leftrightarrow &amp; I &lt; 10^8 \cdot 10^{-12} \\
+					\Leftrightarrow &amp; I &lt; 10^{-4}\,(\text{W/m}^2).
+			\end{align*} Kết hợp điều kiện $I&gt;0$, ta có $0 &lt; I &lt; 10^{-4}\,\text{ W/m}^2$.</li></ol></div></div></div>
+<h3>PHẦN 3. Câu trắc nghiệm trả lời ngắn</h3>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 1:</b> Dung dịch $A$ có nồng độ $H^+$ là $0{,}00001$ mol/L và dung dịch $B$ có nồng độ $H^+$ là $0{,}00000001$ mol/L. Tìm tổng độ $pH$ của hai dung dịch trên.</div></div><div class="options"><div class="short-ans-group"><input type="text" class="short-ans-box" maxlength="1" id="P3_Cau_1_1" oninput="this.value=this.value.replace('.', ','); moveNext(this, 'P3_Cau_1_2')" onkeydown="movePrev(event, this, null)"><input type="text" class="short-ans-box" maxlength="1" id="P3_Cau_1_2" oninput="this.value=this.value.replace('.', ','); moveNext(this, 'P3_Cau_1_3')" onkeydown="movePrev(event, this, 'P3_Cau_1_1')"><input type="text" class="short-ans-box" maxlength="1" id="P3_Cau_1_3" oninput="this.value=this.value.replace('.', ','); moveNext(this, 'P3_Cau_1_4')" onkeydown="movePrev(event, this, 'P3_Cau_1_2')"><input type="text" class="short-ans-box" maxlength="1" id="P3_Cau_1_4" oninput="this.value=this.value.replace('.', ','); moveNext(this, null)" onkeydown="movePrev(event, this, 'P3_Cau_1_3')"></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Độ $pH$ của dung dịch $A$ là $pH_A=-\log\left[H^+\right]_A=-\log 0,00001=5$.<br> Độ $pH$ của dung dịch $B$ là $pH_B=-\log\left[H^+\right]_B=-\log 0,00000001=8$.<br> Khi đó tổng độ $pH$ của hai dung dịch đã cho bằng $13$.</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 2:</b> Trong nông nghiệp bèo hoa dâu được dùng làm phân bón, nó rất tốt cho cây trồng. Mới đây, các nhà khoa học Việt Nam đã phát hiện ra bèo hoa dâu có thể dùng để chiết xuất ra chất có tác dụng kích thích hệ miễn dịch và hỗ trợ điều trị bệnh ung thư. Bèo hoa dâu được thả nuôi trên mặt nước. Một người đã thả một lượng bèo hoa dâu chiếm $4 \%$ diện tích mặt hồ. Biết rằng cứ sau đúng một tuần bèo phát triển thành ba lần số lượng đã có và giả sử tốc độ phát triển của bèo ở mọi thời điểm như nhau. Hỏi sau ít nhất bao nhiêu ngày bèo sẽ vừa phủ kín mặt hồ?</div></div><div class="options"><div class="short-ans-group"><input type="text" class="short-ans-box" maxlength="1" id="P3_Cau_2_1" oninput="this.value=this.value.replace('.', ','); moveNext(this, 'P3_Cau_2_2')" onkeydown="movePrev(event, this, null)"><input type="text" class="short-ans-box" maxlength="1" id="P3_Cau_2_2" oninput="this.value=this.value.replace('.', ','); moveNext(this, 'P3_Cau_2_3')" onkeydown="movePrev(event, this, 'P3_Cau_2_1')"><input type="text" class="short-ans-box" maxlength="1" id="P3_Cau_2_3" oninput="this.value=this.value.replace('.', ','); moveNext(this, 'P3_Cau_2_4')" onkeydown="movePrev(event, this, 'P3_Cau_2_2')"><input type="text" class="short-ans-box" maxlength="1" id="P3_Cau_2_4" oninput="this.value=this.value.replace('.', ','); moveNext(this, null)" onkeydown="movePrev(event, this, 'P3_Cau_2_3')"></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Số lượng bèo ban đầu chiếm $0{,}04$ diện tích mặt hồ.<br> Sau 1 tuần số lượng bèo là $0{,}04 \times 3$ diện tích mặt hồ.<br> Sau 2 tuần số lượng bèo là $0{,}04 \times 3^2$ diện tích mặt hồ.<br> Sau $n$ tuần số lượng bèo là $0{,}04 \times 3^n$ diện tích mặt hồ.<br> Để bèo phủ kín mặt hồ thì $0{,}04 \times 3^n=1 \Rightarrow 3^n=25 \Rightarrow n=\log _3 25$ (tuần).<br> Số ngày tương ứng là $7 n=7 \log _3 25 \approx 20{,}51$ (ngày).<br> Vậy sau ít nhất $21$ ngày thì bèo hoa dâu sẽ phủ kín mặt hồ.</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 3:</b> Cường độ một trận động đất $M$ (độ Richter) được cho bởi công thức $M=\log A-\log A_0$, với $A$ là biên độ rung chấn tối đa và $A_0$ là một biên độ chuẩn (hằng số). Đầu thế ki $20$, một trận động đất ở San Francisco có cường độ $8$ độ Richter. Trong cùng năm đó, một trận động đất khác ở Nam Mỹ có biên độ rung chấn mạnh hơn gấp $4$ lần. Hỏi cường độ của trận động đất ở Nam Mỹ là bao nhiêu (kết quả đuợc làm tròn đến hàng phần chục)?</div></div><div class="options"><div class="short-ans-group"><input type="text" class="short-ans-box" maxlength="1" id="P3_Cau_3_1" oninput="this.value=this.value.replace('.', ','); moveNext(this, 'P3_Cau_3_2')" onkeydown="movePrev(event, this, null)"><input type="text" class="short-ans-box" maxlength="1" id="P3_Cau_3_2" oninput="this.value=this.value.replace('.', ','); moveNext(this, 'P3_Cau_3_3')" onkeydown="movePrev(event, this, 'P3_Cau_3_1')"><input type="text" class="short-ans-box" maxlength="1" id="P3_Cau_3_3" oninput="this.value=this.value.replace('.', ','); moveNext(this, 'P3_Cau_3_4')" onkeydown="movePrev(event, this, 'P3_Cau_3_2')"><input type="text" class="short-ans-box" maxlength="1" id="P3_Cau_3_4" oninput="this.value=this.value.replace('.', ','); moveNext(this, null)" onkeydown="movePrev(event, this, 'P3_Cau_3_3')"></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Gọi $M_1, M_2$ lần lượt là cường độ của trận động đất ở San Francisco và ở Nam Mỹ.<br> Trận động đất ở San Francisco có cường độ là $8$ độ Richter nên $$M_1=\log A-\log A_0 \Leftrightarrow 8=\log A-\log A_0.$$ Trận động đất ở Nam Mỹ có biên độ là $4A$, khi đó cường độ của trận động đất ở Nam Mỹ là $M_2=\log(4A)-\log(A_0)=\log4+(\log A-\log A_0)=\log 4+8\approx 8{,}6$ độ Richter.</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 4:</b> Số tự nhiên $3^{2023}$ có bao nhiêu chữ số?</div></div><div class="options"><div class="short-ans-group"><input type="text" class="short-ans-box" maxlength="1" id="P3_Cau_4_1" oninput="this.value=this.value.replace('.', ','); moveNext(this, 'P3_Cau_4_2')" onkeydown="movePrev(event, this, null)"><input type="text" class="short-ans-box" maxlength="1" id="P3_Cau_4_2" oninput="this.value=this.value.replace('.', ','); moveNext(this, 'P3_Cau_4_3')" onkeydown="movePrev(event, this, 'P3_Cau_4_1')"><input type="text" class="short-ans-box" maxlength="1" id="P3_Cau_4_3" oninput="this.value=this.value.replace('.', ','); moveNext(this, 'P3_Cau_4_4')" onkeydown="movePrev(event, this, 'P3_Cau_4_2')"><input type="text" class="short-ans-box" maxlength="1" id="P3_Cau_4_4" oninput="this.value=this.value.replace('.', ','); moveNext(this, null)" onkeydown="movePrev(event, this, 'P3_Cau_4_3')"></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Đặt $n=3^{2023} \Rightarrow \log n=2023 \log 3 \approx 965,216$.<br> Suy ra $965&lt;\log n&lt;966 \Rightarrow 10^{965}&lt;n&lt;10^{966}$.<br> Ta biết $10^{965}$ có 966 chữ số nên $10^{966}$ có $967$ chữ số mà $n\in(10^{965}; 10^{966})$ nên có $966$ giá trị của $n$.<br> Lưu ý $10^n \Rightarrow n+1$ chữ số. Ví dụ $10^2=100 \Rightarrow 2+1$ chữ số.</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 5:</b> Cho $\log_a b=2$ và $\log_a c=3$. Tính $Q=\log_a (b^2c^3)$.</div></div><div class="options"><div class="short-ans-group"><input type="text" class="short-ans-box" maxlength="1" id="P3_Cau_5_1" oninput="this.value=this.value.replace('.', ','); moveNext(this, 'P3_Cau_5_2')" onkeydown="movePrev(event, this, null)"><input type="text" class="short-ans-box" maxlength="1" id="P3_Cau_5_2" oninput="this.value=this.value.replace('.', ','); moveNext(this, 'P3_Cau_5_3')" onkeydown="movePrev(event, this, 'P3_Cau_5_1')"><input type="text" class="short-ans-box" maxlength="1" id="P3_Cau_5_3" oninput="this.value=this.value.replace('.', ','); moveNext(this, 'P3_Cau_5_4')" onkeydown="movePrev(event, this, 'P3_Cau_5_2')"><input type="text" class="short-ans-box" maxlength="1" id="P3_Cau_5_4" oninput="this.value=this.value.replace('.', ','); moveNext(this, null)" onkeydown="movePrev(event, this, 'P3_Cau_5_3')"></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Ta có $Q=\log_a (b^2c^3)=\log_a b^2+\log_a c^3=2\log_a b+3\log_a c=2\cdot 2+3\cdot 3=13$.</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 6:</b> Cho số thực $a$ thỏa mãn $0&lt; a\ne 1$.<br> Tính giá trị của biểu thức $T=\log_a \left(\dfrac{a^2\cdot \sqrt[3]{a^2} \cdot \sqrt[5]{a^4}}{\sqrt[{15}]{a^7}} \right)$.</div></div><div class="options"><div class="short-ans-group"><input type="text" class="short-ans-box" maxlength="1" id="P3_Cau_6_1" oninput="this.value=this.value.replace('.', ','); moveNext(this, 'P3_Cau_6_2')" onkeydown="movePrev(event, this, null)"><input type="text" class="short-ans-box" maxlength="1" id="P3_Cau_6_2" oninput="this.value=this.value.replace('.', ','); moveNext(this, 'P3_Cau_6_3')" onkeydown="movePrev(event, this, 'P3_Cau_6_1')"><input type="text" class="short-ans-box" maxlength="1" id="P3_Cau_6_3" oninput="this.value=this.value.replace('.', ','); moveNext(this, 'P3_Cau_6_4')" onkeydown="movePrev(event, this, 'P3_Cau_6_2')"><input type="text" class="short-ans-box" maxlength="1" id="P3_Cau_6_4" oninput="this.value=this.value.replace('.', ','); moveNext(this, null)" onkeydown="movePrev(event, this, 'P3_Cau_6_3')"></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Ta có $T=\log_a \left(\dfrac{a^2\cdot \sqrt[3]{a^2} \cdot \sqrt[5]{a^4}}{\sqrt[{15}]{a^7}} \right)=\log_a \dfrac{a^{2+\tfrac{2}{3}+\tfrac{4}{5}}}{a^{\tfrac{7}{15}}}=\log_a a^{2+\tfrac{2}{3}+\tfrac{4}{5}-\tfrac{7}{15}}=\log_a a^3=3$.</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 7:</b> Với $a$, $b$ là các số thực dương và $a$ khác $1$, ta rút gọn biểu thức $Q=\sqrt{\log_a^2(ab)-\dfrac{2\ln b}{\ln a}-1}$ thu được kết quả $m\left|\log_a b^n \right|$ với $m$; $n$ là các số tự nhiên. Tính giá trị $S=m+2n$.</div></div><div class="options"><div class="short-ans-group"><input type="text" class="short-ans-box" maxlength="1" id="P3_Cau_7_1" oninput="this.value=this.value.replace('.', ','); moveNext(this, 'P3_Cau_7_2')" onkeydown="movePrev(event, this, null)"><input type="text" class="short-ans-box" maxlength="1" id="P3_Cau_7_2" oninput="this.value=this.value.replace('.', ','); moveNext(this, 'P3_Cau_7_3')" onkeydown="movePrev(event, this, 'P3_Cau_7_1')"><input type="text" class="short-ans-box" maxlength="1" id="P3_Cau_7_3" oninput="this.value=this.value.replace('.', ','); moveNext(this, 'P3_Cau_7_4')" onkeydown="movePrev(event, this, 'P3_Cau_7_2')"><input type="text" class="short-ans-box" maxlength="1" id="P3_Cau_7_4" oninput="this.value=this.value.replace('.', ','); moveNext(this, null)" onkeydown="movePrev(event, this, 'P3_Cau_7_3')"></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Ta có \begin{align*}
+			Q=&amp;\sqrt{\left(\log_a a+\log_a b\right)^2-2\log_a b-1}\\
+			=&amp;\sqrt{\left(1+\log_a b\right)^2-2\log_a b-1}\\
+			=&amp;\sqrt{1+2\log_a b+\log_a^2b-2\log_a b-1}\\
+			=&amp;\sqrt{\log_a^2b}=\left|\log_a b\right|.
+		\end{align*} Khi đó $\left\{\begin{aligned}&amp;m=1\\&amp;n=1\end{aligned}\right. \Rightarrow S=m+2n=3$.</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 8:</b> Cho $a=\log_2 5$, $b=\log_3 5$. Biểu diễn $\log_6 5$ theo $a$ và $b$ ta thu được kết quả dạng $\dfrac{a}{m+\dfrac{n\cdot a}{b}}$ với $m;n$ là các số tự nhiên. Tính giá trị $S=m-2n$.</div></div><div class="options"><div class="short-ans-group"><input type="text" class="short-ans-box" maxlength="1" id="P3_Cau_8_1" oninput="this.value=this.value.replace('.', ','); moveNext(this, 'P3_Cau_8_2')" onkeydown="movePrev(event, this, null)"><input type="text" class="short-ans-box" maxlength="1" id="P3_Cau_8_2" oninput="this.value=this.value.replace('.', ','); moveNext(this, 'P3_Cau_8_3')" onkeydown="movePrev(event, this, 'P3_Cau_8_1')"><input type="text" class="short-ans-box" maxlength="1" id="P3_Cau_8_3" oninput="this.value=this.value.replace('.', ','); moveNext(this, 'P3_Cau_8_4')" onkeydown="movePrev(event, this, 'P3_Cau_8_2')"><input type="text" class="short-ans-box" maxlength="1" id="P3_Cau_8_4" oninput="this.value=this.value.replace('.', ','); moveNext(this, null)" onkeydown="movePrev(event, this, 'P3_Cau_8_3')"></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Ta có $\log_6 5=\dfrac{\log_2 5}{\log_2 6}=\dfrac{a}{\log_2 2+\log_2 3}=\dfrac{a}{1+\log_2 5\log_5 3}=\dfrac{a}{1+\dfrac{a}{b}}.\\
+		\Rightarrow \left\{\begin{aligned}&amp;{m=1} \\&amp;{n=1}.\end{aligned}\right.\\ \Rightarrow S=m-2n=-1$.</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 9:</b> Cho $a=\log 2$, $b=\ln 2$. Biểu diễn $\ln 800$ theo $a$ và $b$ ta thu được kết quả dạng $m\cdot b+\dfrac{n\cdot b}{a}$ với $m$; $n$ là các số tự nhiên. Tính giá trị $P=m\cdot n$.</div></div><div class="options"><div class="short-ans-group"><input type="text" class="short-ans-box" maxlength="1" id="P3_Cau_9_1" oninput="this.value=this.value.replace('.', ','); moveNext(this, 'P3_Cau_9_2')" onkeydown="movePrev(event, this, null)"><input type="text" class="short-ans-box" maxlength="1" id="P3_Cau_9_2" oninput="this.value=this.value.replace('.', ','); moveNext(this, 'P3_Cau_9_3')" onkeydown="movePrev(event, this, 'P3_Cau_9_1')"><input type="text" class="short-ans-box" maxlength="1" id="P3_Cau_9_3" oninput="this.value=this.value.replace('.', ','); moveNext(this, 'P3_Cau_9_4')" onkeydown="movePrev(event, this, 'P3_Cau_9_2')"><input type="text" class="short-ans-box" maxlength="1" id="P3_Cau_9_4" oninput="this.value=this.value.replace('.', ','); moveNext(this, null)" onkeydown="movePrev(event, this, 'P3_Cau_9_3')"></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Ta có \begin{align*}
+			\ln 800=&amp;\ln\left(2^3\cdot 10^2\right)=3\ln 2+2\ln 10\\
+			=&amp;3\ln 2+2\ln 2\cdot \log_2 10\\
+			=&amp;3\ln 2+\dfrac{2\ln 2}{\log 2}=3b+\dfrac{2b}{a}.
+		\end{align*} $\Rightarrow\left\{\begin{aligned}&amp;{m=3} \\
+		&amp;{n=2}\end{aligned}\right. \Rightarrow P=6$.</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 10:</b> Cho $a$, $b$, $c$ là các số thực khác $0$ thỏa mãn $4^a=25^b=10^c$.<br> Tính $T=\dfrac{c}{a}+\dfrac{c}{b}$.</div></div><div class="options"><div class="short-ans-group"><input type="text" class="short-ans-box" maxlength="1" id="P3_Cau_10_1" oninput="this.value=this.value.replace('.', ','); moveNext(this, 'P3_Cau_10_2')" onkeydown="movePrev(event, this, null)"><input type="text" class="short-ans-box" maxlength="1" id="P3_Cau_10_2" oninput="this.value=this.value.replace('.', ','); moveNext(this, 'P3_Cau_10_3')" onkeydown="movePrev(event, this, 'P3_Cau_10_1')"><input type="text" class="short-ans-box" maxlength="1" id="P3_Cau_10_3" oninput="this.value=this.value.replace('.', ','); moveNext(this, 'P3_Cau_10_4')" onkeydown="movePrev(event, this, 'P3_Cau_10_2')"><input type="text" class="short-ans-box" maxlength="1" id="P3_Cau_10_4" oninput="this.value=this.value.replace('.', ','); moveNext(this, null)" onkeydown="movePrev(event, this, 'P3_Cau_10_3')"></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Giả sử $4^a=25^b=10^c=t\Rightarrow \left\{\begin{aligned}&amp;{a=\log_4t}\\&amp;{b=\log _{25} t} \\&amp;{c=\log _{10} t}.\end{aligned}\right.$<br> Ta có \begin{align*}
+			T=&amp;\dfrac{c}{a}+\dfrac{c}{b}=\dfrac{\log _{10} t}{\log_4 t}+\dfrac{\log _{10} t}{\log _{25} t}\\
+			=&amp;\dfrac{\log_t 4}{\log_t 10}+\dfrac{\log_t 25}{\log_t 10}\\
+			=&amp;\log _{10} 4+\log _{10} 25\\
+			=&amp;\log _{10} \left(4\cdot 25\right)\\
+			=&amp;\log _{10} 100=2.
+		\end{align*}</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 11:</b> Cho $\log_a b=2$ và $\log_a c=3$. Giá trị của biểu thức $Q=\log_a (b^2\cdot c^3)$ bằng bao nhiêu?</div></div><div class="options"><div class="short-ans-group"><input type="text" class="short-ans-box" maxlength="1" id="P3_Cau_11_1" oninput="this.value=this.value.replace('.', ','); moveNext(this, 'P3_Cau_11_2')" onkeydown="movePrev(event, this, null)"><input type="text" class="short-ans-box" maxlength="1" id="P3_Cau_11_2" oninput="this.value=this.value.replace('.', ','); moveNext(this, 'P3_Cau_11_3')" onkeydown="movePrev(event, this, 'P3_Cau_11_1')"><input type="text" class="short-ans-box" maxlength="1" id="P3_Cau_11_3" oninput="this.value=this.value.replace('.', ','); moveNext(this, 'P3_Cau_11_4')" onkeydown="movePrev(event, this, 'P3_Cau_11_2')"><input type="text" class="short-ans-box" maxlength="1" id="P3_Cau_11_4" oninput="this.value=this.value.replace('.', ','); moveNext(this, null)" onkeydown="movePrev(event, this, 'P3_Cau_11_3')"></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Ta có $Q=\log_a (b^2 \cdot c^3)=\log_a b^2+\log_a c^3=2\log_a b+3\log_a c=2\cdot 2+3\cdot 3=13$.</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 12:</b> Cho số thực $a$ thỏa mãn $0&lt; a\ne 1$. Giá trị của biểu thức <div class="center"><div class="tp">$T=\log_a \left(\dfrac{a^2\cdot \sqrt[3]{a^2} \cdot \sqrt[5]{a^4}}{\sqrt[{15}]{a^7}} \right)$</div></div> bằng bao nhiêu?</div></div><div class="options"><div class="short-ans-group"><input type="text" class="short-ans-box" maxlength="1" id="P3_Cau_12_1" oninput="this.value=this.value.replace('.', ','); moveNext(this, 'P3_Cau_12_2')" onkeydown="movePrev(event, this, null)"><input type="text" class="short-ans-box" maxlength="1" id="P3_Cau_12_2" oninput="this.value=this.value.replace('.', ','); moveNext(this, 'P3_Cau_12_3')" onkeydown="movePrev(event, this, 'P3_Cau_12_1')"><input type="text" class="short-ans-box" maxlength="1" id="P3_Cau_12_3" oninput="this.value=this.value.replace('.', ','); moveNext(this, 'P3_Cau_12_4')" onkeydown="movePrev(event, this, 'P3_Cau_12_2')"><input type="text" class="short-ans-box" maxlength="1" id="P3_Cau_12_4" oninput="this.value=this.value.replace('.', ','); moveNext(this, null)" onkeydown="movePrev(event, this, 'P3_Cau_12_3')"></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Ta có $T=\log_a \left(\dfrac{a^2\cdot \sqrt[3]{a^2} \cdot \sqrt[5]{a^4}}{\sqrt[{15}]{a^7}} \right)=\log_a \dfrac{a^{2+\tfrac{2}{3}+\tfrac{4}{5}}}{a^{\tfrac{7}{15}}}=\log_a a^{2+\tfrac{2}{3}+\tfrac{4}{5}-\tfrac{7}{15}}=\log_a a^3=3$.</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 13:</b> Cho $a=\log _2 3$, $b=\log _5 2$, $c=\log _2 7$. Biểu diễn $\log _{42} 15$ theo $a$, $b$, $c$ ta thu được kết quả dạng $\dfrac{a b+m}{h \cdot b(a+c+n)}$ với $h$, $m$, $n$ là các số tự nhiên. Tính giá trị $P=m \cdot n+h$.</div></div><div class="options"><div class="short-ans-group"><input type="text" class="short-ans-box" maxlength="1" id="P3_Cau_13_1" oninput="this.value=this.value.replace('.', ','); moveNext(this, 'P3_Cau_13_2')" onkeydown="movePrev(event, this, null)"><input type="text" class="short-ans-box" maxlength="1" id="P3_Cau_13_2" oninput="this.value=this.value.replace('.', ','); moveNext(this, 'P3_Cau_13_3')" onkeydown="movePrev(event, this, 'P3_Cau_13_1')"><input type="text" class="short-ans-box" maxlength="1" id="P3_Cau_13_3" oninput="this.value=this.value.replace('.', ','); moveNext(this, 'P3_Cau_13_4')" onkeydown="movePrev(event, this, 'P3_Cau_13_2')"><input type="text" class="short-ans-box" maxlength="1" id="P3_Cau_13_4" oninput="this.value=this.value.replace('.', ','); moveNext(this, null)" onkeydown="movePrev(event, this, 'P3_Cau_13_3')"></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Ta có $\log _{42} 15=\dfrac{\log _2 15}{\log _2 42}=\dfrac{\log _2 3+\log _2 5}{\log _2 2+\log _2 3+\log _2 7}=\dfrac{a+\frac{1}{b}}{1+a+c}=\dfrac{a b+1}{b(a+c+1)}$.<br> Khi đó $\left\{\begin{aligned}&amp; m=1 \\ &amp; n=1 \\ &amp; h=1\end{aligned}\right. \Rightarrow P=2$.</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 14:</b> Cho các số thực dương $x, y$ thoả mãn $x^2+y^2=14 x y$. Xác định giá trị $a$ thỏa mãn $\log _2(x+y)=a+\dfrac{\log _2 x y}{a}$.</div></div><div class="options"><div class="short-ans-group"><input type="text" class="short-ans-box" maxlength="1" id="P3_Cau_14_1" oninput="this.value=this.value.replace('.', ','); moveNext(this, 'P3_Cau_14_2')" onkeydown="movePrev(event, this, null)"><input type="text" class="short-ans-box" maxlength="1" id="P3_Cau_14_2" oninput="this.value=this.value.replace('.', ','); moveNext(this, 'P3_Cau_14_3')" onkeydown="movePrev(event, this, 'P3_Cau_14_1')"><input type="text" class="short-ans-box" maxlength="1" id="P3_Cau_14_3" oninput="this.value=this.value.replace('.', ','); moveNext(this, 'P3_Cau_14_4')" onkeydown="movePrev(event, this, 'P3_Cau_14_2')"><input type="text" class="short-ans-box" maxlength="1" id="P3_Cau_14_4" oninput="this.value=this.value.replace('.', ','); moveNext(this, null)" onkeydown="movePrev(event, this, 'P3_Cau_14_3')"></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Ta có \[\begin{aligned}
+			x^2+y^2=14 x y &amp;\Leftrightarrow(x+y)^2=16 x y \\
+			&amp;\Leftrightarrow \log _2(x+y)^2=\log _2(16 x y)\\
+			&amp;\Leftrightarrow 2 \log _2(x+y)=4+\log _2(x y) \\
+			&amp;\Leftrightarrow \log _2(x+y)=2+\frac{\log _2(x y)}{2}.
+		\end{aligned}\] Vậy $a=2$.</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 15:</b> Với $a$, $b$ là các số thực dương và thoả mãn $a b \neq 1$. Ta rút gọn biểu&nbsp;thức \[P=\left(\log _a b+\log _b a+2\right)\left(\log _a b-\log _{a b} b\right) \log _b a-1\] thu được kết quả $(2 m-1) \log _a b^n$ với $m$, $n$ là các số tự nhiên. Giá trị của biểu thức $S=m-n$ bằng bao nhiêu?</div></div><div class="options"><div class="short-ans-group"><input type="text" class="short-ans-box" maxlength="1" id="P3_Cau_15_1" oninput="this.value=this.value.replace('.', ','); moveNext(this, 'P3_Cau_15_2')" onkeydown="movePrev(event, this, null)"><input type="text" class="short-ans-box" maxlength="1" id="P3_Cau_15_2" oninput="this.value=this.value.replace('.', ','); moveNext(this, 'P3_Cau_15_3')" onkeydown="movePrev(event, this, 'P3_Cau_15_1')"><input type="text" class="short-ans-box" maxlength="1" id="P3_Cau_15_3" oninput="this.value=this.value.replace('.', ','); moveNext(this, 'P3_Cau_15_4')" onkeydown="movePrev(event, this, 'P3_Cau_15_2')"><input type="text" class="short-ans-box" maxlength="1" id="P3_Cau_15_4" oninput="this.value=this.value.replace('.', ','); moveNext(this, null)" onkeydown="movePrev(event, this, 'P3_Cau_15_3')"></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> $$
+		\begin{aligned}
+			P&amp;=\left(\log _a b+\log _b a+2\right)\left(\log _a b-\log _{a b} b\right) \log _b a-1 \\
+			&amp; =\left(\log _a b+\frac{1}{\log _a b}+2\right)\left(\log _a b-\frac{\log _a b}{\log _a(a b)}\right) \log _b a-1 \\
+			&amp; =\frac{\log _a^2 b+2 \log _a b+1}{\log _a b}\left(\log _a b-\frac{\log _a b}{1+\log _a b}\right) \log _b a-1 \\
+			&amp; =\frac{\left(\log _a b+1\right)^2}{\log _a b} \cdot\frac{\log _a^2 b}{1+\log _a b} \cdot\log _b a-1\\
+			&amp;=\left(\log _a b+1\right) \log _a b\cdot \log _b a-1\\
+			&amp;=\log _a b.
+		\end{aligned}
+		$$ Khi đó $\left\{\begin{aligned}&amp;2m - 1 =1\\&amp;n=1\end{aligned}\right.\Leftrightarrow \left\{\begin{aligned}&amp;m=1\\&amp;n=1\end{aligned}\right.\\ \Rightarrow S = m-n = 0$<br> Vậy $S=0$.</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 16:</b> Cho $a$, $b$ là các số thực dương khác $1$ và thoả mãn $a b \neq 1$. Biết rằng \[\log _a \frac{3}{b}=\left(\log _a b+\log _b a+2\right)\left(\log _a b-\log _{a b} b\right) \log _b a-1.\] Tìm $b$ (làm tròn kết quả đến hàng phần chục).</div></div><div class="options"><div class="short-ans-group"><input type="text" class="short-ans-box" maxlength="1" id="P3_Cau_16_1" oninput="this.value=this.value.replace('.', ','); moveNext(this, 'P3_Cau_16_2')" onkeydown="movePrev(event, this, null)"><input type="text" class="short-ans-box" maxlength="1" id="P3_Cau_16_2" oninput="this.value=this.value.replace('.', ','); moveNext(this, 'P3_Cau_16_3')" onkeydown="movePrev(event, this, 'P3_Cau_16_1')"><input type="text" class="short-ans-box" maxlength="1" id="P3_Cau_16_3" oninput="this.value=this.value.replace('.', ','); moveNext(this, 'P3_Cau_16_4')" onkeydown="movePrev(event, this, 'P3_Cau_16_2')"><input type="text" class="short-ans-box" maxlength="1" id="P3_Cau_16_4" oninput="this.value=this.value.replace('.', ','); moveNext(this, null)" onkeydown="movePrev(event, this, 'P3_Cau_16_3')"></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Ta có $$
+		\begin{aligned}
+			P
+			&amp;=\left(\log _a b+\log _b a+2\right)\left(\log _a b-\log _{a b} b\right) \log _b a-1 \\
+			&amp;=\left(\log _a b+\frac{1}{\log _a b}+2\right)\left(\log _a b-\frac{\log _a b}{\log _a(a b)}\right) \log _b a-1 \\
+			&amp;=\frac{\log _a^2 b+2 \log _a b+1}{\log _a b}\left(\log _a b-\frac{\log _a b}{1+\log _a b}\right) \log _b a-1 \\
+			&amp;=\frac{\left(\log _a b+1\right)^2}{\log _a b}\cdot\frac{\log _a^2 b}{1+\log _a b}\cdot \log _b a-1=\left(\log _a b+1\right) \log _a b\cdot \log _b a-1=\log _a b.
+		\end{aligned}
+		$$ Khi đó $\log _a \dfrac{3}{b}=P \Leftrightarrow \log _a \dfrac{3}{b}=\log _a b \Leftrightarrow \dfrac{3}{b}=b \Leftrightarrow b^2=3 \Leftrightarrow b=\sqrt{3} \approx 1{,}7$.</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 17:</b> Cho $a$, $b&gt;0$ và đều khác $1$ thoả mãn $\ln a+\ln(8 b)=2 \ln(a+2 b)$. Rút gọn biểu thức $P=\log _b(2 a)+\log _{\frac{a}{2}}(2 b)-\dfrac{1}{\log _8 b}$ được kết quả bằng bao&nbsp;nhiêu?</div></div><div class="options"><div class="short-ans-group"><input type="text" class="short-ans-box" maxlength="1" id="P3_Cau_17_1" oninput="this.value=this.value.replace('.', ','); moveNext(this, 'P3_Cau_17_2')" onkeydown="movePrev(event, this, null)"><input type="text" class="short-ans-box" maxlength="1" id="P3_Cau_17_2" oninput="this.value=this.value.replace('.', ','); moveNext(this, 'P3_Cau_17_3')" onkeydown="movePrev(event, this, 'P3_Cau_17_1')"><input type="text" class="short-ans-box" maxlength="1" id="P3_Cau_17_3" oninput="this.value=this.value.replace('.', ','); moveNext(this, 'P3_Cau_17_4')" onkeydown="movePrev(event, this, 'P3_Cau_17_2')"><input type="text" class="short-ans-box" maxlength="1" id="P3_Cau_17_4" oninput="this.value=this.value.replace('.', ','); moveNext(this, null)" onkeydown="movePrev(event, this, 'P3_Cau_17_3')"></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Với $a$, $b$ là các số thực dương khác $1$, ta có $$
+		\begin{aligned}
+			&amp;\ln a+\ln(8 b)=2 \ln(a+2 b) \\
+			\Leftrightarrow\;&amp; \ln(8 a b)=\ln(a+2 b)^2 \\
+			\Leftrightarrow\;&amp; 8 a b=(a+2 b)^2 \\
+			\Leftrightarrow\;&amp;\left(a+2 b\right)^2=0 \\
+			\Leftrightarrow\;&amp; a=2 b.
+		\end{aligned}
+		$$ Khi đó $P=\log _b(2 a)+\log _{\frac{a}{2}}(2 b)-\dfrac{1}{\log _8 b}=\log _b(4 b)+\log _b(2 b)-\log _b 8
+		=\log _b \dfrac{8 b^2}{8}=\log _b b^2=2$.</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 18:</b> Cho $\log_2 x=\sqrt{2}$. Tính giá trị biểu thức $P=\log_2 x^2+\log _{\tfrac{1}{2}} x^3+\log_4 x$. (<i>Làm tròn đến hàng hàng phần mười</i>).</div></div><div class="options"><div class="short-ans-group"><input type="text" class="short-ans-box" maxlength="1" id="P3_Cau_18_1" oninput="this.value=this.value.replace('.', ','); moveNext(this, 'P3_Cau_18_2')" onkeydown="movePrev(event, this, null)"><input type="text" class="short-ans-box" maxlength="1" id="P3_Cau_18_2" oninput="this.value=this.value.replace('.', ','); moveNext(this, 'P3_Cau_18_3')" onkeydown="movePrev(event, this, 'P3_Cau_18_1')"><input type="text" class="short-ans-box" maxlength="1" id="P3_Cau_18_3" oninput="this.value=this.value.replace('.', ','); moveNext(this, 'P3_Cau_18_4')" onkeydown="movePrev(event, this, 'P3_Cau_18_2')"><input type="text" class="short-ans-box" maxlength="1" id="P3_Cau_18_4" oninput="this.value=this.value.replace('.', ','); moveNext(this, null)" onkeydown="movePrev(event, this, 'P3_Cau_18_3')"></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Ta có $P=2\log_2 x-3\log_2 x+\dfrac{1}{2} \log_2 x=-\dfrac{1}{2} \log_2 x=-\dfrac{1}{2}\cdot \sqrt{2}=-\dfrac{\sqrt{2}}{2} \approx-0{,}7$.</div></div></div>
+<h3>PHẦN 4. Tự luận</h3>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 1:</b> Cho $0&lt;a\neq 1$. Tính giá trị của biểu thức $a^{\log_{\sqrt{a}}4}$.</div></div><div class="options"><textarea class="essay-input" placeholder="Làm bài tự luận tại đây (Hoặc làm trên giấy tùy yêu cầu của GV)..."></textarea></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Ta có $a^{\log_{\sqrt{a}}4}=a^{2\log_a4}=a^{\log_a4^2}=4^2=16$.</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 2:</b> Tính giá trị của biểu thức $A=2\log_2 {12}+3\log_25-\log_2{15}-\log_2{150}$.</div></div><div class="options"><textarea class="essay-input" placeholder="Làm bài tự luận tại đây (Hoặc làm trên giấy tùy yêu cầu của GV)..."></textarea></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> \begin{align*}
+			A &amp;=  \log_2{12^2}+\log_2{5^3}-\left(\log_2{15}+\log_2{150}\right)\\
+			&amp;=  \log_2{\left(12^2\cdot 5^3\right)}-\log_2{\left(15\cdot 150\right)}\\
+			&amp;=  \log_2{\dfrac{18\,000}{2\,250}}\\
+			&amp;=  \log_2{8}\\
+			&amp;=  3.
+		\end{align*}</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 3:</b> Cho $a=\log_5{18}$ và $b=\log_5{60}$. Tính $\log_32$ theo $a$ và $b$.</div></div><div class="options"><textarea class="essay-input" placeholder="Làm bài tự luận tại đây (Hoặc làm trên giấy tùy yêu cầu của GV)..."></textarea></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Đầu tiên ta có hệ $\left\{\begin{aligned}&amp;a=\log_5{18}=\log_52+2\log_53\\&amp;b=\log_5{60}=2\log_52+\log_53+1.\end{aligned}\right.$ <br> Đặt $x=\log_52$ và $y=\log_53$ từ đó ta có hệ phương trình bậc nhất hai ẩn \begin{align*}
+			&amp; \left\{\begin{aligned}&amp;x+2y=a\\&amp;2x+y=b-1\end{aligned}\right.\\
+			&amp;\Leftrightarrow  \left\{\begin{aligned}&amp;x=\log_52=\dfrac{-a+2b-2}{3}\\&amp;y=\log_53=\dfrac{2a-b+1}{3}.\end{aligned}\right.
+		\end{align*} Vậy $\log_32=\dfrac{\log_52}{\log_5 3}=\dfrac{-a+2b-2}{2a-b+1}$.</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 4:</b> Độ lớn $M$ của một trận động đất theo thang Richter được tính theo công thức $M=\log\dfrac{A}{A_0}$, trong đó $A$ là biên độ lớn nhất ghi được bởi máy đo địa chất, $A_0=1$ (đơn vị là micro mét, kí hiệu là $\mu m$) là biên độ tiêu chuẩn được sử dụng để hiệu chỉnh độ lệch gây ra bởi khoảng cách của máy đo địa chấn so với tâm chấn. Năm $2011$ tại Nhật Bản đã xảy ra một trận động đất độ lớn $8{,}9$ độ Richter. Dự đoán tương lại nước Nhật Bản vào năm $2025$ sẽ hứng chịu một trận động đất có biên độ lớn nhất gấp đôi năm $2011$, hỏi độ lớn trận động đất là bao&nbsp;nhiêu?</div></div><div class="options"><textarea class="essay-input" placeholder="Làm bài tự luận tại đây (Hoặc làm trên giấy tùy yêu cầu của GV)..."></textarea></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Năm 2011, độ lớn là $M=\log\dfrac{A}{A_0}=8{,}9$.<br> Năm 2025, độ lớn là $M'=\log\dfrac{2A}{A_0}=\log 2+\log\dfrac{A}{A_0}=\log 2+8{,}9\approx 9{,}2$.<br> Vậy độ lớn trận động đất được dự báo vào năm 2025 là $9{,}2$ độ Richter.</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 5:</b> Gia đình bác An gửi tiết kiệm $500$ triệu đồng vào ngân hàng với lãi suất $6{,}5\%$/năm. Biết rằng tiền lãi của kì trước được cộng vào gốc tính lãi kì sau (lãi kép). <ol><li>Hỏi sau ba năm, gia đình bác nhận được số tiền cả vốn lẫn lãi là bao nhiêu? Nếu tính theo thể thức lãi kép liên tục thì số tiền cả vốn lẫn lãi của gia đình bác An thu được là bao nhiêu (sau ba năm)?</li><li>Vẫn với $500$ triệu đồng, gia đình bác An gửi tiết kiệm với lãi kép $6{,}5\%$/năm theo kì hạn $6$ tháng. Hỏi để nhận được cả gốc và lãi là $1$ tỉ đồng thì gia đình bác An cần gửi bao nhiêu năm?</li></ol></div></div><div class="options"><textarea class="essay-input" placeholder="Làm bài tự luận tại đây (Hoặc làm trên giấy tùy yêu cầu của GV)..."></textarea></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> <ol><li>Ta có <ul><li>$A_0=500$ triệu đồng là số tiền gốc ban đầu.</li><li>$r=6{,}5\%=0{,}065$/năm là lãi suất một kì.</li><li>$n=3$ (năm) là số kì hạn gửi.</li><li>$A_n$ là số tiền cả vốn và lãi nhận được sau $n$ kì gửi.</li></ul> Vậy sau $3$ năm, gia đình bác An nhận được số tiền cả gốc và lãi là \[A_3=A_0\cdot\left(1+r\right)^3=500\cdot\left(1+0{,}065\right)^3\approx 603{,}975\,(\text{triệu đồng}).\] Với thể thức lãi kép liên tục thì số tiền gia đình bác An thu được sau $3$ năm là \[A_3=A_0\cdot \mathrm{e}^{tr}=500\cdot\mathrm{e}^{3\cdot 0{,}065}\approx 607{,}655\,(\text{triệu đồng}).\]</li><li>Ta có <ul><li>$A_0=500$ triệu đồng là số tiền gốc ban đầu.</li><li>$r=6{,}5\%=0{,}065$/năm là lãi suất một kì.</li><li>$n$ là số năm cần gửi.</li><li>$A_n=1\,000$ triệu đồng là số tiền cả vốn và lãi nhận được sau $n$ năm gửi.</li></ul> Do kì hạn là $6$ tháng, tức là mỗi năm là 2 kì tính lãi nên số kì gửi là $N=2n$, lãi suất mỗi kì gửi là $\dfrac{r}{2}$.<br> Khi đó\begin{align*}
+				&amp;A_n=A_0\left(1+\dfrac{r}{2}\right)^{2n}\\
+				&amp;\Leftrightarrow  1\,000=500\cdot\left(1+\dfrac{0{,}065}{2}\right)^{2n}\\
+				&amp;\Leftrightarrow 1{,}0325^{2n}=2\\
+				&amp;\Leftrightarrow n\approx 10{,}83\,(\text{năm}).
+			\end{align*} Vậy gia đình bác An cần gửi ít nhất $11$ năm để nhận được số tiền như dự định.</li></ol></div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 6:</b> Dân số Việt Nam năm $2020$ là khoảng $97{,}6$ triệu người. Giả sử tỉ lệ tăng dân số hằng năm không đổi là $1{,}14\%$. Biết rằng sự tăng trưởng dân số được tính theo công thức $S = A \cdot e^{Nr}$, trong đó $A$ là dân số năm lấy làm mốc, $S$ là dân số sau $N$ năm, $r$ là tỉ lệ tăng dân số hằng&nbsp;năm. <ol><li>Dự báo dân số Việt Nam vào năm $2030$ (<i>làm tròn đến chữ số hàng chục nghìn</i>).</li><li>Hỏi bắt đầu từ năm nào thì dân số Việt Nam vượt ngưỡng $120$ triệu người?</li></ol></div></div><div class="options"><textarea class="essay-input" placeholder="Làm bài tự luận tại đây (Hoặc làm trên giấy tùy yêu cầu của GV)..."></textarea></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Ta có các giả thiết: $A = 97{,}6$ (triệu người); $r = 1{,}14\% = 0{,}0114$. <ol><li>Tính dân số năm $2030$<br> Số năm từ $2020$ đến $2030$ là $N = 2030 - 2020 = 10$ (năm).<br> Dân số Việt Nam năm $2030$ là $$ S = 97{,}6 \cdot e^{10 \cdot 0{,}0114} \approx 109{,}378 \text{ (triệu người)}. $$ Vậy dân số năm $2030$ khoảng $109\,378\,000$ người.</li><li>Tìm năm dân số vượt $120$ triệu<br> Ta cần tìm $N$ sao cho $S &gt; 120$. \begin{align*}
+				&amp; &amp; 97{,}6 \cdot e^{N \cdot 0{,}0114} &gt; 120 \\
+				&amp;\Leftrightarrow  e^{0{,}0114 N} &gt; \dfrac{120}{97{,}6} \\
+				&amp;\Leftrightarrow  0{,}0114 N &gt; \ln\left(\dfrac{120}{97{,}6}\right) \\
+				&amp;\Leftrightarrow  N &gt; \dfrac{1}{0{,}0114} \ln\left(\dfrac{120}{97{,}6}\right) \\
+				&amp;\Leftrightarrow  N &gt; 18{,}12
+			\end{align*} Như vậy, sau hơn $18$ năm tính từ năm $2020$, dân số sẽ vượt ngưỡng $120$ triệu người.<br> Năm cần tìm là: $2020 + 19 = 2039$.<br> Vậy bắt đầu từ năm $2039$, dân số Việt Nam sẽ vượt ngưỡng $120$ triệu người.</li></ol></div></div></div>
+        <button type="button" class="submit-btn" id="submitBtn" onclick="submitQuiz()">Nộp Bài</button>
+        <button type="button" class="submit-btn" id="viewSolBtn" onclick="showPasswordPrompt()" style="background: #17a2b8;">Xem Đáp Án & Lời Giải</button>
+    </form>
+    
+    <div id="result"></div>
+    
+    <div id="passwordPrompt">
+        <h4>Mở Khóa Lời Giải</h4>
+        <p style="color: #856404; font-size: 14px; margin-top: 0;">Nhập mật khẩu từ Giáo viên để xem đáp án chi tiết.</p>
+        <input type="password" id="solPassword" placeholder="Nhập mật khẩu...">
+        <button type="button" onclick="checkPassword()">Xem</button>
+    </div>
+
+    <footer class="author-footer">Liên hệ Trần Lê Nam - 0947306694 TeX &gt; HTML</footer>
+
+    <script>
+        const ua = navigator.userAgent || navigator.vendor || window.opera;
+        if ((ua.indexOf("FBAN") === -1) && (ua.indexOf("FBAV") === -1) && (ua.indexOf("Zalo") === -1)) {
+            document.getElementById("zaloWarning").style.display = "none";
+        }
+
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbyrb8pbIJA3IMb6FGuDgjLUuga9JDHC1fIKHMk6qFyYceXHh9SUHS7i-j0FAqG0YK02/exec"; 
+        const correctAnswers = {"P1_Cau_1": "D", "P1_Cau_2": "B", "P1_Cau_3": "C", "P1_Cau_4": "D", "P1_Cau_5": "C", "P1_Cau_6": "D", "P1_Cau_7": "A", "P1_Cau_8": "C", "P1_Cau_9": "C", "P1_Cau_10": "B", "P1_Cau_11": "D", "P1_Cau_12": "D", "P1_Cau_13": "C", "P1_Cau_14": "D", "P1_Cau_15": "A", "P1_Cau_16": "D", "P1_Cau_17": "C", "P1_Cau_18": "A", "P1_Cau_19": "C", "P1_Cau_20": "D", "P1_Cau_22": "C", "P1_Cau_23": "C", "P1_Cau_24": "B", "P1_Cau_25": "A", "P1_Cau_26": "B", "P1_Cau_27": "B", "P1_Cau_28": "A", "P1_Cau_29": "A", "P1_Cau_30": "A", "P1_Cau_31": "D", "P2_Cau_1_a": "Sai", "P2_Cau_1_b": "Đúng", "P2_Cau_1_c": "Sai", "P2_Cau_1_d": "Đúng", "P2_Cau_2_a": "Sai", "P2_Cau_2_b": "Đúng", "P2_Cau_2_c": "Sai", "P2_Cau_2_d": "Đúng", "P2_Cau_3_a": "Sai", "P2_Cau_3_b": "Đúng", "P2_Cau_3_c": "Sai", "P2_Cau_3_d": "Đúng", "P2_Cau_4_a": "Đúng", "P2_Cau_4_b": "Sai", "P2_Cau_4_c": "Đúng", "P2_Cau_4_d": "Đúng", "P2_Cau_5_a": "Đúng", "P2_Cau_5_b": "Sai", "P2_Cau_5_c": "Đúng", "P2_Cau_5_d": "Sai", "P2_Cau_6_a": "Sai", "P2_Cau_6_b": "Sai", "P2_Cau_6_c": "Sai", "P2_Cau_6_d": "Đúng", "P2_Cau_7_a": "Sai", "P2_Cau_7_b": "Sai", "P2_Cau_7_c": "Sai", "P2_Cau_7_d": "Đúng", "P2_Cau_8_a": "Sai", "P2_Cau_8_b": "Đúng", "P2_Cau_8_c": "Sai", "P2_Cau_8_d": "Đúng", "P2_Cau_9_a": "Sai", "P2_Cau_9_b": "Đúng", "P2_Cau_9_c": "Sai", "P2_Cau_9_d": "Đúng", "P3_Cau_1": "13", "P3_Cau_2": "21", "P3_Cau_3": "8,6", "P3_Cau_4": "966", "P3_Cau_5": "13", "P3_Cau_6": "3", "P3_Cau_7": "3", "P3_Cau_8": "-1", "P3_Cau_9": "6", "P3_Cau_10": "2", "P3_Cau_11": "13", "P3_Cau_12": "3", "P3_Cau_13": "2", "P3_Cau_14": "2", "P3_Cau_15": "0", "P3_Cau_16": "1,7", "P3_Cau_17": "2", "P3_Cau_18": "-0,7"};
+        let isSubmitted = false;
+        
+        function moveNext(current, nextId) {
+            if (current.value.length > 1) current.value = current.value.slice(0, 1);
+            if (current.value.length === 1 && nextId) document.getElementById(nextId).focus();
+        }
+        function movePrev(e, current, prevId) {
+            if (e.key === "Backspace" && current.value === "" && prevId) document.getElementById(prevId).focus();
+        }
+
+        // =====================================================================
+        // LƯU TRẠNG THÁI (tải lại trang không mất bài, không reset đồng hồ)
+        // Thêm ?reset=1 vào đường dẫn để xóa trạng thái khi giáo viên muốn thử lại.
+        // =====================================================================
+        function hashStr(str) { let h = 5381; for (let i = 0; i < str.length; i++) h = ((h << 5) + h + str.charCodeAt(i)) | 0; return (h >>> 0).toString(36); }
+        const STORE_KEY = 'quizstate:v2:' + location.pathname + '|' + document.title + '|' + hashStr(JSON.stringify(correctAnswers) + '|' + 19);
+        if (/[?&]reset=1(&|$)/.test(location.search)) { try { localStorage.removeItem(STORE_KEY); } catch (e) {} }
+
+        function loadState() { try { return JSON.parse(localStorage.getItem(STORE_KEY) || 'null'); } catch (e) { return null; } }
+        let state = loadState() || {};
+        function saveState(patch) {
+            Object.assign(state, patch);
+            try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch (e) {}   // bị chặn lưu (chế độ riêng tư...) thì chạy bằng bộ nhớ tạm
+        }
+        function newId() { return (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : (Date.now().toString(36) + Math.random().toString(36).slice(2, 10)); }
+
+        const DURATION_MS = 19 * 60 * 1000;
+        if (!state.endTime) saveState({ endTime: Date.now() + DURATION_MS });
+        if (!state.attemptId) saveState({ attemptId: newId() });
+
+        function formFields() { return Array.from(document.querySelectorAll('#studentName, #studentClass, #quizForm input, #quizForm textarea')); }
+        function collectAnswers() { return formFields().map(el => (el.type === 'radio' || el.type === 'checkbox') ? (el.checked ? 1 : 0) : el.value); }
+        function restoreAnswers(arr) {
+            const f = formFields();
+            if (!Array.isArray(arr) || arr.length !== f.length) return;
+            f.forEach((el, i) => { if (el.type === 'radio' || el.type === 'checkbox') el.checked = !!arr[i]; else el.value = arr[i]; });
+        }
+
+        let saveTimer;
+        function scheduleSave() {
+            if (isSubmitted) return;
+            clearTimeout(saveTimer);
+            saveTimer = setTimeout(() => saveState({ answers: collectAnswers() }), 250);
+        }
+        document.addEventListener('input', scheduleSave);
+        document.addEventListener('change', scheduleSave);
+        window.addEventListener('pagehide', () => { if (!isSubmitted) saveState({ answers: collectAnswers() }); });
+
+        const resDiv = document.getElementById('result');
+        function showResult(html) { resDiv.style.display = 'block'; resDiv.innerHTML = html; }
+        function lockForm() {
+            document.getElementById('submitBtn').style.display = 'none';
+            document.querySelectorAll('#quizForm input, #quizForm textarea, #studentName, #studentClass').forEach(el => el.disabled = true);
+        }
+        const scoreSpan = s => `<span style="font-size: 24px; color: red;">${s}</span>`;
+
+        // Gửi kết quả; mất mạng thì giữ lại và tự gửi lại (khi có mạng, hoặc mỗi 15 giây)
+        let sending = false;
+        function sendPayload() {
+            const finalScoreString = state.finalScore;
+            if (!GAS_URL) {
+                saveState({ sent: true });
+                showResult(`Đã chấm xong (chưa cấu hình nơi nhận kết quả).<br>Điểm của bạn: ${scoreSpan(finalScoreString)}`);
+                return;
+            }
+            if (sending) return;
+            sending = true;
+            fetch(GAS_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                keepalive: true,
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: new URLSearchParams(state.payload)
+            }).then(() => {
+                sending = false;
+                saveState({ sent: true });
+                showResult(`Nộp bài thành công!<br>Điểm của bạn: ${scoreSpan(finalScoreString)}`);
+            }).catch(() => {
+                sending = false;
+                showResult(`Đã chấm xong nhưng <b>chưa gửi được</b> kết quả (mạng yếu).<br>Em hãy giữ nguyên trang này, bài sẽ tự gửi lại khi có mạng.<br>Điểm của bạn: ${scoreSpan(finalScoreString)}`);
+            });
+        }
+        function retryPending() { if (state.submitted && !state.sent) sendPayload(); }
+        window.addEventListener('online', retryPending);
+        setInterval(retryPending, 15000);
+
+        // Đồng hồ tính theo giờ kết thúc nên không lệch khi tab ở nền hoặc điện thoại khóa màn hình
+        const timerEl = document.getElementById("timer");
+        let timeoutFired = false;
+        const countdown = setInterval(tick, 500);
+        document.addEventListener('visibilitychange', tick);
+        function tick() {
+            if (isSubmitted) { clearInterval(countdown); return; }
+            const remain = Math.ceil((state.endTime - Date.now()) / 1000);
+            if (remain <= 0) {
+                if (timeoutFired) return;
+                timeoutFired = true;
+                clearInterval(countdown);
+                timerEl.innerHTML = "HẾT GIỜ!";
+                alert("Đã hết thời gian làm bài. Hệ thống tự động nộp bài!");
+                submitQuiz(true);
+            } else {
+                const m = Math.floor(remain / 60), s = remain % 60;
+                timerEl.innerHTML = m.toString().padStart(2, '0') + ":" + s.toString().padStart(2, '0');
+            }
+        }
+
+        // Khôi phục khi mở lại trang
+        restoreAnswers(state.answers);
+        if (state.submitted) {
+            isSubmitted = true;
+            lockForm();
+            timerEl.innerHTML = "ĐÃ NỘP BÀI";
+            if (state.sent) showResult(`Nộp bài thành công!<br>Điểm của bạn: ${scoreSpan(state.finalScore)}`);
+            else { showResult('Đang gửi lại kết quả...'); retryPending(); }
+        } else {
+            tick();
+        }
+
+        function submitQuiz(autoSubmit = false) {
+            if (isSubmitted) return;
+            const name = document.getElementById('studentName').value.trim();
+            const className = document.getElementById('studentClass').value.trim();
+            
+            if (!autoSubmit && (!name || !className)) {
+                alert("Vui lòng nhập đầy đủ Họ tên và Lớp trước khi nộp!");
+                return;
+            }
+
+            isSubmitted = true;
+            if (typeof timerEl !== 'undefined' && timerEl) {
+                timerEl.innerHTML = "ĐÃ NỘP BÀI";
+            }
+            
+            const form = document.getElementById('quizForm');
+            let score = 0;
+            
+            let payload = {
+                'name': name || "Vô danh (Hết giờ)",
+                'className': className || "N/A"
+            };
+
+            for (let i = 1; i <= 31; i++) {
+                const qName = `P1_Cau_${i}`;
+                const selected = form.querySelector(`input[name="${qName}"]:checked`);
+                let ans = selected ? selected.value : "K";
+                const correctVal = correctAnswers[qName];
+                
+                let isCorrect = (selected && selected.value === correctVal);
+                if (isCorrect) score += 0.25;
+                
+                let statusStr = isCorrect ? "Đúng" : (selected ? "Sai" : "K");
+                payload[qName] = `${ans} (${statusStr})`;
+            }
+
+            const labels_tf = ['a', 'b', 'c', 'd'];
+            for (let i = 1; i <= 9; i++) {
+                let correctCount = 0;
+                let questionDetail = [];
+                
+                labels_tf.forEach(l => {
+                    const qName = `P2_Cau_${i}_${l}`;
+                    if (correctAnswers[qName]) {
+                        const selected = form.querySelector(`input[name="${qName}"]:checked`);
+                        let ans = selected ? selected.value : "K";
+                        const correctVal = correctAnswers[qName];
+                        let isSubCorrect = (selected && selected.value === correctVal);
+                        if (isSubCorrect) correctCount++;
+                        
+                        let subStatus = isSubCorrect ? "Đ" : (selected ? "S" : "-");
+                        questionDetail.push(`${l}:${ans}(${subStatus})`);
+                    }
+                });
+                
+                let p2ScoreEarned = 0;
+                if (correctCount === 1) p2ScoreEarned = 0.1;
+                else if (correctCount === 2) p2ScoreEarned = 0.25;
+                else if (correctCount === 3) p2ScoreEarned = 0.5;
+                else if (correctCount === 4) p2ScoreEarned = 1.0;
+                
+                score += p2ScoreEarned;
+                payload[`P2_Cau_${i}`] = `[${correctCount} ý đúng] ${questionDetail.join(' ')}`;
+            }
+
+            for (let i = 1; i <= 18; i++) {
+                const qName = `P3_Cau_${i}`;
+                if (correctAnswers[qName]) {
+                    let ans = "";
+                    for (let j = 1; j <= 12; j++) {
+                        const box = document.getElementById(`${qName}_${j}`);
+                        if (box && box.value) ans += box.value;
+                    }
+                    
+                    let studentAns = ans.replace(/,/g, '.').replace(/\s+/g, '');
+                    let trueAns = correctAnswers[qName].replace(/,/g, '.').replace(/\s+/g, '');
+                    let isCorrect = (studentAns === trueAns && studentAns !== "");
+                    
+                    if (isCorrect) score += 0.5;
+                    
+                    let statusStr = isCorrect ? "Đúng" : (studentAns !== "" ? "Sai" : "K");
+                    payload[qName] = `${studentAns || 'Bỏ trống'} (${statusStr})`;
+                }
+            }
+
+            const finalScoreString = `${score.toFixed(2)}/25.75`;
+            payload['score'] = score.toFixed(2);
+            payload['maxScore'] = '25.75';
+            payload['attemptId'] = state.attemptId;   // để Apps Script bỏ các lần gửi trùng
+
+            lockForm();
+            saveState({ answers: collectAnswers(), submitted: true, sent: false, payload: payload, finalScore: finalScoreString });
+            showResult('Đã chấm xong, đang gửi kết quả...');
+            sendPayload();
+        }
+
+        function showPasswordPrompt() {
+            document.getElementById('passwordPrompt').style.display = 'block';
+            document.getElementById('viewSolBtn').style.display = 'none';
+            document.getElementById('passwordPrompt').scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        function checkPassword() {
+            const entered = document.getElementById('solPassword').value;
+            if (entered === "0947306694") {
+                document.getElementById('passwordPrompt').style.display = 'none';
+                revealSolutions();
+            } else {
+                alert("Mật khẩu không chính xác! Vui lòng liên hệ Giáo viên.");
+            }
+        }
+
+        function revealSolutions() {
+            isSubmitted = true;
+            
+            document.getElementById('submitBtn').style.display = 'none';
+            const allInputs = document.querySelectorAll('#quizForm input, #quizForm textarea');
+            allInputs.forEach(input => input.disabled = true);
+
+            const form = document.getElementById('quizForm');
+            
+            for (let i = 1; i <= 31; i++) {
+                const qName = `P1_Cau_${i}`;
+                const correctVal = correctAnswers[qName];
+                const allRadios = form.querySelectorAll(`input[name="${qName}"]`);
+                allRadios.forEach(radio => {
+                    const lbl = radio.closest('label');
+                    if (radio.value === correctVal) {
+                        lbl.style.backgroundColor = '#d4edda';
+                        lbl.style.borderColor = '#28a745';
+                    } else if (radio.checked) {
+                        lbl.style.backgroundColor = '#f8d7da';
+                        lbl.style.borderColor = '#dc3545';
+                    } else {
+                        lbl.style.opacity = '0.5';
+                    }
+                });
+            }
+
+            const labels_tf = ['a', 'b', 'c', 'd'];
+            for (let i = 1; i <= 9; i++) {
+                labels_tf.forEach(l => {
+                    const qName = `P2_Cau_${i}_${l}`;
+                    if (correctAnswers[qName]) {
+                        const correctVal = correctAnswers[qName];
+                        const allRadios = form.querySelectorAll(`input[name="${qName}"]`);
+                        allRadios.forEach(radio => {
+                            const lbl = radio.closest('label');
+                            if (radio.value === correctVal) {
+                                lbl.style.backgroundColor = '#d4edda';
+                                lbl.style.color = '#155724';
+                            } else if (radio.checked) {
+                                lbl.style.backgroundColor = '#f8d7da';
+                                lbl.style.color = '#721c24';
+                            } else {
+                                lbl.style.opacity = '0.5';
+                            }
+                        });
+                    }
+                });
+            }
+
+            for (let i = 1; i <= 18; i++) {
+                const qName = `P3_Cau_${i}`;
+                if (correctAnswers[qName]) {
+                    let ans = "";
+                    let boxes = [];
+                    for (let j = 1; j <= 12; j++) {
+                        const box = document.getElementById(`${qName}_${j}`);
+                        if (box) {
+                            boxes.push(box);
+                            if (box.value) ans += box.value;
+                        }
+                    }
+                    
+                    let studentAns = ans.replace(/,/g, '.').replace(/\s+/g, '');
+                    let trueAns = correctAnswers[qName].replace(/,/g, '.').replace(/\s+/g, '');
+                    let isCorrect = (studentAns === trueAns && studentAns !== "");
+                    
+                    boxes.forEach(box => {
+                        if (isCorrect) {
+                            box.style.backgroundColor = '#d4edda';
+                            box.style.borderColor = '#28a745';
+                            box.style.color = '#155724';
+                        } else {
+                            box.style.backgroundColor = '#f8d7da';
+                            box.style.borderColor = '#dc3545';
+                            box.style.color = '#721c24';
+                        }
+                    });
+
+                    const group = document.querySelector(`#${qName}_1`).closest('.options');
+                    let correctDiv = document.createElement('div');
+                    correctDiv.style.marginTop = '10px';
+                    correctDiv.innerHTML = `<span style="color:#28a745; font-weight:bold; font-size:16px;">Đáp án đúng: ${correctAnswers[qName]}</span>`;
+                    group.appendChild(correctDiv);
+                }
+            }
+
+            const solutions = document.querySelectorAll('.solution-box');
+            solutions.forEach(box => box.style.display = 'block');
+
+            // Chuẩn hóa lại SVG vừa hiện ra (lúc này mới đo được kích thước)
+            initMedia();
+            if (window.MathJax && MathJax.typesetPromise) MathJax.typesetPromise().then(initMedia);
+        }
+
+        const MEDIA_SCOPE = '.question, .solution-box';
+        // =====================================================================
+        // XỬ LÝ SVG / ẢNH (dùng chung cho quiz và trình chiếu)
+        // Mỗi template khai báo trước: const MEDIA_SCOPE = '.vung-chua-hinh, ...';
+        // =====================================================================
+        const MEDIA_SVG_SEL = MEDIA_SCOPE.split(',').map(s => s.trim() + ' svg').join(', ');
+        const MEDIA_ALL_SEL = MEDIA_SCOPE.split(',').map(s => s.trim()).flatMap(s => [s + ' svg', s + ' img']).join(', ');
+
+        // Chỉ nhận số thuần hoặc "px"; "10cm", "50%", "auto"... trả về NaN để không đọc sai đơn vị
+        function svgNum(v) {
+            if (v == null) return NaN;
+            const m = String(v).trim().match(/^([0-9]*\.?[0-9]+)(px)?$/i);
+            return m ? parseFloat(m[1]) : NaN;
+        }
+
+        // Đổi id trong từng SVG thành duy nhất để các hình không dùng nhầm clipPath/marker/gradient của nhau
+        let __svgSeq = 0;
+        function uniquifySvgIds(svg) {
+            if (svg.dataset.idsDone) return;
+            svg.dataset.idsDone = '1';
+            const withId = svg.querySelectorAll('[id]');
+            if (!withId.length) return;
+            const prefix = 'svg' + (++__svgSeq) + '_';
+            const map = {};
+            withId.forEach(n => { map[n.id] = prefix + n.id; });
+            const ids = Object.keys(map);
+            const esc = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const urlRe = /url\(\s*(['"]?)#([^)'"\s]+)\1\s*\)/g;
+            const fixUrls = str => str.replace(urlRe, (m, q, id) => map[id] ? `url(${q}#${map[id]}${q})` : m);
+
+            svg.querySelectorAll('*').forEach(n => {
+                if (n.tagName.toLowerCase() === 'style') {
+                    let css = fixUrls(n.textContent);
+                    css = css.replace(new RegExp('#(' + ids.map(esc).join('|') + ')(?![\\w-])', 'g'), '#' + prefix + '$1');
+                    n.textContent = css;
+                    return;
+                }
+                Array.from(n.attributes).forEach(a => {
+                    if (a.name === 'id' || a.value.indexOf('#') < 0) return;
+                    if ((a.name === 'href' || a.name === 'xlink:href') && a.value.charAt(0) === '#') {
+                        const id = a.value.slice(1);
+                        if (map[id]) n.setAttribute(a.name, '#' + map[id]);
+                    } else {
+                        const nv = fixUrls(a.value);
+                        if (nv !== a.value) n.setAttribute(a.name, nv);
+                    }
+                });
+            });
+            withId.forEach(n => { n.id = map[n.id]; });
+        }
+
+        // Chuẩn hóa SVG: id duy nhất + thêm viewBox nếu thiếu để SVG co giãn đúng
+        function normalizeSvgs() {
+            document.querySelectorAll(MEDIA_SVG_SEL).forEach(svg => {
+                if (svg.closest('mjx-container')) return;
+                uniquifySvgIds(svg);
+                if (svg.dataset.normalized) return;
+                const w = svgNum(svg.getAttribute('width'));
+                const h = svgNum(svg.getAttribute('height'));
+
+                if (!svg.hasAttribute('viewBox')) {
+                    if (w > 0 && h > 0) {
+                        svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
+                    } else {
+                        try {   // đang bị ẩn thì getBBox lỗi -> sẽ thử lại khi phần chứa nó hiện ra
+                            const b = svg.getBBox();
+                            if (b.width && b.height)
+                                svg.setAttribute('viewBox', `${b.x - 2} ${b.y - 2} ${b.width + 4} ${b.height + 4}`);
+                        } catch (e) { return; }
+                    }
+                }
+                if (svg.hasAttribute('viewBox')) {
+                    if (w > 0) { svg.style.width = '100%'; svg.style.maxWidth = w + 'px'; }  // kích thước gốc làm trần
+                    svg.removeAttribute('height');
+                    svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+                    svg.dataset.normalized = '1';
+                }
+            });
+        }
+
+        // Zoom: phóng to bằng cách tăng chiều rộng thật, khung tự cao theo, cuộn bằng thanh cuộn gốc
+        const __zoomRefresh = new Set();
+        let __zoomResizeTimer;
+        window.addEventListener('resize', () => {
+            clearTimeout(__zoomResizeTimer);
+            __zoomResizeTimer = setTimeout(() => __zoomRefresh.forEach(fn => fn()), 150);
+        });
+
+        function setupImageZoom() {
+            document.querySelectorAll(MEDIA_ALL_SEL).forEach(el => {
+                if (el.closest('.zoom-container') || el.closest('mjx-container') || el.classList.contains('no-zoom')) return;
+
+                const wrapper = document.createElement('div');
+                wrapper.className = 'zoom-container';
+                const viewport = document.createElement('div');
+                viewport.className = 'zoom-viewport';
+                el.parentNode.insertBefore(wrapper, el);
+                viewport.appendChild(el);
+                wrapper.appendChild(viewport);
+                el.classList.add('zoom-media');
+
+                let scale = 1;
+                const STEP = 0.25, MIN = 1, MAX = 4;
+
+                const toolbar = document.createElement('div');
+                toolbar.className = 'zoom-toolbar';
+                const mk = (txt, title) => {
+                    const b = document.createElement('button');
+                    b.type = 'button'; b.className = 'zoom-btn'; b.innerHTML = txt; b.title = title;
+                    b.setAttribute('aria-label', title);
+                    return b;
+                };
+                const btnIn = mk('➕', 'Phóng to'), btnOut = mk('➖', 'Thu nhỏ'), btnReset = mk('↺', 'Mặc định');
+
+                function apply(newScale) {
+                    const cx = viewport.scrollWidth ? (viewport.scrollLeft + viewport.clientWidth / 2) / viewport.scrollWidth : 0.5;
+                    const cy = viewport.scrollHeight ? (viewport.scrollTop + viewport.clientHeight / 2) / viewport.scrollHeight : 0.5;
+
+                    scale = Math.min(MAX, Math.max(MIN, Math.round(newScale * 100) / 100));
+
+                    el.classList.remove('zoomed');
+                    el.style.removeProperty('--zw');
+                    const base = el.getBoundingClientRect().width;   // chiều rộng vừa khung hiện tại
+                    if (scale > 1 && base > 0) {
+                        el.style.setProperty('--zw', (base * scale) + 'px');
+                        el.classList.add('zoomed');
+                        viewport.scrollLeft = cx * viewport.scrollWidth - viewport.clientWidth / 2;
+                        viewport.scrollTop = cy * viewport.scrollHeight - viewport.clientHeight / 2;
+                    }
+                    viewport.classList.toggle('can-pan', el.classList.contains('zoomed'));
+                    btnIn.disabled = scale >= MAX;
+                    btnOut.disabled = scale <= MIN;
+                }
+
+                btnIn.onclick = () => apply(scale + STEP);
+                btnOut.onclick = () => apply(scale - STEP);
+                btnReset.onclick = () => apply(1);
+                __zoomRefresh.add(() => { if (scale > 1) apply(scale); });
+
+                // Ctrl + lăn chuột để zoom, nhấp đúp để phóng to/reset
+                viewport.addEventListener('wheel', e => {
+                    if (!e.ctrlKey) return;
+                    e.preventDefault();
+                    apply(scale + (e.deltaY < 0 ? STEP : -STEP));
+                }, { passive: false });
+                viewport.addEventListener('dblclick', () => apply(scale > 1 ? 1 : 2));
+
+                // Kéo thả bằng chuột (cảm ứng dùng cuộn gốc của trình duyệt)
+                let dragging = false, sx = 0, sy = 0, sl = 0, st = 0;
+                viewport.addEventListener('pointerdown', e => {
+                    if (e.pointerType !== 'mouse' || !el.classList.contains('zoomed')) return;
+                    dragging = true; sx = e.clientX; sy = e.clientY; sl = viewport.scrollLeft; st = viewport.scrollTop;
+                    viewport.setPointerCapture(e.pointerId);
+                    viewport.classList.add('dragging');
+                });
+                viewport.addEventListener('pointermove', e => {
+                    if (!dragging) return;
+                    viewport.scrollLeft = sl - (e.clientX - sx);
+                    viewport.scrollTop = st - (e.clientY - sy);
+                });
+                const stop = () => { dragging = false; viewport.classList.remove('dragging'); };
+                viewport.addEventListener('pointerup', stop);
+                viewport.addEventListener('pointercancel', stop);
+
+                toolbar.append(btnIn, btnOut, btnReset);
+                wrapper.appendChild(toolbar);
+                apply(1);
+            });
+        }
+
+        // Bọc từng <table> trong khung cuộn ngang (bỏ qua bảng của MathJax hoặc bảng đã được bọc)
+        const MEDIA_TABLE_SEL = MEDIA_SCOPE.split(',').map(s => s.trim() + ' table').join(', ');
+        function wrapTables() {
+            document.querySelectorAll(MEDIA_TABLE_SEL).forEach(t => {
+                if (t.closest('mjx-container, .table-scroll, .table-responsive, #tblOverlay')) return;
+                if (!t.parentNode) return;
+                const w = document.createElement('div');
+                w.className = 'table-scroll';
+                t.parentNode.insertBefore(w, t);
+                w.appendChild(t);
+            });
+        }
+
+        // ---- Bảng rộng: gợi ý vuốt ngang, cột đầu cố định, nút xem toàn màn hình ----
+        const __tblRefresh = [];
+        window.addEventListener('resize', () => __tblRefresh.forEach(fn => fn()));
+        function tblState(box, sc) {
+            const over = sc.scrollWidth > sc.clientWidth + 2;
+            box.classList.toggle('has-scroll', over);
+            box.classList.toggle('at-end', !over || sc.scrollLeft + sc.clientWidth >= sc.scrollWidth - 2);
+        }
+        function enhanceTables() {
+            document.querySelectorAll('.table-responsive, .table-scroll').forEach(sc => {
+                if (sc.dataset.tblDone || sc.closest('#tblOverlay')) return;
+                const table = sc.querySelector('table');
+                if (!table || !sc.parentNode) return;
+                sc.dataset.tblDone = '1';
+                const box = document.createElement('div'); box.className = 'tbl-box';
+                const hint = document.createElement('div'); hint.className = 'tbl-hint';
+                const msg = document.createElement('span'); msg.textContent = '\u2194 Vuốt ngang để xem thêm';
+                const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'tbl-open'; btn.textContent = '\u26F6 Xem toàn màn hình';
+                btn.addEventListener('click', e => { e.stopPropagation(); openTableOverlay(table); });
+                hint.append(msg, btn);
+                const wrap = document.createElement('div'); wrap.className = 'tbl-wrap';
+                const fade = document.createElement('div'); fade.className = 'tbl-fade';
+                sc.parentNode.insertBefore(box, sc);
+                box.append(hint, wrap);
+                wrap.append(sc, fade);
+                const first = table.rows[0];
+                if (first && first.cells.length >= 4 && first.cells[0].colSpan === 1 && first.cells[0].rowSpan === 1) table.classList.add('sticky-first');
+                const upd = () => tblState(box, sc);
+                sc.addEventListener('scroll', upd, { passive: true });
+                if (window.ResizeObserver) new ResizeObserver(upd).observe(table);
+                __tblRefresh.push(upd);
+                upd();
+            });
+        }
+        let tblOv = null, tblScale = 1;
+        function closeTableOverlay() {
+            if (!tblOv) return;
+            tblOv.classList.remove('open');
+            document.documentElement.style.overflow = '';
+        }
+        function openTableOverlay(table) {
+            if (!tblOv) {
+                tblOv = document.createElement('div'); tblOv.id = 'tblOverlay';
+                tblOv.innerHTML = '<div class="tbl-ov-bar"><span class="ttl">Kéo để xem; A+ / A\u2212 đổi cỡ chữ</span>'
+                    + '<button type="button" class="zoom-btn" data-a="-">A\u2212</button><button type="button" class="zoom-btn" data-a="+">A+</button>'
+                    + '<button type="button" class="zoom-btn" data-a="x">\u2715 Đóng</button></div><div class="tbl-ov-body"></div>';
+                document.body.appendChild(tblOv);
+                tblOv.addEventListener('click', e => {
+                    const b = e.target.closest('button[data-a]');
+                    if (!b) return;
+                    if (b.dataset.a === 'x') { closeTableOverlay(); return; }
+                    tblScale = Math.min(2.6, Math.max(0.6, tblScale + (b.dataset.a === '+' ? 0.2 : -0.2)));
+                    tblOv.style.setProperty('--tbl-s', tblScale);
+                });
+                window.addEventListener('keydown', e => {                 // đang xem bảng: không để phím chuyển câu / slide
+                    if (!tblOv.classList.contains('open')) return;
+                    e.stopImmediatePropagation();
+                    if (e.key === 'Escape') closeTableOverlay();
+                }, true);
+            }
+            const body = tblOv.querySelector('.tbl-ov-body');
+            body.innerHTML = '';
+            const c = table.cloneNode(true);
+            c.querySelectorAll('[id]').forEach(n => n.removeAttribute('id'));
+            c.classList.remove('sticky-first');
+            body.appendChild(c);
+            tblScale = 1;
+            tblOv.style.setProperty('--tbl-s', 1);
+            tblOv.classList.add('open');
+            document.documentElement.style.overflow = 'hidden';
+            body.scrollTo(0, 0);
+        }
+
+        function initMedia() { wrapTables(); enhanceTables(); normalizeSvgs(); setupImageZoom(); }
+
+        window.addEventListener('load', () => setTimeout(initMedia, 300));
+
+    </script>
+</body>
+</html>
