@@ -1,0 +1,1171 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lớp 11 Chương 8 - Bài 1 - Trình Chiếu</title>
+    <style>
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #eccfa0; font-family: Arial, sans-serif; display: flex; justify-content: center; align-items: center; overflow: hidden; }
+        .slide-container { width: 95vw; height: 95vh; height: 95dvh; background: #fff; border-radius: 5px; box-shadow: 0 5px 15px rgba(0,0,0,0.5); display: flex; flex-direction: column; position: relative; padding: 10px; box-sizing: border-box; }
+        .slide-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #0056b3; padding-bottom: 10px; margin-bottom: 20px; flex-shrink: 0; }
+        .slide-header h2 { margin: 0; color: #0056b3; font-size: var(--fs-title); }
+        
+        /* --- CỠ CHỮ CO GIÃN THEO MÀN HÌNH ---
+           --u kết hợp chiều rộng và chiều cao nên màn hình dọc (điện thoại) và ngang đều vừa mắt;
+           clamp() chặn nhỏ nhất để dễ đọc trên điện thoại, chặn lớn nhất để không phình trên màn hình lớn. */
+        :root {
+            --u: calc(0.65vw + 0.65vh);
+            --fs-title: clamp(16px, calc(var(--u) * 1.8), 34px);
+            --fs-q: clamp(16px, calc(var(--u) * 2), 40px);
+            --fs-q-sm: clamp(15px, calc(var(--u) * 1.6), 34px);
+            --fs-sol: clamp(15px, calc(var(--u) * 1.8), 36px);
+            --fs-opt: clamp(14px, calc(var(--u) * 1.6), 32px);
+            --fs-btn: clamp(13px, calc(var(--u) * 1.25), 22px);
+            --fs-toc-h: clamp(16px, calc(var(--u) * 1.5), 28px);
+            --fs-toc: clamp(13px, calc(var(--u) * 1.2), 22px);
+            --fs-toc-num: clamp(19px, calc(var(--u) * 2), 30px);   /* số câu trong mục lục */
+            --box-w: clamp(34px, calc(var(--u) * 3.2), 64px);
+            --box-h: clamp(42px, calc(var(--u) * 4), 80px);
+        }
+        html { -webkit-text-size-adjust: 100%; }
+        @supports (height: 100dvh) { body, html { height: 100dvh; } }
+
+        /* BẬT TÍNH NĂNG CUỘN CHO NỘI DUNG SLIDE */
+        .slide-content { flex-grow: 1; display: flex; flex-direction: column; justify-content: flex-start; align-items: stretch; overflow-y: auto; overflow-x: hidden; padding-right: 7px; padding-bottom: 30px; }
+        /* Trang trí thanh cuộn */
+        .slide-content::-webkit-scrollbar { width: 8px; }
+        .slide-content::-webkit-scrollbar-thumb { background: #888; border-radius: 4px; }
+        .slide-content::-webkit-scrollbar-thumb:hover { background: #555; }
+
+        .question-box { font-size: var(--fs-q); line-height: 1.5; transition: all 0.3s ease; }
+        .solution-box { display: none; font-size: var(--fs-sol); line-height: 1.4; margin-top: 15px; padding: 15px; background: #e2f3f5; border-left: 5px solid #17a2b8; border-radius: 5px; flex-shrink: 0; }
+        
+        /* Trắc nghiệm 1 lựa chọn */
+        .options { display: flex; flex-wrap: wrap; gap: 15px; margin-top: 15px; }
+        .options div { flex: 1 1 45%; background: #f9f9f9; padding: 10px; border: 2px solid #ddd; border-radius: 5px; cursor: pointer; transition: 0.2s; box-sizing: border-box; }
+        .options div:hover:not(.disabled) { background: #e9e9e9; }
+        .options div.selected { border-color: #007bff; background: #e2eefb; }
+        .options div.correct { background: #d4edda !important; border-color: #28a745 !important; color: #155724; font-weight: bold; }
+        .options div.incorrect { background: #f8d7da !important; border-color: #dc3545 !important; color: #721c24; }
+        .options div.disabled { cursor: not-allowed; opacity: 0.8; }
+        
+        /* Trắc nghiệm Đúng/Sai */
+        .tf-row { display: flex; align-items: center; justify-content: space-between; background: #f9f9f9; padding: 8px; margin-top: 10px; border: 2px solid #ddd; border-radius: 3px; }
+        .tf-row .content { flex-grow: 1; padding-right: 15px; font-size: var(--fs-sol); }
+        .tf-actions { display: flex; gap: 10px; }
+        .tf-btn { padding: 10px 20px; font-size: var(--fs-opt); font-weight: bold; border: 2px solid #ccc; border-radius: 5px; cursor: pointer; background: #fff; transition: 0.2s; user-select: none; }
+        .tf-btn.selected { border-color: #007bff; background: #e2eefb; color: #0056b3; }
+        .tf-btn.correct { background: #d4edda !important; border-color: #28a745 !important; color: #155724; }
+        .tf-btn.incorrect { background: #f8d7da !important; border-color: #dc3545 !important; color: #721c24; }
+        
+        /* Trắc nghiệm Trả lời ngắn */
+        .short-ans-group-slide { display: flex; gap: 5px; margin-top: 15px; }
+        .short-ans-box-slide { width: var(--box-w); height: var(--box-h); font-size: var(--fs-sol); text-align: center; border: 1px solid #007bff; border-radius: 8px; font-weight: bold; color: #0056b3; box-sizing: border-box; }
+        .short-ans-box-slide.correct { background: #d4edda; border-color: #28a745; color: #155724; }
+        .short-ans-box-slide.incorrect { background: #f8d7da; border-color: #dc3545; color: #721c24; }
+        .true-ans-text { display: none; color: #28a745; font-weight: bold; font-size: var(--fs-sol); margin-top: 15px; }
+        
+        /* CSS Nút điều khiển */
+        .controls { position: absolute; bottom: 20px; right: 20px; display: flex; gap: 10px; z-index: 100; background: #fff; padding-left: 10px; box-shadow: -10px 0px 10px white; }
+        button { padding: 10px 20px; font-size: var(--fs-btn); cursor: pointer; border: none; border-radius: 2px; font-weight: bold; transition: 0.3s; }
+        .btn-nav { background: #007bff; color: white; }
+        .btn-nav:hover { background: #0056b3; }
+        .btn-nav:disabled { background: #ccc; cursor: not-allowed; }
+        .btn-sol { background: #28a745; color: white; }
+        .btn-sol:hover { background: #218838; }
+        .btn-check { background: #ffc107; color: black; }
+        .btn-check:hover:not(:disabled) { background: #e0a800; }
+        .btn-check:disabled { background: #ccc; color: #666; cursor: not-allowed; }
+        
+        .scale-down .question-box { font-size: var(--fs-q-sm); }
+        .scale-down .options div, .scale-down .tf-row .content, .scale-down .tf-btn { font-size: var(--fs-opt); }
+        
+        mjx-container { max-width: 100%; }
+        /* --- SVG / ẢNH + KHUNG ZOOM DÙNG CHUNG (khung tự co giãn, không đặt chiều cao cố định) --- */
+        :root {
+            --zoom-accent: #1e88e5; --zoom-accent-hover: #1565c0;
+            --zoom-border: #b3d4fc; --zoom-bar-bg: #eef6fc; --zoom-max-h: none;
+        }
+        svg { max-width: 100%; height: auto; display: block; margin: 10px auto; overflow: visible; }
+        svg text { font-family: Arial, sans-serif; }
+        img { max-width: 100%; height: auto; }
+        .zoom-container { display: flex; align-items: flex-start; gap: 10px; margin: 15px 0; }
+        .zoom-viewport {
+            flex: 1 1 auto; min-width: 0;
+            overflow: auto; -webkit-overflow-scrolling: touch;
+            border: 1px solid var(--zoom-border); border-radius: 4px; background: #fff;
+            box-sizing: border-box; padding: 4px;
+        }
+        /* chỉ giới hạn chiều cao và giữ cuộn bên trong khi ảnh đang được phóng to */
+        .zoom-viewport.can-pan { cursor: grab; max-height: var(--zoom-max-h); overscroll-behavior: contain; }
+        .zoom-viewport.dragging { cursor: grabbing; user-select: none; }
+        .zoom-toolbar { display: flex; flex-direction: column; gap: 5px; background: var(--zoom-bar-bg); padding: 5px; border-radius: 4px; border: 1px solid var(--zoom-border); flex-shrink: 0; }
+        .zoom-btn { background: var(--zoom-accent); color: #fff; border: none; padding: 6px 10px; font-size: 14px; border-radius: 4px; cursor: pointer; transition: background .2s, opacity .2s; white-space: nowrap; }
+        .zoom-btn:hover:not(:disabled) { background: var(--zoom-accent-hover); }
+        .zoom-btn:disabled { background: #ccc; cursor: not-allowed; opacity: .6; }
+        .zoom-media { display: block; margin: 0 auto; max-width: 100%; height: auto; user-select: none; -webkit-user-drag: none; }
+        .zoom-media.zoomed { width: var(--zw) !important; max-width: none !important; height: auto !important; }
+        /* --- BẢNG DÀI: bọc trong khung cuộn ngang, không làm tràn lề --- */
+        .table-scroll { display: block; width: 100%; max-width: 100%; min-width: 0; box-sizing: border-box; overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain; margin: 10px 0; }
+        .table-scroll > table { margin: 0; max-width: 100%; border-collapse: collapse; }
+        .table-scroll th, .table-scroll td { overflow-wrap: break-word; }
+        /* .table-responsive do TeX2HTML tạo ra: trước đây chỉ mẫu làm bài có CSS này nên bảng rộng bị tràn ở trình chiếu / luyện tập */
+        .table-responsive { display: block; width: 100%; max-width: 100%; min-width: 0; box-sizing: border-box; overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain; margin: 15px 0; }
+        /* --- BẢNG RỘNG TRÊN ĐIỆN THOẠI: gợi ý vuốt ngang, cột đầu cố định, xem toàn màn hình --- */
+        .tbl-box { position: relative; margin: 12px 0; max-width: 100%; min-width: 0; }
+        .tbl-box > .tbl-wrap { position: relative; }
+        .tbl-box .table-responsive, .tbl-box .table-scroll { margin: 0; }
+        .tbl-hint { display: none; align-items: center; justify-content: space-between; gap: 8px; margin: 0 0 4px; font-size: 12.5px; color: #5f7b94; }
+        .tbl-box.has-scroll > .tbl-hint { display: flex; }
+        .tbl-open { font: inherit; font-size: 12.5px; padding: 4px 10px; border-radius: 14px; border: 1px solid var(--zoom-border); background: var(--zoom-bar-bg); color: var(--zoom-accent-hover); cursor: pointer; white-space: nowrap; }
+        .tbl-fade { display: none; position: absolute; top: 0; right: 0; bottom: 0; width: 30px; pointer-events: none; background: linear-gradient(to right, rgba(255,255,255,0), rgba(120,140,160,.28)); }
+        .tbl-box.has-scroll:not(.at-end) .tbl-fade { display: block; }
+        .tbl-box.has-scroll table.sticky-first tr > :first-child { position: sticky; left: 0; z-index: 2; background: #fff; box-shadow: 2px 0 4px -2px rgba(0,0,0,.35); }
+        @media (max-width: 600px) {
+            .tbl-box td, .tbl-box th { font-size: 14px; padding: 4px 7px !important; }
+        }
+        #tblOverlay { position: fixed; inset: 0; z-index: 99999; background: #fff; display: none; flex-direction: column; }
+        #tblOverlay.open { display: flex; }
+        .tbl-ov-bar { display: flex; align-items: center; gap: 8px; padding: 8px 10px; background: var(--zoom-bar-bg); border-bottom: 1px solid var(--zoom-border); }
+        .tbl-ov-bar .ttl { flex: 1; min-width: 0; font-size: 13px; font-weight: bold; color: #333; }
+        .tbl-ov-body { flex: 1; overflow: auto; -webkit-overflow-scrolling: touch; padding: 10px; touch-action: pan-x pan-y; }
+        .tbl-ov-body table { margin: 0; width: auto; max-width: none; border-collapse: collapse; font-size: calc(15px * var(--tbl-s, 1)); }
+        .tbl-ov-body td, .tbl-ov-body th { font-size: inherit !important; padding: 5px 9px; }
+
+        :root { --zoom-accent: #17a2b8; --zoom-accent-hover: #138496; --zoom-border: #ced4da; --zoom-bar-bg: #f8f9fa; --zoom-max-h: 70vh; }
+        .slide { display: none; height: 100%; flex-direction: column; }
+        .slide.active { display: flex; }
+
+
+        .slide-counter { align-self: center; font-weight: bold; color: #555; font-size: var(--fs-btn); white-space: nowrap; min-width: 3.6em; text-align: center; }
+        .tf-row { flex-wrap: wrap; gap: 8px; }
+
+        @media (max-width: 700px) {
+            .slide-container { width: 100vw; height: 100vh; height: 100dvh; border-radius: 0; padding: 8px; }
+            .slide-header { margin-bottom: 10px; padding-bottom: 6px; }
+            .options div { flex-basis: 100%; }
+            .slide { height: auto; flex: 1 1 auto; min-height: 0; }
+            .slide-content { padding-bottom: 10px; }
+            .controls { position: static; width: 100%; box-shadow: none; padding: 8px 0 0; background: transparent; flex-shrink: 0; justify-content: space-between; }
+            .controls button { flex: 1; padding: 10px 6px; }
+            .controls .btn-fs { flex: 0 0 auto; }
+        }
+        @media (max-height: 500px) {
+            .slide-header { margin-bottom: 8px; padding-bottom: 6px; }
+            .slide-content { padding-bottom: 50px; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            * { transition: none !important; }
+        }
+
+        .author-footer { position: absolute; left: 14px; bottom: 24px; max-width: 38%; z-index: 90; background: #fff; padding: 2px 10px 2px 0; color: #6b7280; font-size: clamp(11px, calc(var(--u) * 0.9), 16px); line-height: 1.3; }
+        .author-footer:empty { display: none; }
+        @media (max-width: 700px) {
+            .author-footer { position: static; max-width: 100%; text-align: center; padding: 6px 0 0; flex-shrink: 0; }
+        }
+
+        /* --- MỤC LỤC: tấm trượt từ dưới lên, có trạng thái từng câu --- */
+        .btn-toc { background: #17a2b8; color: white; cursor: pointer; }
+        .slide-container:focus { outline: none; }
+
+        .toc-modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); z-index: 1000;
+            display: flex; justify-content: center; align-items: flex-end;
+            opacity: 0; visibility: hidden;
+            transition: opacity 0.25s ease, visibility 0.25s ease;
+        }
+        .toc-content {
+            background: #fff; width: 80vw; max-width: 900px; max-height: 85vh; max-height: 85dvh;
+            border-radius: 15px 15px 0 0; padding: 12px 25px 0;
+            display: flex; flex-direction: column; box-sizing: border-box;
+            box-shadow: 0 -5px 25px rgba(0,0,0,0.3);
+            transform: translateY(100%);
+            transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+        .toc-modal.active { opacity: 1; visibility: visible; }
+        .toc-modal.active .toc-content { transform: translateY(0); }
+
+        .toc-handle { flex-shrink: 0; padding: 4px 0 10px; touch-action: none; cursor: grab; }
+        .toc-handle span { display: block; width: 46px; height: 5px; border-radius: 3px; background: #cbd5e1; margin: 0 auto; }
+        .toc-content h3 { flex-shrink: 0; margin: 0 0 4px; color: #0056b3; font-size: var(--fs-toc-h); text-align: center; }
+        .toc-summary { flex-shrink: 0; text-align: center; color: #333; font-size: var(--fs-btn); margin: 2px 0 8px; }
+        .toc-legend { flex-shrink: 0; display: flex; flex-wrap: wrap; gap: 6px 10px; justify-content: center; margin-bottom: 8px; font-size: clamp(11px, calc(var(--u) * 0.9), 15px); }
+        .toc-legend span { padding: 1px 9px; border: 2px solid; border-radius: 12px; white-space: nowrap; }
+
+        .toc-scroll { flex: 1 1 auto; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; padding: 4px 2px 8px; }
+        .toc-group-title { margin: 12px 0 4px; color: #495057; font-size: var(--fs-btn); }
+        .toc-group-title:first-child { margin-top: 2px; }
+        .toc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(58px, 1fr)); gap: 8px; padding: 8px; }
+
+        .toc-item {
+            position: relative; display: flex; align-items: center; justify-content: center;
+            min-height: 44px; padding: 2px; border: 2px solid #007bff; border-radius: 6px;
+            background: #e2eefb; color: #0056b3; font-family: inherit; font-weight: bold; font-size: var(--fs-toc-num);
+            line-height: 1; cursor: pointer; user-select: none; transition: filter .15s, transform .15s;
+        }
+        /* ký hiệu trạng thái: dấu nhỏ ở góc trên bên phải để ô thấp, số to */
+        .toc-item .m { position: absolute; top: 1px; right: 4px; font-size: 11px; line-height: 1; }
+        .toc-item:hover { filter: brightness(0.94); transform: translateY(-1px); }
+        .toc-item:focus-visible { outline: 3px solid #ff9800; outline-offset: 2px; }
+        .toc-item.current { box-shadow: 0 0 0 3px #fff, 0 0 0 6px #0056b3; }
+        .toc-s-correct { background: #d4edda; border-color: #28a745; color: #155724; }
+        .toc-s-wrong   { background: #f8d7da; border-color: #dc3545; color: #721c24; }
+        .toc-s-partial { background: #fff3cd; border-color: #ff9800; color: #7a4b00; }
+        .toc-s-picked  { background: #fffbe6; border-style: dashed; border-color: #d39e00; color: #7a5c00; }
+        .toc-s-none    { background: #f1f3f5; border-color: #adb5bd; color: #495057; }
+        .toc-s-empty   { background: #e2eefb; border-color: #007bff; color: #0056b3; }
+
+        .toc-footer { flex-shrink: 0; display: flex; justify-content: center; padding: 10px 0 calc(12px + env(safe-area-inset-bottom)); }
+        .toc-close { background: #dc3545; font-size: var(--fs-btn); min-width: 120px; }
+        .toc-close:hover { background: #b02a37; }
+
+        @media (max-width: 700px) {
+            .toc-content { width: 100vw; max-width: none; max-height: 88vh; max-height: 88dvh; padding: 8px 14px 0; }
+            .toc-grid { grid-template-columns: repeat(auto-fill, minmax(48px, 1fr)); gap: 6px; padding: 6px; }
+            .toc-item { min-height: 42px; }
+        }
+        @media (max-height: 500px) {
+            .toc-content { max-height: 96vh; max-height: 96dvh; }
+            .toc-legend { display: none; }
+        }
+
+        
+        /* ===== Bổ sung của bộ chuyển đổi TeX2HTML (PyQt6) ===== */
+        .tp { margin: 6px 0; }
+        .center { text-align: center; }
+        /* Huy hiệu mức độ khó (suy ra từ ID câu hỏi, HTML bài giảng) */
+        .lvl { display: inline-block; margin-left: 8px; padding: 1px 10px; border-radius: 12px; border: 1px solid; font-size: 12px; font-weight: bold; line-height: 1.6; white-space: nowrap; vertical-align: middle; cursor: help; }
+        .lvl .dots { letter-spacing: 1px; margin-right: 4px; }
+        .lvl.lv1 { background: #e6f4ea; border-color: #34a853; color: #1b6b32; }
+        .lvl.lv2 { background: #e3f0fb; border-color: #4a90d9; color: #0d47a1; }
+        .lvl.lv3 { background: #fff3e0; border-color: #fb8c00; color: #8a4b00; }
+        .lvl.lv4 { background: #fdeaea; border-color: #e53935; color: #a31515; }
+        .figure svg, .figure img { max-width: 100%; height: auto; }
+        .fig-error { color: #b00020; border: 1px dashed #b00020; padding: 6px 10px; text-align: center; margin: 8px 0; font-size: 14px; }
+        .fbox { border: 1px solid currentColor; padding: 0 4px; }
+        blockquote { margin: 8px 20px; }
+        img { max-width: 100%; height: auto; }
+        ul, ol { margin: 6px 0; padding-left: 24px; }
+        ul.desc, li.cl { list-style: none; }
+        li.cl .lbl { font-weight: bold; margin-right: .4em; }
+        ol[class^="paren-"] { list-style: none; counter-reset: pc; padding-left: 2.2em; }
+        ol[class^="paren-"] > li { counter-increment: pc; position: relative; margin: 4px 0; }
+        ol[class^="paren-"] > li::before { position: absolute; left: -2.2em; width: 2em; text-align: right; font-weight: bold; }
+        ol.paren-a > li::before { content: counter(pc, lower-alpha) ")"; }
+        ol.paren-A > li::before { content: counter(pc, upper-alpha) ")"; }
+        ol.paren-i > li::before { content: counter(pc, lower-roman) ")"; }
+        ol.paren-I > li::before { content: counter(pc, upper-roman) ")"; }
+        ol.paren-1 > li::before { content: counter(pc, decimal) ")"; }
+        table.tex-table { border-collapse: collapse; margin: 8px auto; }
+        table.tex-table td { padding: 4px 10px; }
+        table.tex-table.bordered td { border: 1px solid #555; }
+        .tex-fa { margin: 0 .25em; font-style: normal; }
+
+
+    </style>
+
+    <script>
+        window.MathJax = {
+          tex: { inlineMath: [['$','$'], ['\\(','\\)']], displayMath: [['$$','$$'], ['\\[','\\]']], processEscapes: true, macros: {"wideparen": ["\\overset{\\frown}{#1}", 1], "overarc": ["\\overset{\\frown}{#1}", 1], "colorInterval": "white", "skipInterval": "0.4cm", "Interval": ["\\coordinate [label={center:$#1$},label=below:$\\rule{0pt}{\\skipInterval}#2$] (a) at (#2,0); \n \\coordinate [label={center:$#3$},label=below:$\\rule{0pt}{\\skipInterval}#4$] (b) at (#4,0); \n \\draw[color=\\colorInterval] decorate[decoration={ticks,amplitude=3pt,segment length=1mm}] {(a)--(b)};\n", 4], "IntervalR": ["\\coordinate [label={center:$#1$},label=below:$\\rule{0pt}{\\skipInterval}#2$] (a) at (#2,0); \n \\coordinate [label={center:$#3$},label=below:$\\rule{0pt}{\\skipInterval}#4$] (b) at (#4,0); \n \\draw decorate[decoration={markings,mark=between positions 0 and 1 step 1mm\n with\n {\n\\draw[color=\\colorInterval] (-3pt,-3pt) -- (3pt,3pt);\n }}] {(a)--(b)};\n", 4], "IntervalL": ["\\coordinate [label={center:$#1$},label=below:$\\rule{0pt}{\\skipInterval}#2$] (a) at (#2,0); \n \\coordinate [label={center:$#3$},label=below:$\\rule{0pt}{\\skipInterval}#4$] (b) at (#4,0); \n \\draw decorate[decoration={\n\t\tmarkings,\n\t\tmark=between positions 0 and 1 step 1mm\n with\n {\n\t\t\\draw[color=\\colorInterval] (-3pt,3pt) -- (3pt,-3pt);\n }\n\t\t}\n\t\t] {(a)--(b)};\n", 4], "IntervalLF": ["\\coordinate [label={center:$#1$},label=below:$\\rule{0pt}{\\skipInterval}#2$] (a) at (#2,0); \n \\coordinate [label={center:$#3$},label=below:$\\rule{0pt}{\\skipInterval}#4$] (b) at (#4,0); \n \\fill[pattern=north west lines,pattern color=\\colorInterval](#2,-3pt)rectangle(#4,3pt);\n", 4], "IntervalRF": ["\\coordinate [label={center:$#1$},label=below:$\\rule{0pt}{\\skipInterval}#2$] (a) at (#2,0); \n \\coordinate [label={center:$#3$},label=below:$\\rule{0pt}{\\skipInterval}#4$] (b) at (#4,0); \n \\fill[pattern=north east lines,pattern color=\\colorInterval](#2,-3pt)rectangle(#4,3pt);\n", 4], "pre": "0", "next": "2", "IntervalLR": ["\n\\def\\pre{#1}\n\\def\\next{#2}\n", 2], "IntervalG": ["\\coordinate [label={center:$#1$},label=below:$\\rule{0pt}{\\skipInterval}#2$] (a) at (\\pre,0); \n \\coordinate [label={center:$#3$},label=below:$\\rule{0pt}{\\skipInterval}#4$] (b) at (\\next,0); \n \\draw[color=\\colorInterval] decorate[decoration={ticks,amplitude=3pt,segment length=1mm}] {(a)--(b)};\n", 4], "IntervalGL": ["\\coordinate [label={center:$#1$},label=below:$\\rule{0pt}{\\skipInterval}#2$] (a) at (\\pre,0); \n \\coordinate [label={center:$#3$},label=below:$\\rule{0pt}{\\skipInterval}#4$] (b) at (\\next,0); \n \\draw decorate[decoration={markings,mark=between positions 0 and 1 step 1mm\n with\n {\n\\draw[color=\\colorInterval] (-3pt,3pt) -- (3pt,-3pt);\n }}] {(a)--(b)};\n", 4], "IntervalGR": ["\\coordinate [label={center:$#1$},label=below:$\\rule{0pt}{\\skipInterval}#2$] (a) at (\\pre,0); \n \\coordinate [label={center:$#3$},label=below:$\\rule{0pt}{\\skipInterval}#4$] (b) at (\\next,0); \n \\draw decorate[decoration={markings,mark=between positions 0 and 1 step 1mm\n with\n {\n\\draw[color=\\colorInterval] (-3pt,-3pt) -- (3pt,3pt);\n }}] {(a)--(b)};\n", 4], "IntervalGLF": ["\\coordinate [label={center:$#1$},label=below:$\\rule{0pt}{\\skipInterval}#2$] (a) at (\\pre,0); \n \\coordinate [label={center:$#3$},label=below:$\\rule{0pt}{\\skipInterval}#4$] (b) at (\\next,0); \n \\fill[pattern=north west lines,pattern color=\\colorInterval](\\pre,-3pt)rectangle(\\next,3pt);\n", 4], "IntervalGRF": ["\\coordinate [label={center:$#1$},label=below:$\\rule{0pt}{\\skipInterval}#2$] (a) at (\\pre,0); \n \\coordinate [label={center:$#3$},label=below:$\\rule{0pt}{\\skipInterval}#4$] (b) at (\\next,0); \n \\fill[pattern=north east lines,pattern color=\\colorInterval](\\pre,-3pt)rectangle(\\next,3pt);\n", 4], "tikzsetnextfilename": ["", 1], "phone": "0947 306 694", "facenhom": "\\raisebox{-1pt}{\\scriptsize\\faFacebook}\\ LaTeX\\ Theme and Related Topics"} },
+          options: { enableMenu: false }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-chtml.min.js"></script>
+<style>
+mjx-container[jax="CHTML"][display="true"] { max-width: 100%; overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; }
+mjx-container.fv-wide { cursor: zoom-in; outline: 1px dashed rgba(30,136,229,.6); outline-offset: 2px; border-radius: 3px; }
+.fv-btn { font: bold 12px Arial, sans-serif; line-height: 1.4; color: #1565c0; background: #fff; border: 1px solid #1e88e5; border-radius: 12px; padding: 2px 9px; margin: 0 4px; cursor: pointer; vertical-align: middle; white-space: nowrap; }
+.fv-btn.blk { display: block; margin: 2px 0 8px auto; }
+.fv-btn:active { background: #e3f0fb; }
+html.fv-lock, html.fv-lock body { overflow: hidden !important; }
+.fv-ov { position: fixed; inset: 0; z-index: 100000; display: none; flex-direction: column; background: #fff; color: #1c2b3a; font-family: Arial, sans-serif; }
+.fv-ov.open { display: flex; }
+.fv-bar { flex: 0 0 auto; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; padding: 8px 10px; background: #1e88e5; color: #fff; }
+.fv-bar .fv-t { flex: 1 1 auto; font-weight: bold; font-size: 14px; }
+.fv-bar button { background: #fff; color: #1565c0; border: none; border-radius: 5px; padding: 6px 11px; min-width: 38px; font-weight: bold; font-size: 14px; cursor: pointer; }
+.fv-hint { flex: 0 0 auto; display: none; background: #fff3cd; color: #7a5600; font-size: 12px; padding: 4px 10px; }
+.fv-body { flex: 1 1 auto; overflow: auto; -webkit-overflow-scrolling: touch; touch-action: pan-x pan-y; padding: 16px 12px 40px; background: #fff; }
+.fv-stage { width: max-content; min-width: 100%; }
+.fv-stage mjx-container { display: block !important; margin: 0 !important; max-width: none !important; overflow: visible !important; text-align: left !important; }
+</style>
+</head>
+<body>
+    <div class="slide-container" id="mainContainer" tabindex="-1">
+        <div class="slide" id="slide-0" data-checked="false" data-type="1"><div class="slide-header"><h2>Câu 1</h2><div style="display: flex; gap: 10px;"><button class="btn-check" onclick="checkAnswer(this, 'slide-0')">Kiểm tra</button><button class="btn-sol" onclick="toggleSolution(this, 'slide-0')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Một lớp học gồm $50$ bạn, trong đó có $20$ bạn thích chơi bóng đá, $28$ bạn thích chơi bóng rổ và $8$ bạn thích chơi cả hai môn. Gặp ngẫu nhiên $1$ học sinh trong lớp. Xác suất của biến cố “Bạn được gặp thích chơi bóng đá hoặc bóng rổ” là</div><div class='options'><div onclick="selectOption(this, 'slide-0')"><b>A.</b> $0{,}16$</div><div onclick="selectOption(this, 'slide-0')"><b>B.</b> $0{,}96$</div><div onclick="selectOption(this, 'slide-0')"><b>C.</b> $0{,}48$</div><div onclick="selectOption(this, 'slide-0')" data-correct='true'><b>D.</b> $0{,}8$</div></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Gọi $A$ là biến cố “Bạn được gặp thích chơi bóng đá”, $B$ là biến cố “Bạn được gặp thích chơi bóng rổ”.<br> Xác suất của biến cố $A$ là$$\mathrm{P}(A)=\dfrac{20}{50}=\dfrac{2}{5}.$$ Xác suất của biến cố $B$ là$$\mathrm{P}(B)=\dfrac{28}{50}=\dfrac{14}{25}.$$ Xác suất của biến cố “Bạn được gặp thích chơi cả hai loại” là: $$\mathrm{P}(A B)=\dfrac{8}{50}=\dfrac{4}{25}\text {.}$$ Xác suất của biến cố “Bạn được gặp thích chơi bóng đá hoặc bóng rổ” là: $$\mathrm{P}(A \cup B)=\mathrm{P}(A)+\mathrm{P}(B)-\mathrm{P}(AB)=\dfrac{2}{5}+\dfrac{14}{25}-\dfrac{4}{25}=\dfrac{4}{5}=0{,}8.$$</div></div></div></div>
+<div class="slide" id="slide-1" data-checked="false" data-type="1"><div class="slide-header"><h2>Câu 2</h2><div style="display: flex; gap: 10px;"><button class="btn-check" onclick="checkAnswer(this, 'slide-1')">Kiểm tra</button><button class="btn-sol" onclick="toggleSolution(this, 'slide-1')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Gieo $2$ con xúc xắc cân đối và đồng chất. Gọi $A$ là biến cố “Tích số chấm xuất hiện là số lẻ”. Biến cố nào sau đây xung khắc với biến cố $A$?</div><div class='options'><div onclick="selectOption(this, 'slide-1')"><b>A.</b> “Xuất hiện hai mặt có cùng số chấm”</div><div onclick="selectOption(this, 'slide-1')" data-correct='true'><b>B.</b> “Tổng số chấm xuất hiện là số lẻ”</div><div onclick="selectOption(this, 'slide-1')"><b>C.</b> “Xuất hiện ít nhất một mặt có số chấm là số lẻ”</div><div onclick="selectOption(this, 'slide-1')"><b>D.</b> “Xuất hiện hai mặt có số chấm khác nhau”</div></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Biến cố $A$: “Tích số chấm xuất hiện là số lẻ”&nbsp; tức là cả hai mặt xuất hiện đều là lẻ.<br> Biến cố $B$: “Tổng số chấm xuất hiện là số lẻ”&nbsp; tức là một mặt là lẻ và một mặt là chẵn.<br> Suy ra $A \cap B=\emptyset$. Vậy $A$ và $B$ là hai biến cố xung khắc.</div></div></div></div>
+<div class="slide" id="slide-2" data-checked="false" data-type="1"><div class="slide-header"><h2>Câu 3</h2><div style="display: flex; gap: 10px;"><button class="btn-check" onclick="checkAnswer(this, 'slide-2')">Kiểm tra</button><button class="btn-sol" onclick="toggleSolution(this, 'slide-2')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Một hộp đựng 10 viên bi đỏ được đánh số từ $1$ đến $10$ và $15$ viên bi xanh được đánh số từ $1$ đến $15$. Các viên bi có cùng kích thước và khối lượng. Lấy ra ngẫu nhiên $1$ viên bi từ trong hộp. Gọi $A$ là biến cố “Viên bi lấy ra có màu đỏ”, $B$ là biến cố “Viên bi lấy ra ghi số chẵn”. Xác suất của biến cố $A \cup B$ là</div><div class='options'><div onclick="selectOption(this, 'slide-2')"><b>A.</b> $0,4$</div><div onclick="selectOption(this, 'slide-2')"><b>B.</b> $0,88$</div><div onclick="selectOption(this, 'slide-2')"><b>C.</b> $0,48$</div><div onclick="selectOption(this, 'slide-2')" data-correct='true'><b>D.</b> $0,68$</div></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> $$\mathrm{P}(A \cup B)=\mathrm{P}(A)+\mathrm{P}(B)-\mathrm{P}(AB)=0,68.$$</div></div></div></div>
+<div class="slide" id="slide-3" data-checked="false" data-type="1"><div class="slide-header"><h2>Câu 4</h2><div style="display: flex; gap: 10px;"><button class="btn-check" onclick="checkAnswer(this, 'slide-3')">Kiểm tra</button><button class="btn-sol" onclick="toggleSolution(this, 'slide-3')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Lấy ra ngẫu nhiên $2$ quả bóng từ một hộp chứa $5$ quả bóng xanh và $4$ quả bóng đỏ có kích thước và khối lượng như nhau. Xác suất của biến cố “Hai bóng lấy ra có cùng màu” là</div><div class='options'><div onclick="selectOption(this, 'slide-3')"><b>A.</b> $\dfrac{1}{9}$</div><div onclick="selectOption(this, 'slide-3')"><b>B.</b> $\dfrac{2}{9}$</div><div onclick="selectOption(this, 'slide-3')" data-correct='true'><b>C.</b> $\dfrac{4}{9}$</div><div onclick="selectOption(this, 'slide-3')"><b>D.</b> $\dfrac{5}{9}$</div></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Ta có $n(\Omega)=\mathrm{C}_9^2=36$. <br> $n(A)=\mathrm{C}_5^2 + \mathrm{C}_4^2=16$. <br> Vậy $\mathrm{P}(A)=\dfrac{16}{36}=\dfrac{4}{9}$.</div></div></div></div>
+<div class="slide" id="slide-4" data-checked="false" data-type="1"><div class="slide-header"><h2>Câu 5</h2><div style="display: flex; gap: 10px;"><button class="btn-check" onclick="checkAnswer(this, 'slide-4')">Kiểm tra</button><button class="btn-sol" onclick="toggleSolution(this, 'slide-4')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Chọn ngẫu nhiên một số tự nhiên từ $1$ tới $20$. Xét hai biến&nbsp;cố. <ul><li>$A$: “Số được chọn chia hết cho $3$”;</li><li>$B$: “Số được chọn chia hết cho $4$”.</li></ul> Khi đó biến cố $A \cap B$ là</div><div class='options'><div onclick="selectOption(this, 'slide-4')"><b>A.</b> $\{3;4;12 \}$</div><div onclick="selectOption(this, 'slide-4')" data-correct='true'><b>B.</b> $\{12 \}$</div><div onclick="selectOption(this, 'slide-4')"><b>C.</b> $\{3;4;6;8;9;12;15;16;18;20 \}$</div><div onclick="selectOption(this, 'slide-4')"><b>D.</b> $\{3;6;9;12;15;18\}$</div></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Các phần tử của biến cố $A \cup B$ là số tự nhiên từ $1$ đến $20$ thỏa mãn vừa chia hết cho $3$, vừa chia hết cho $4$, tức là số đó chia hết cho $12$.</div></div></div></div>
+<div class="slide" id="slide-5" data-checked="false" data-type="1"><div class="slide-header"><h2>Câu 6</h2><div style="display: flex; gap: 10px;"><button class="btn-check" onclick="checkAnswer(this, 'slide-5')">Kiểm tra</button><button class="btn-sol" onclick="toggleSolution(this, 'slide-5')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Cho hai biến cố <ul><li>$P$: “Số ghi trên thẻ được lấy là số chia hết cho $2$”;</li><li>$Q$: “Số ghi trên thẻ được lấy là số chia hết cho $4$”.</li></ul> Khi đó biến cố $P \cap Q$ là</div><div class='options'><div onclick="selectOption(this, 'slide-5')"><b>A.</b> “Số ghi trên thẻ được lấy là số chia hết cho $8$”</div><div onclick="selectOption(this, 'slide-5')"><b>B.</b> “Số ghi trên thẻ được lấy là số chia hết cho $2$”</div><div onclick="selectOption(this, 'slide-5')"><b>C.</b> “Số ghi trên thẻ được lấy là số chia hết cho $6$”</div><div onclick="selectOption(this, 'slide-5')" data-correct='true'><b>D.</b> “Số ghi trên thẻ được lấy là số chia hết cho $4$”</div></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Biến cố $P \cap Q$: “Số ghi trên thẻ được lấy là số chia hết cho $2$ và $4$”, tức là chia hết cho $4$.</div></div></div></div>
+<div class="slide" id="slide-6" data-checked="false" data-type="1"><div class="slide-header"><h2>Câu 7</h2><div style="display: flex; gap: 10px;"><button class="btn-check" onclick="checkAnswer(this, 'slide-6')">Kiểm tra</button><button class="btn-sol" onclick="toggleSolution(this, 'slide-6')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Gieo một con xúc xắc cân đối và đồng chất hai lần liên tiếp. Xét các biến cố sau <ul><li>$P$: “Số chấm xuất hiện ở cả hai lần gieo là số chẵn”;</li><li>$Q$: “Số chấm xuất hiện ở cả hai lần gieo là số lẻ”;</li><li>$R$: “Số chấm xuất hiện ở cả hai lần gieo khác tính chẵn lẻ”.</li></ul> Khẳng định nào dưới đây <b>sai</b>?</div><div class='options'><div onclick="selectOption(this, 'slide-6')"><b>A.</b> Hai biến cố $P$ và $Q$ độc lập với nhau</div><div onclick="selectOption(this, 'slide-6')"><b>B.</b> Hai biến cố $P$ và $R$ không độc lập với nhau</div><div onclick="selectOption(this, 'slide-6')"><b>C.</b> Hai biến cố $Q$ và $R$ không độc lập với nhau</div><div onclick="selectOption(this, 'slide-6')" data-correct='true'><b>D.</b> $R$ là biến cố hợp của $P$ và $Q$</div></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Biến cố hợp của hai biến cố $P$ và $Q$ là “Số chấm ở cả hai lần gieo có cùng tính chẵn lẻ” nên mệnh đề “$R$ là biến cố hợp của $P$ và $Q$” &thinsp; là <b>sai</b>.</div></div></div></div>
+<div class="slide" id="slide-7" data-checked="false" data-type="1"><div class="slide-header"><h2>Câu 8</h2><div style="display: flex; gap: 10px;"><button class="btn-check" onclick="checkAnswer(this, 'slide-7')">Kiểm tra</button><button class="btn-sol" onclick="toggleSolution(this, 'slide-7')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Cho hai biến cố $A$ và $B$. Biến cố “$A$ hoặc $B$ xảy ra” &thinsp;được gọi là</div><div class='options'><div onclick="selectOption(this, 'slide-7')"><b>A.</b> Biến cố giao của $A$ và $B$</div><div onclick="selectOption(this, 'slide-7')" data-correct='true'><b>B.</b> Biến cố hợp của $A$ và $B$</div><div onclick="selectOption(this, 'slide-7')"><b>C.</b> Biến cố đối của $A$</div><div onclick="selectOption(this, 'slide-7')"><b>D.</b> Biến cố đối của $B$</div></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Theo định nghĩa, biến cố “$A$ hoặc $B$ xảy ra”&thinsp; được gọi là biến cố hợp của $A$ và $B$.</div></div></div></div>
+<div class="slide" id="slide-8" data-checked="false" data-type="1"><div class="slide-header"><h2>Câu 9</h2><div style="display: flex; gap: 10px;"><button class="btn-check" onclick="checkAnswer(this, 'slide-8')">Kiểm tra</button><button class="btn-sol" onclick="toggleSolution(this, 'slide-8')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Cho hai biến cố $A$ và $B$. Biến cố “Cả $A$ và $B$ đều xảy ra” &thinsp; được gọi là</div><div class='options'><div onclick="selectOption(this, 'slide-8')" data-correct='true'><b>A.</b> Biến cố giao của $A$ và $B$</div><div onclick="selectOption(this, 'slide-8')"><b>B.</b> Biến cố hợp của $A$ và $B$</div><div onclick="selectOption(this, 'slide-8')"><b>C.</b> Biến cố đối của $A$</div><div onclick="selectOption(this, 'slide-8')"><b>D.</b> Biến cố đối của $B$</div></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Theo định nghĩa, biến cố “Cả $A$ và $B$ xảy ra” được gọi là biến cố giao của $A$ và $B$.</div></div></div></div>
+<div class="slide" id="slide-9" data-checked="false" data-type="1"><div class="slide-header"><h2>Câu 10</h2><div style="display: flex; gap: 10px;"><button class="btn-check" onclick="checkAnswer(this, 'slide-9')">Kiểm tra</button><button class="btn-sol" onclick="toggleSolution(this, 'slide-9')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Cho hai biến cố $A$ và $B$. Nếu việc xảy ra hay không xảy ra của biến cố này không ảnh hưởng đến xác suất xảy ra của biến cố kia thì hai biến cố $A$ và $B$ được gọi là</div><div class='options'><div onclick="selectOption(this, 'slide-9')"><b>A.</b> Xung khắc với nhau</div><div onclick="selectOption(this, 'slide-9')"><b>B.</b> Biến cố đối của nhau</div><div onclick="selectOption(this, 'slide-9')" data-correct='true'><b>C.</b> Độc lập với nhau</div><div onclick="selectOption(this, 'slide-9')"><b>D.</b> Không giao với nhau</div></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Theo định nghĩa, nếu việc xảy ra hay không xảy ra của biến cố này không ảnh hưởng đến xác suất xảy ra của biến cố kia thì hai biến cố $A$ và $B$ được gọi là độc lập với nhau.</div></div></div></div>
+<div class="slide" id="slide-10" data-checked="false" data-type="1"><div class="slide-header"><h2>Câu 11</h2><div style="display: flex; gap: 10px;"><button class="btn-check" onclick="checkAnswer(this, 'slide-10')">Kiểm tra</button><button class="btn-sol" onclick="toggleSolution(this, 'slide-10')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Cho hai biến cố $A$ và $B$ là hai biến cố độc lập. Mệnh đề nào dưới đây đúng?</div><div class='options'><div onclick="selectOption(this, 'slide-10')"><b>A.</b> Hai biến cố $A$ và $\overline{B}$ không độc lập</div><div onclick="selectOption(this, 'slide-10')"><b>B.</b> Hai biến cố $\overline{A}$ và $\overline{B}$ không độc lập</div><div onclick="selectOption(this, 'slide-10')" data-correct='true'><b>C.</b> Hai biến cố $\overline{A}$ và $B$ độc lập</div><div onclick="selectOption(this, 'slide-10')"><b>D.</b> Hai biến cố $A$ và $A \cup B$ độc lập</div></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Nếu $A$ và $B$ độc lập thì các cặp biến cố $A$ và $\overline{B}$, $\overline{A}$ và $B$, $\overline{A}$ và $\overline{B}$ cũng độc lập.</div></div></div></div>
+<div class="slide" id="slide-11" data-checked="false" data-type="1"><div class="slide-header"><h2>Câu 12</h2><div style="display: flex; gap: 10px;"><button class="btn-check" onclick="checkAnswer(this, 'slide-11')">Kiểm tra</button><button class="btn-sol" onclick="toggleSolution(this, 'slide-11')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Câu lạc bộ cờ vua của một trường THPT có $20$ thành viên ở ba khối, trong đó khối $10$ có $3$ nam và $2$ nữ, khối $11$ có $4$ nam và $4$ nữ, khối $12$ có $5$ nam và $2$ nữ. Giáo viên chọn ngẫu nhiên một thành viên của câu lạc bộ để tham gia thi đấu giao hữu. Xét các biến cố sau <ul><li>$A$: “Thành viên được chọn là học sinh khối $11$”;</li><li>$B$: “Thành viên được chọn là học sinh nam”;</li></ul> Khi đó biến cố $A \cup B$ là</div><div class='options'><div onclick="selectOption(this, 'slide-11')"><b>A.</b> “Thành viên được chọn là học sinh khối $11$ và là học sinh nam”</div><div onclick="selectOption(this, 'slide-11')"><b>B.</b> “Thành viên được chọn là học sinh khối $11$ và không là học sinh nam”</div><div onclick="selectOption(this, 'slide-11')" data-correct='true'><b>C.</b> “Thành viên được chọn là học sinh khối $11$ hoặc là học sinh nam”</div><div onclick="selectOption(this, 'slide-11')"><b>D.</b> “Thành viên được chọn không là học sinh khối $11$ hoặc là học sinh nam”</div></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Biến cố $A \cup B$ là bao gồm việc chọn thành viên là học sinh khối $11$ hoặc là học sinh nam.</div></div></div></div>
+<div class="slide" id="slide-12" data-checked="false" data-type="1"><div class="slide-header"><h2>Câu 13</h2><div style="display: flex; gap: 10px;"><button class="btn-check" onclick="checkAnswer(this, 'slide-12')">Kiểm tra</button><button class="btn-sol" onclick="toggleSolution(this, 'slide-12')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Hai xạ thủ tham gia thi đấu bắn súng, mỗi người bắn vào bia của mình một viên đạn một cách độc lập với nhau. Gọi $A$ và $B$ lần lượt là các biến cố “Người thứ nhất bắn trúng bia”; “Người thứ hai bắn trúng bia”. Khẳng định nào sau đây đúng?</div><div class='options'><div onclick="selectOption(this, 'slide-12')" data-correct='true'><b>A.</b> Hai biến cố $A$ và $B$ độc lập với nhau</div><div onclick="selectOption(this, 'slide-12')"><b>B.</b> Hai biến cố $A$ và $B$ bằng nhau</div><div onclick="selectOption(this, 'slide-12')"><b>C.</b> Hai biến cố $A$ và $B$ đối nhau</div><div onclick="selectOption(this, 'slide-12')"><b>D.</b> Hai biến cố $A$ và $B$ không độc lập</div></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Do hai xạ thủ thi đấu một cách độc lập nên việc xảy ra biến cố $A$ không ảnh hưởng đến việc xác suất xảy ra biến cố $B$ và ngược lại, do đó hai biến cố $A$ và $B$ độc lập với nhau.</div></div></div></div>
+<div class="slide" id="slide-13" data-checked="false" data-type="1"><div class="slide-header"><h2>Câu 14</h2><div style="display: flex; gap: 10px;"><button class="btn-check" onclick="checkAnswer(this, 'slide-13')">Kiểm tra</button><button class="btn-sol" onclick="toggleSolution(this, 'slide-13')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Chọn một số tự nhiên từ $1$ đến $100$. Xét các biến cố sau <ul><li>$P$: “Số được chọn chia hết cho $3$”;</li><li>$Q$: “Số được chọn chia hết cho $5$”.</li></ul> Biến cố giao có số kết quả thuận lợi là</div><div class='options'><div onclick="selectOption(this, 'slide-13')"><b>A.</b> $5$</div><div onclick="selectOption(this, 'slide-13')" data-correct='true'><b>B.</b> $6$</div><div onclick="selectOption(this, 'slide-13')"><b>C.</b> $3$</div><div onclick="selectOption(this, 'slide-13')"><b>D.</b> $8$</div></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Biến cố $P \cap Q$: “Số được chọn chia hết cho $3$ và $5$”, tức là chia hết cho $15$. Có $6$ kết quả thỏa mãn đó là $\{15;30;45;60;75;90 \}$.</div></div></div></div>
+<div class="slide" id="slide-14" data-checked="false" data-type="1"><div class="slide-header"><h2>Câu 15</h2><div style="display: flex; gap: 10px;"><button class="btn-check" onclick="checkAnswer(this, 'slide-14')">Kiểm tra</button><button class="btn-sol" onclick="toggleSolution(this, 'slide-14')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Chọn một số tự nhiên từ $1$ đến $300$. Xét các biến cố sau <ul><li>$A$: “Số được chọn chia hết cho $3$”;</li><li>$B$: “Số được chọn chia hết cho $6$”.</li></ul> Biến cố giao có số kết quả thuận lợi là</div><div class='options'><div onclick="selectOption(this, 'slide-14')"><b>A.</b> $40$</div><div onclick="selectOption(this, 'slide-14')" data-correct='true'><b>B.</b> $50$</div><div onclick="selectOption(this, 'slide-14')"><b>C.</b> $30$</div><div onclick="selectOption(this, 'slide-14')"><b>D.</b> $40$</div></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Biến cố $A \cap B$: “Số được chọn chia hết cho $3$ và $6$”, tức là chia hết cho $6$. <br> Khi đó có $\dfrac{300-6}{6}+1 = 50$ kết quả thỏa mãn.</div></div></div></div>
+<div class="slide" id="slide-15" data-checked="false" data-type="1"><div class="slide-header"><h2>Câu 16</h2><div style="display: flex; gap: 10px;"><button class="btn-check" onclick="checkAnswer(this, 'slide-15')">Kiểm tra</button><button class="btn-sol" onclick="toggleSolution(this, 'slide-15')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Có $12$ người xếp thành một hàng dọc (vị trí của mỗi người trong hàng là cố định). Chọn ngẫu nhiên $3$ người trong hàng. Tính xác suất để $3$ người được chọn không có $2$ người đứng nào cạnh nhau.</div><div class='options'><div onclick="selectOption(this, 'slide-15')" data-correct='true'><b>A.</b> $\dfrac{6}{11}$</div><div onclick="selectOption(this, 'slide-15')"><b>B.</b> $\dfrac{55}{126}$</div><div onclick="selectOption(this, 'slide-15')"><b>C.</b> $\dfrac{21}{55}$</div><div onclick="selectOption(this, 'slide-15')"><b>D.</b> $\dfrac{7}{110}$</div></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Số phần tử không gian mẫu là $n\left(\Omega \right) = \mathrm{C}_{12}^3 = 220$. <br> Gọi $A$ là biến cố “$3$ người được chọn không có $2$ người đứng cạnh nhau’ ’. <br> Gọi $E$ là biến cố “$3$ người được chọn có đúng $2$ người đứng cạnh nhau”.<br> Gọi $F$ là biến cố “$3$ người được chọn có $3$ người đứng cạnh nhau”.<br> Khi đó$$\mathrm{P} \left(E \right) = \dfrac{n(E)}{n(\Omega)} =\dfrac{2 \cdot 9 + 9 \cdot 8}{220} = \dfrac{9}{22}.$$ $$\mathrm{P} \left(F \right) = \dfrac{n(F)}{n(\Omega)} =\dfrac{10}{220} = \dfrac{1}{22}.$$ Rõ ràng $\overline{A}= E \cup F$ và $E$, $F$ là hai biến cố xung khắc.<br> Suy ra \[\mathrm{P}\left(A \right) = 1 - \mathrm{P} \left(\overline{A} \right) = 1 - \left[\mathrm{P} \left(E \right) + \mathrm{P} \left(F \right) \right] = 1- \dfrac{5}{11} = \dfrac{6}{11}.\]</div></div></div></div>
+<div class="slide" id="slide-16" data-checked="false" data-type="1"><div class="slide-header"><h2>Câu 17</h2><div style="display: flex; gap: 10px;"><button class="btn-check" onclick="checkAnswer(this, 'slide-16')">Kiểm tra</button><button class="btn-sol" onclick="toggleSolution(this, 'slide-16')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Cho hai biến cố $A$ và $B$. Biến cố “$A$ hoặc $B$ xảy ra” được gọi là</div><div class='options'><div onclick="selectOption(this, 'slide-16')"><b>A.</b> Biến cố giao của $A$ và $B$</div><div onclick="selectOption(this, 'slide-16')"><b>B.</b> Biến cố đối của $A$</div><div onclick="selectOption(this, 'slide-16')" data-correct='true'><b>C.</b> Biến cố hợp của $A$ và $B$</div><div onclick="selectOption(this, 'slide-16')"><b>D.</b> Biến cố đối của $B$</div></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Theo định nghĩa, biến cố “$A$ hoặc $B$ xảy ra” được gọi là biến cố hợp của $A$ và $B$.</div></div></div></div>
+<div class="slide" id="slide-17" data-checked="false" data-type="1"><div class="slide-header"><h2>Câu 18</h2><div style="display: flex; gap: 10px;"><button class="btn-check" onclick="checkAnswer(this, 'slide-17')">Kiểm tra</button><button class="btn-sol" onclick="toggleSolution(this, 'slide-17')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Cho hai biến cố $A$ và $B$. Biến cố “Cả $A$ và $B$ đều xảy ra” được gọi là</div><div class='options'><div onclick="selectOption(this, 'slide-17')" data-correct='true'><b>A.</b> Biến cố giao của $A$ và $B$</div><div onclick="selectOption(this, 'slide-17')"><b>B.</b> Biến cố đối của $A$</div><div onclick="selectOption(this, 'slide-17')"><b>C.</b> Biến cố hợp của $A$ và $B$</div><div onclick="selectOption(this, 'slide-17')"><b>D.</b> Biến cố đối của $B$</div></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Theo định nghĩa, biến cố “Cả $A$ và $B$ đều xảy ra” được gọi là biến cố giao của $A$ và $B$.</div></div></div></div>
+<div class="slide" id="slide-18" data-checked="false" data-type="1"><div class="slide-header"><h2>Câu 19</h2><div style="display: flex; gap: 10px;"><button class="btn-check" onclick="checkAnswer(this, 'slide-18')">Kiểm tra</button><button class="btn-sol" onclick="toggleSolution(this, 'slide-18')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Chọn ngẫu nhiên một số tự nhiên từ $1$ đến $20$. Xét các biến cố $A$: “Số được chọn chia hết cho $3$”; $B$: “Số được chọn chia hết cho $4$”. Khi đó biến cố $A \cap B$ là</div><div class='options'><div onclick="selectOption(this, 'slide-18')"><b>A.</b> $\{3; 4; 12\}$</div><div onclick="selectOption(this, 'slide-18')"><b>B.</b> $\{3; 4; 6; 8; 9; 12; 15; 16; 18; 20\}$</div><div onclick="selectOption(this, 'slide-18')" data-correct='true'><b>C.</b> $\{12\}$</div><div onclick="selectOption(this, 'slide-18')"><b>D.</b> $\{3; 6; 9; 12; 15; 18\}$</div></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Các phần tử của biến cố $A \cup B$ là số tự nhiên từ $1$ đến $20$ thỏa mãn vừa chia hết cho $3$, vừa chia hết cho $4$, tức là số đó chia hết cho $12$.</div></div></div></div>
+<div class="slide" id="slide-19" data-checked="false" data-type="1"><div class="slide-header"><h2>Câu 20</h2><div style="display: flex; gap: 10px;"><button class="btn-check" onclick="checkAnswer(this, 'slide-19')">Kiểm tra</button><button class="btn-sol" onclick="toggleSolution(this, 'slide-19')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Một hộp có $30$ tấm thẻ được đánh số từ $1$ đến $30$. Lấy ngẫu nhiên một tấm thẻ từ hộp. Xét các biến cố sau: <ul><li>$P$: “Số ghi trên thẻ được lấy là số chia hết cho $2$”.</li><li>$Q$: “Số ghi trên thẻ được lấy là số chia hết cho $4$”.</li></ul> Biến cố $P \cap Q$ là</div><div class='options'><div onclick="selectOption(this, 'slide-19')"><b>A.</b> “Số ghi trên thẻ được lấy là số chia hết cho $8$”</div><div onclick="selectOption(this, 'slide-19')"><b>B.</b> “Số ghi trên thẻ được lấy là số chia hết cho $2$”</div><div onclick="selectOption(this, 'slide-19')"><b>C.</b> “Số ghi trên thẻ được lấy là số chia hết cho $6$”</div><div onclick="selectOption(this, 'slide-19')" data-correct='true'><b>D.</b> “Số ghi trên thẻ được lấy là số chia hết cho $4$”</div></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Biến cố $P \cap Q$: “Số ghi trên thẻ được lấy là số chia hết cho cả 2 và 4”, tức là chia hết cho 4 (số chia hết cho 4 thì sẽ chia hết cho 2, điều ngược lại không đúng).</div></div></div></div>
+<div class="slide" id="slide-20" data-checked="false" data-type="1"><div class="slide-header"><h2>Câu 21</h2><div style="display: flex; gap: 10px;"><button class="btn-check" onclick="checkAnswer(this, 'slide-20')">Kiểm tra</button><button class="btn-sol" onclick="toggleSolution(this, 'slide-20')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Cho $\mathrm{P}(A)=\dfrac{1}{4}$, $\mathrm{P}(A \cup B)=\dfrac{1}{2}$. Biết $A$, $B$ là hai biến cố xung khắc, thì $\mathrm{P}(B)$ bằng</div><div class='options'><div onclick="selectOption(this, 'slide-20')"><b>A.</b> $\dfrac{1}{8}$</div><div onclick="selectOption(this, 'slide-20')" data-correct='true'><b>B.</b> $\dfrac{1}{4}$</div><div onclick="selectOption(this, 'slide-20')"><b>C.</b> $\dfrac{3}{4}$</div><div onclick="selectOption(this, 'slide-20')"><b>D.</b> $\dfrac{1}{3}$</div></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> $A$, $B$ là hai biến cố xung khắc: $\mathrm{P}(A \cup B)=\mathrm{P}(A)+\mathrm{P}(B) \Leftrightarrow \mathrm{P}(B)=\dfrac{1}{4}$.</div></div></div></div>
+<div class="slide" id="slide-21" data-checked="false" data-type="1"><div class="slide-header"><h2>Câu 22</h2><div style="display: flex; gap: 10px;"><button class="btn-check" onclick="checkAnswer(this, 'slide-21')">Kiểm tra</button><button class="btn-sol" onclick="toggleSolution(this, 'slide-21')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Trên giá sách có $4$ quyến sách toán, $3$ quyến sách lý, $2$ quyến sách hóa. Lấy ngẫu nhiên $3$ quyền sách. Tính xác suất để $3$ quyền lấy ra có ít nhất $1$ quyển là môn toán.</div><div class='options'><div onclick="selectOption(this, 'slide-21')"><b>A.</b> $\dfrac{2}{7}$</div><div onclick="selectOption(this, 'slide-21')"><b>B.</b> $\dfrac{1}{21}$</div><div onclick="selectOption(this, 'slide-21')" data-correct='true'><b>C.</b> $\dfrac{37}{42}$</div><div onclick="selectOption(this, 'slide-21')"><b>D.</b> $\dfrac{5}{42}$</div></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> $n(\Omega)=\mathrm{C}_9^3=84$. Gọi $A: \text{“} 3$ quyển lấy ra có ít nhất $1$ quyển là môn toán”\ Khi đó $\overline{A}$: “$3$ quyển lấy ra không có quyền nào môn toán” hay $\overline{A}$: “$3$ quyền lấy ra là môn lý hoặc hóa”. Ta có $3+2=5$ quyển sách lý hoặc hóa. $n\left(\overline{A}\right)=\mathrm{C}_5^3=10$. Vậy $\mathrm{P}(A)=1-\mathrm{P}\left(\overline{A}\right)=1-\dfrac{10}{84}=\dfrac{37}{42}$.</div></div></div></div>
+<div class="slide" id="slide-22" data-checked="false" data-type="1"><div class="slide-header"><h2>Câu 23</h2><div style="display: flex; gap: 10px;"><button class="btn-check" onclick="checkAnswer(this, 'slide-22')">Kiểm tra</button><button class="btn-sol" onclick="toggleSolution(this, 'slide-22')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Một tổ có 7 nam và 3 nữ. Chọn ngẫu nhiên 2 người. Tính xác suất sao cho 2 người được chọn có ít nhất một nữ.</div><div class='options'><div onclick="selectOption(this, 'slide-22')"><b>A.</b> $\dfrac{2}{15}$</div><div onclick="selectOption(this, 'slide-22')"><b>B.</b> $\dfrac{7}{15}$</div><div onclick="selectOption(this, 'slide-22')" data-correct='true'><b>C.</b> $\dfrac{8}{15}$</div><div onclick="selectOption(this, 'slide-22')"><b>D.</b> $\dfrac{1}{15}$</div></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> $$
+			n(\Omega)=\mathrm{C}_{10}^2=45.
+			$$</div><div class="tp">Gọi $A$: “2 người được chọn có ít nhất 1 nữ” thì $\overline{\mathrm{A}}$: “2 người được chọn không có nữ” hay $\overline{\mathrm{A}}$: “2 người được chọn đều là nam”.</div><div class="tp">Ta có $n\left(\overline{A}\right)=\mathrm{C}_7^2=21$. Do đó $\mathrm{P}\left(\overline{A}\right)=\dfrac{21}{45}$ suy ra $\mathrm{P}(A)=1-\mathrm{P}\left(\overline{A}\right)=1-\dfrac{21}{45}=\dfrac{24}{45}=\dfrac{8}{15}$.</div></div></div></div>
+<div class="slide" id="slide-23" data-checked="false" data-type="1"><div class="slide-header"><h2>Câu 24</h2><div style="display: flex; gap: 10px;"><button class="btn-check" onclick="checkAnswer(this, 'slide-23')">Kiểm tra</button><button class="btn-sol" onclick="toggleSolution(this, 'slide-23')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Một hộp chứa sáu quả cầu trắng và bốn quả cầu đen. Lấy ngẫu nhiên đồng thời bốn quả. Tính xác suất sao cho có ít nhất một quả màu trắng?</div><div class='options'><div onclick="selectOption(this, 'slide-23')" data-correct='true'><b>A.</b> $\dfrac{209}{210}$</div><div onclick="selectOption(this, 'slide-23')"><b>B.</b> $\dfrac{8}{105}$</div><div onclick="selectOption(this, 'slide-23')"><b>C.</b> $\dfrac{1}{21}$</div><div onclick="selectOption(this, 'slide-23')"><b>D.</b> $\dfrac{1}{210}$</div></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Gọi $\mathrm{A}$ là biến cố: “trong bốn quả được chọn có ít nhất 1 quả trắng.”\ Không gian mẫu: $\mathrm{C}_{10}^4=210$. $\overline{A}$ là biến cố: “trong bốn quả được chọn không có 1 quả trắng nào.”\ $\rightarrow n\left(\overline{A}\right)=\mathrm{C}_4^4=1$. $\rightarrow \mathrm{P}\left(\overline{A}\right)=\dfrac{n\left(\overline{A}\right)}{\mid \Omega\mid}=\dfrac{1}{210}$. $\rightarrow \mathrm{P}(A)=1-\mathrm{P}\left(\overline{A}\right)=1-\dfrac{1}{210}=\dfrac{209}{210}$.</div></div></div></div>
+<div class="slide" id="slide-24" data-checked="false" data-type="1"><div class="slide-header"><h2>Câu 25</h2><div style="display: flex; gap: 10px;"><button class="btn-check" onclick="checkAnswer(this, 'slide-24')">Kiểm tra</button><button class="btn-sol" onclick="toggleSolution(this, 'slide-24')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Gieo một con súc xắc cân đối và đồng chất hai lần. Xác suất đề ít nhất một lần xuất hiện mặt sáu chấm là</div><div class='options'><div onclick="selectOption(this, 'slide-24')"><b>A.</b> $\dfrac{6}{36}$</div><div onclick="selectOption(this, 'slide-24')"><b>B.</b> $\dfrac{8}{36}$</div><div onclick="selectOption(this, 'slide-24')"><b>C.</b> $\dfrac{12}{36}$</div><div onclick="selectOption(this, 'slide-24')" data-correct='true'><b>D.</b> $\dfrac{11}{36}$</div></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> $n(\Omega)=6.6=36$. Gọi $A$: “ít nhất một lần xuất hiện mặt sáu chấm”. Khi đó $\overline{A}$: “'không có lần nào xuất hiện mặt sáu chấm”. Ta có $n\left(\overline{A}\right)=5.5=25$. Vậy $\mathrm{P}(A)=1-\mathrm{P}\left(\overline{A}\right)=1-\dfrac{25}{36}=\dfrac{11}{36}$.</div></div></div></div>
+<div class="slide" id="slide-25" data-checked="false" data-type="1"><div class="slide-header"><h2>Câu 26</h2><div style="display: flex; gap: 10px;"><button class="btn-check" onclick="checkAnswer(this, 'slide-25')">Kiểm tra</button><button class="btn-sol" onclick="toggleSolution(this, 'slide-25')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Một lô hàng có $20$ sản phẩm, trong đó $4$ phế phẩm. Lấy tùy ý $6$ sản phẩm từ lô hàng đó. Hãy tính xác suất để trong $6$ sản phẩm lấy ra có không quá $1$ phế phầm.</div><div class='options'><div onclick="selectOption(this, 'slide-25')" data-correct='true'><b>A.</b> $\dfrac{637}{969}$</div><div onclick="selectOption(this, 'slide-25')"><b>B.</b> $\dfrac{7}{9}$</div><div onclick="selectOption(this, 'slide-25')"><b>C.</b> $\dfrac{91}{285}$</div><div onclick="selectOption(this, 'slide-25')"><b>D.</b> $\dfrac{91}{323}$</div></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Số phần tử không gian mẫu là $n(\Omega)=38\,760$. Kết quả trong $6$ sản phầm lấy ra có không quá $1$ phế phẩm là $n(A)=\mathrm{C}_{16}^5 \cdot \mathrm{C}_4^1+\mathrm{C}_{16}^6=25\,480$. Xác suất cần tìm là: $P=\dfrac{25\,480}{38\,760}=\dfrac{637}{969}$.</div></div></div></div>
+<div class="slide" id="slide-26" data-checked="false" data-type="1"><div class="slide-header"><h2>Câu 27</h2><div style="display: flex; gap: 10px;"><button class="btn-check" onclick="checkAnswer(this, 'slide-26')">Kiểm tra</button><button class="btn-sol" onclick="toggleSolution(this, 'slide-26')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Trong nhóm $60$ học sinh có $30$ học sinh thích học Toán, $25$ học sinh thích học Lý và $10$ học sinh thích cả Toán và Lý. Chọn ngẫu nhiên $1$ học sinh từ nhóm này. Xác suất để được học sinh này thích học ít nhất là một môn Toán hoặc Lý?</div><div class='options'><div onclick="selectOption(this, 'slide-26')"><b>A.</b> $\dfrac{1}{2}$</div><div onclick="selectOption(this, 'slide-26')"><b>B.</b> $\dfrac{4}{5}$</div><div onclick="selectOption(this, 'slide-26')" data-correct='true'><b>C.</b> $\dfrac{3}{4}$</div><div onclick="selectOption(this, 'slide-26')"><b>D.</b> $\dfrac{2}{3}$</div></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Gọi $A$ là tập hợp “học sinh thích học Toán”.<br> Gọi $B$ là tập hợp “học sinh thích học Lý”.<br> Gọi $C$ là tập hợp “học sinh thích học ít nhất một môn”.<br> Ta có $n(C)=n(A \cup B)=n(A)+n(B)-n(A \cap B)=30+25-10=45$.<br> Vậy xác suất để được học sinh này thích học ít nhất là một môn Toán hoặc Lý là <div class="center"><div class="tp">$\mathrm{P}(C)=\dfrac{n(C)}{n(\Omega)}=\dfrac{45}{60}=\dfrac{3}{4}$</div></div></div></div></div></div>
+<div class="slide" id="slide-27" data-checked="false" data-type="2"><div class="slide-header"><h2>Câu 28</h2><div style="display: flex; gap: 10px;"><button class="btn-check" onclick="checkAnswer(this, 'slide-27')">Kiểm tra</button><button class="btn-sol" onclick="toggleSolution(this, 'slide-27')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Chọn ngẫu nhiên một học sinh trong trường em. Xét hai biến cố sau:<br> $P$: “Học sinh đó bị cận thị”;<br> $Q$: “Học sinh đó học giỏi môn Toán”.</div><div class='tf-options'><div class="tf-row" data-correct="Sai"><div class="content"><b>a.</b> $P \cup Q$ là biến cố “Học sinh đó bị cận thị và giỏi môn Toán”</div><div class="tf-actions"><div class="tf-btn" onclick="selectTF(this, 'slide-27', 0, 'Đúng')">Đúng</div><div class="tf-btn" onclick="selectTF(this, 'slide-27', 0, 'Sai')">Sai</div></div></div><div class="tf-row" data-correct="Đúng"><div class="content"><b>b.</b> $PQ$ là biến cố “Học sinh đó bị cận thị và học giỏi môn Toán”</div><div class="tf-actions"><div class="tf-btn" onclick="selectTF(this, 'slide-27', 1, 'Đúng')">Đúng</div><div class="tf-btn" onclick="selectTF(this, 'slide-27', 1, 'Sai')">Sai</div></div></div><div class="tf-row" data-correct="Sai"><div class="content"><b>c.</b> $\overline{Q}$ là biến cố “Học sinh đó giỏi môn Toán”</div><div class="tf-actions"><div class="tf-btn" onclick="selectTF(this, 'slide-27', 2, 'Đúng')">Đúng</div><div class="tf-btn" onclick="selectTF(this, 'slide-27', 2, 'Sai')">Sai</div></div></div><div class="tf-row" data-correct="Đúng"><div class="content"><b>d.</b> $\overline{P} \overline{Q}$ là biến cố “Học sinh đó không bị cận và không giỏi môn Toán”</div><div class="tf-actions"><div class="tf-btn" onclick="selectTF(this, 'slide-27', 3, 'Đúng')">Đúng</div><div class="tf-btn" onclick="selectTF(this, 'slide-27', 3, 'Sai')">Sai</div></div></div></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> <ol class="paren-a"><li>$P \cup Q$ là biến cố “Học sinh đó bị cận thị hoặc giỏi môn Toán”.</li><li>$PQ$ là biến cố “Học sinh đó bị cận thị và học giỏi môn Toán”.</li><li>$\overline{Q}$ là biến cố “Học sinh đó không giỏi môn Toán”.</li><li>$\overline{P} \overline{Q}$ là biến cố “Học sinh đó không bị cận và không giỏi môn Toán”.</li></ol></div></div></div></div>
+<div class="slide" id="slide-28" data-checked="false" data-type="2"><div class="slide-header"><h2>Câu 29</h2><div style="display: flex; gap: 10px;"><button class="btn-check" onclick="checkAnswer(this, 'slide-28')">Kiểm tra</button><button class="btn-sol" onclick="toggleSolution(this, 'slide-28')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Gieo một con xúc sắc cân đối một lần. Xét các biến cố:<br> $M$: “Mặt xuất hiện có số chẵn”;<br> $N$: “Mặt xuất hiện có số lớn hơn $4$”.</div><div class='tf-options'><div class="tf-row" data-correct="Sai"><div class="content"><b>a.</b> $M \cup N$ là biến cố “Mặt xuất hiện có số chẵn và lớn hơn $4$”</div><div class="tf-actions"><div class="tf-btn" onclick="selectTF(this, 'slide-28', 0, 'Đúng')">Đúng</div><div class="tf-btn" onclick="selectTF(this, 'slide-28', 0, 'Sai')">Sai</div></div></div><div class="tf-row" data-correct="Đúng"><div class="content"><b>b.</b> $M \cap N$ là biến cố “Mặt xuất hiện có số chẵn và lớn hơn $4$”</div><div class="tf-actions"><div class="tf-btn" onclick="selectTF(this, 'slide-28', 1, 'Đúng')">Đúng</div><div class="tf-btn" onclick="selectTF(this, 'slide-28', 1, 'Sai')">Sai</div></div></div><div class="tf-row" data-correct="Đúng"><div class="content"><b>c.</b> $\overline{N}$ là biến cố “Học sinh đó giỏi môn Toán”</div><div class="tf-actions"><div class="tf-btn" onclick="selectTF(this, 'slide-28', 2, 'Đúng')">Đúng</div><div class="tf-btn" onclick="selectTF(this, 'slide-28', 2, 'Sai')">Sai</div></div></div><div class="tf-row" data-correct="Đúng"><div class="content"><b>d.</b> $M \cap \overline{Q}$ là biến cố “Mặt xuất hiện có số không lớn hơn $4$”</div><div class="tf-actions"><div class="tf-btn" onclick="selectTF(this, 'slide-28', 3, 'Đúng')">Đúng</div><div class="tf-btn" onclick="selectTF(this, 'slide-28', 3, 'Sai')">Sai</div></div></div></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> <ol class="paren-a"><li>$M \cup N$ là biến cố “Mặt xuất hiện có số chẵn hoặc lớn hơn $4$”.</li><li>$M \cap N$ là biến cố “Mặt xuất hiện có số chẵn và lớn hơn $4$”.</li><li>$\overline{N}$ là biến cố “Học sinh đó giỏi môn Toán”.</li><li>$M \cap \overline{N}$ là biến cố “Mặt xuất hiện có số không lớn hơn $4$”.</li></ol></div></div></div></div>
+<div class="slide" id="slide-29" data-checked="false" data-type="2"><div class="slide-header"><h2>Câu 30</h2><div style="display: flex; gap: 10px;"><button class="btn-check" onclick="checkAnswer(this, 'slide-29')">Kiểm tra</button><button class="btn-sol" onclick="toggleSolution(this, 'slide-29')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Một cửa hàng bán điện thoại tiến hành khảo sát ngẫu nhiên một khách hàng. Xét các biến cố:<br> $A$: “Khách hàng mua điện thoại Samsung”;<br> $B$: “Khách hàng mua điện thoại có giá trên $10$ triệu đồng”.</div><div class='tf-options'><div class="tf-row" data-correct="Sai"><div class="content"><b>a.</b> $A \cup B$ là biến cố “Khách hàng mua điện thoại Samsung và có giá trên $10$ triệu đồng”</div><div class="tf-actions"><div class="tf-btn" onclick="selectTF(this, 'slide-29', 0, 'Đúng')">Đúng</div><div class="tf-btn" onclick="selectTF(this, 'slide-29', 0, 'Sai')">Sai</div></div></div><div class="tf-row" data-correct="Đúng"><div class="content"><b>b.</b> $A \cap B$ là biến cố “Khách hàng mua điện thoại Samsung và có giá trên $10$ triệu đồng”</div><div class="tf-actions"><div class="tf-btn" onclick="selectTF(this, 'slide-29', 1, 'Đúng')">Đúng</div><div class="tf-btn" onclick="selectTF(this, 'slide-29', 1, 'Sai')">Sai</div></div></div><div class="tf-row" data-correct="Đúng"><div class="content"><b>c.</b> $\overline{A}$ là biến cố “Khách hàng không mua điện thoại Samsung”</div><div class="tf-actions"><div class="tf-btn" onclick="selectTF(this, 'slide-29', 2, 'Đúng')">Đúng</div><div class="tf-btn" onclick="selectTF(this, 'slide-29', 2, 'Sai')">Sai</div></div></div><div class="tf-row" data-correct="Đúng"><div class="content"><b>d.</b> $\overline{A} \cap \overline{B}$ là biến cố “Khách hàng không mua điện thoại Samsung hoặc không mua điện thoại có giá trên $10$ triệu đồng”</div><div class="tf-actions"><div class="tf-btn" onclick="selectTF(this, 'slide-29', 3, 'Đúng')">Đúng</div><div class="tf-btn" onclick="selectTF(this, 'slide-29', 3, 'Sai')">Sai</div></div></div></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> <ol class="paren-a"><li>$A \cup B$ là biến cố “Khách hàng mua điện thoại Samsung hoặc mua điện thoại có giá trên $10$ triệu đồng”.</li><li>$A \cap B$ là biến cố “Khách hàng mua điện thoại Samsung và có giá trên $10$ triệu đồng”.</li><li>$\overline{A}$ là biến cố “Khách hàng không mua điện thoại Samsung”.</li><li>$\overline{A} \cap \overline{B}$ là biến cố “Khách hàng không mua điện thoại Samsung hoặc không mua điện thoại có giá trên $10$ triệu đồng”.</li></ol></div></div></div></div>
+<div class="slide" id="slide-30" data-checked="false" data-type="2"><div class="slide-header"><h2>Câu 31</h2><div style="display: flex; gap: 10px;"><button class="btn-check" onclick="checkAnswer(this, 'slide-30')">Kiểm tra</button><button class="btn-sol" onclick="toggleSolution(this, 'slide-30')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Một chiếc túi có $12$ tấm thẻ được đánh số từ $1$ đến $12$. Bạn Hòa rút ngẫu nhiên một tấm thẻ trong túi để sang bên cạnh. Tiếp theo, bạn Bình rút ngẫu nhiên một tấm thẻ. Xét hai biến cố sau <ul><li>M: “Bạn Hòa rút được tấm thẻ ghi số lẻ”;</li><li>N: “Bạn Bình rút được tấm thẻ ghi số chẵn”.</li></ul></div><div class='tf-options'><div class="tf-row" data-correct="Sai"><div class="content"><b>a.</b> Có $12$ khả năng biến cố $M$ xảy ra</div><div class="tf-actions"><div class="tf-btn" onclick="selectTF(this, 'slide-30', 0, 'Đúng')">Đúng</div><div class="tf-btn" onclick="selectTF(this, 'slide-30', 0, 'Sai')">Sai</div></div></div><div class="tf-row" data-correct="Đúng"><div class="content"><b>b.</b> Nếu $M$ xảy ra, khi đó $\mathrm{P}(N)=\dfrac{6}{11}$</div><div class="tf-actions"><div class="tf-btn" onclick="selectTF(this, 'slide-30', 1, 'Đúng')">Đúng</div><div class="tf-btn" onclick="selectTF(this, 'slide-30', 1, 'Sai')">Sai</div></div></div><div class="tf-row" data-correct="Sai"><div class="content"><b>c.</b> Nếu $M$ không xảy ra, khi đó $\mathrm{P}(N)=\dfrac{6}{11}$</div><div class="tf-actions"><div class="tf-btn" onclick="selectTF(this, 'slide-30', 2, 'Đúng')">Đúng</div><div class="tf-btn" onclick="selectTF(this, 'slide-30', 2, 'Sai')">Sai</div></div></div><div class="tf-row" data-correct="Sai"><div class="content"><b>d.</b> $M$ và $N$ độc lập</div><div class="tf-actions"><div class="tf-btn" onclick="selectTF(this, 'slide-30', 3, 'Đúng')">Đúng</div><div class="tf-btn" onclick="selectTF(this, 'slide-30', 3, 'Sai')">Sai</div></div></div></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> <ol class="paren-a"><li>Có $6$ số lẻ là $\{1;3;5;7;9;11 \}$ nên sẽ có $6$ khả năng biến cố $M$ xảy ra.</li><li>Nếu $M$ xảy ra, tức là bạn Hòa rút được tấm thẻ ghi số lẻ thì sau đó trong túi còn $11$ tấm thẻ với $5$ thẻ ghi số lẻ và $6$ thẻ ghi số chẵn. Vậy $\mathrm{P}(N) = \dfrac{6}{11}$.</li><li>Nếu $M$ không xảy ra, tức là bạn Hòa rút được tấm thẻ ghi số chẵn thì sau đó trong túi còn $11$ tấm thẻ với $6$ thẻ ghi số lẻ và $5$ thẻ ghi số chẵn. Vậy $\mathrm{P}(N) = \dfrac{5}{11}$.</li><li>Ta thấy xác suất của $N$ thay đổi tùy theo $M$ xảy ra hay $M$ không xảy ra. Do đó $M$ và $N$ không độc lập.</li></ol></div></div></div></div>
+<div class="slide" id="slide-31" data-checked="false" data-type="3" data-correctans="0"><div class="slide-header"><h2>Câu 32</h2><div style="display: flex; gap: 10px;"><button class="btn-check" onclick="checkAnswer(this, 'slide-31')">Kiểm tra</button><button class="btn-sol" onclick="toggleSolution(this, 'slide-31')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Gieo một con xúc sắc. Xét các biến cố $A$: “Số chấm thu được là một số chia hết cho $3$” &thinsp; và biến cố $B$: “Số chấm thu được là số chính phương”. Tìm số kết quả thuận lợi của biến cố $A \cap B$.</div><div class="short-ans-group-slide"><input type="text" class="short-ans-box-slide" maxlength="1" id="ans_slide-31_1" oninput="moveNextSlideAns(this, 2, 'slide-31')" onkeydown="movePrevSlideAns(event, this, null, 'slide-31')"><input type="text" class="short-ans-box-slide" maxlength="1" id="ans_slide-31_2" oninput="moveNextSlideAns(this, 3, 'slide-31')" onkeydown="movePrevSlideAns(event, this, 1, 'slide-31')"><input type="text" class="short-ans-box-slide" maxlength="1" id="ans_slide-31_3" oninput="moveNextSlideAns(this, 4, 'slide-31')" onkeydown="movePrevSlideAns(event, this, 2, 'slide-31')"><input type="text" class="short-ans-box-slide" maxlength="1" id="ans_slide-31_4" oninput="moveNextSlideAns(this, 5, 'slide-31')" onkeydown="movePrevSlideAns(event, this, 3, 'slide-31')"></div><div class="true-ans-text"></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Ta có $A = \{3;6 \}$, $B=\{4 \}$. Khi đó không có kết quả chung của cả hai biến cố.</div></div></div></div>
+<div class="slide" id="slide-32" data-checked="false" data-type="3" data-correctans="1"><div class="slide-header"><h2>Câu 33</h2><div style="display: flex; gap: 10px;"><button class="btn-check" onclick="checkAnswer(this, 'slide-32')">Kiểm tra</button><button class="btn-sol" onclick="toggleSolution(this, 'slide-32')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Gieo hai con xúc xắc cân đối và đồng chất. Gọi $A$ là biến cố “Tổng số chấm xuất hiện trên hai con xúc xắc bằng $4$”, $B$ là biến cố “Tích số chấm xuất hiện trên hai con xúc xắc bằng $4$”. Tập hợp mô tả biến cố $AB$ có bao nhiêu kết quả thuận lợi.</div><div class="short-ans-group-slide"><input type="text" class="short-ans-box-slide" maxlength="1" id="ans_slide-32_1" oninput="moveNextSlideAns(this, 2, 'slide-32')" onkeydown="movePrevSlideAns(event, this, null, 'slide-32')"><input type="text" class="short-ans-box-slide" maxlength="1" id="ans_slide-32_2" oninput="moveNextSlideAns(this, 3, 'slide-32')" onkeydown="movePrevSlideAns(event, this, 1, 'slide-32')"><input type="text" class="short-ans-box-slide" maxlength="1" id="ans_slide-32_3" oninput="moveNextSlideAns(this, 4, 'slide-32')" onkeydown="movePrevSlideAns(event, this, 2, 'slide-32')"><input type="text" class="short-ans-box-slide" maxlength="1" id="ans_slide-32_4" oninput="moveNextSlideAns(this, 5, 'slide-32')" onkeydown="movePrevSlideAns(event, this, 3, 'slide-32')"></div><div class="true-ans-text"></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Tập hợp mô tả các biến cố $A=\left\{(1; 3), (3; 1), (2; 2)\right\}$, $B=\left\{(1; 4), (4; 1), (2; 2)\right\}$. <br> Suy ra $AB=\left\{(2; 2)\right\}$ nên có $1$ kết quả thuận lợi.</div></div></div></div>
+<div class="slide" id="slide-33" data-checked="false" data-type="3" data-correctans="107"><div class="slide-header"><h2>Câu 34</h2><div style="display: flex; gap: 10px;"><button class="btn-check" onclick="checkAnswer(this, 'slide-33')">Kiểm tra</button><button class="btn-sol" onclick="toggleSolution(this, 'slide-33')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Có $200$ thẻ ghi số tự nhiên khác nhau từ $1$ đến $200$, rút ngẫu nhiên $1$ thẻ. Xét các biến cố $A$: “Số ghi trên thẻ là số chẵn” &thinsp; và biến cố $B$: “Số ghi trên thẻ là số chính phương”. Tìm số kết quả thuận lợi của biến cố giao.</div><div class="short-ans-group-slide"><input type="text" class="short-ans-box-slide" maxlength="1" id="ans_slide-33_1" oninput="moveNextSlideAns(this, 2, 'slide-33')" onkeydown="movePrevSlideAns(event, this, null, 'slide-33')"><input type="text" class="short-ans-box-slide" maxlength="1" id="ans_slide-33_2" oninput="moveNextSlideAns(this, 3, 'slide-33')" onkeydown="movePrevSlideAns(event, this, 1, 'slide-33')"><input type="text" class="short-ans-box-slide" maxlength="1" id="ans_slide-33_3" oninput="moveNextSlideAns(this, 4, 'slide-33')" onkeydown="movePrevSlideAns(event, this, 2, 'slide-33')"><input type="text" class="short-ans-box-slide" maxlength="1" id="ans_slide-33_4" oninput="moveNextSlideAns(this, 5, 'slide-33')" onkeydown="movePrevSlideAns(event, this, 3, 'slide-33')"></div><div class="true-ans-text"></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Ta có $A = \{2;4;6 \cdots 200 \}$ và có $\dfrac{200-2}{2}+1 = 100$ kết quả, $B=\{1;4;9;16;25;36;64;81;100;121; 144; 169; 196 \}$ và có $13$ kết quả trong đó có $6$ kết quả chẵn.<br> Khi đó $A \cup B$ có $100+13-6= 107$ kết quả thuận lợi.</div></div></div></div>
+<div class="slide" id="slide-34" data-checked="false" data-type="3" data-correctans="2"><div class="slide-header"><h2>Câu 35</h2><div style="display: flex; gap: 10px;"><button class="btn-check" onclick="checkAnswer(this, 'slide-34')">Kiểm tra</button><button class="btn-sol" onclick="toggleSolution(this, 'slide-34')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Gieo ngẫu nhiên một xúc xắc cân đối và đồng chất hai lần liên tiếp. Xét các biến cố: <ul><li>$A$: “Số chấm xuất hiện ở lần gieo thứ nhất lớn hơn $4$”;</li><li>$B$: “Số chấm xuất hiện ở lần gieo thứ hai nhỏ hơn $4$”;</li><li>$C$: “Số chấm xuất hiện ở lần gieo thứ nhất nhỏ hơn $4$”.</li></ul> Trong các biến cố trên, có bao nhiêu cặp biến cố độc lập.</div><div class="short-ans-group-slide"><input type="text" class="short-ans-box-slide" maxlength="1" id="ans_slide-34_1" oninput="moveNextSlideAns(this, 2, 'slide-34')" onkeydown="movePrevSlideAns(event, this, null, 'slide-34')"><input type="text" class="short-ans-box-slide" maxlength="1" id="ans_slide-34_2" oninput="moveNextSlideAns(this, 3, 'slide-34')" onkeydown="movePrevSlideAns(event, this, 1, 'slide-34')"><input type="text" class="short-ans-box-slide" maxlength="1" id="ans_slide-34_3" oninput="moveNextSlideAns(this, 4, 'slide-34')" onkeydown="movePrevSlideAns(event, this, 2, 'slide-34')"><input type="text" class="short-ans-box-slide" maxlength="1" id="ans_slide-34_4" oninput="moveNextSlideAns(this, 5, 'slide-34')" onkeydown="movePrevSlideAns(event, this, 3, 'slide-34')"></div><div class="true-ans-text"></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Có $2$ cặp biến cố độc lập là $A$, $B$ và $B$, $C$.</div></div></div></div>
+<div class="slide" id="slide-35" data-checked="false" data-type="3" data-correctans="2100"><div class="slide-header"><h2>Câu 36</h2><div style="display: flex; gap: 10px;"><button class="btn-check" onclick="checkAnswer(this, 'slide-35')">Kiểm tra</button><button class="btn-sol" onclick="toggleSolution(this, 'slide-35')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Trên giá sách có $5$ quyển sách Toán học, $6$ quyển sách Vật lý và $7$ quyển sách Hóa học. Lấy ngẫu nhiên cùng lúc $5$ quyển. Tính số phần tử của biến cố $A\colon$ “Lấy ra đủ $3$ loại sách và số sách Toán bằng số sách Vật lý”.</div><div class="short-ans-group-slide"><input type="text" class="short-ans-box-slide" maxlength="1" id="ans_slide-35_1" oninput="moveNextSlideAns(this, 2, 'slide-35')" onkeydown="movePrevSlideAns(event, this, null, 'slide-35')"><input type="text" class="short-ans-box-slide" maxlength="1" id="ans_slide-35_2" oninput="moveNextSlideAns(this, 3, 'slide-35')" onkeydown="movePrevSlideAns(event, this, 1, 'slide-35')"><input type="text" class="short-ans-box-slide" maxlength="1" id="ans_slide-35_3" oninput="moveNextSlideAns(this, 4, 'slide-35')" onkeydown="movePrevSlideAns(event, this, 2, 'slide-35')"><input type="text" class="short-ans-box-slide" maxlength="1" id="ans_slide-35_4" oninput="moveNextSlideAns(this, 5, 'slide-35')" onkeydown="movePrevSlideAns(event, this, 3, 'slide-35')"></div><div class="true-ans-text"></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Biến cố $A$ xảy ra khi một trong hai trường hợp sau xảy ra:<br> Trường hợp 1. Lấy được $1$ sách Toán, $1$ sách Vật lý và $3$ sách Hóa học.<br> Trường hợp 2. Lấy được $2$ sách Toán, $2$ sách Vật lý và $1$ sách Hóa học.<br> Vậy số phần tử của biến cố $A$ là $n(A)=\mathrm{C}_5^1\mathrm{C}_6^1\mathrm{C}_7^3+\mathrm{C}_5^2\mathrm{C}_6^2\mathrm{C}_7^1=2100$.</div></div></div></div>
+<div class="slide" id="slide-36" data-checked="false" data-type="3" data-correctans="2"><div class="slide-header"><h2>Câu 37</h2><div style="display: flex; gap: 10px;"><button class="btn-check" onclick="checkAnswer(this, 'slide-36')">Kiểm tra</button><button class="btn-sol" onclick="toggleSolution(this, 'slide-36')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Gieo hai con xúc xắc cân đối và đồng chất. Gọi $A$ là biến cố “Tổng số chấm xuất hiện trên hai con xúc xắc bằng 5”, gọi $B$ là biến cố “Có ít nhất một con xúc xắc xuất hiện mặt $1$ chấm”.<br> Xác định số phần tử của tập hợp mô tả các biến cố giao $AB$.</div><div class="short-ans-group-slide"><input type="text" class="short-ans-box-slide" maxlength="1" id="ans_slide-36_1" oninput="moveNextSlideAns(this, 2, 'slide-36')" onkeydown="movePrevSlideAns(event, this, null, 'slide-36')"><input type="text" class="short-ans-box-slide" maxlength="1" id="ans_slide-36_2" oninput="moveNextSlideAns(this, 3, 'slide-36')" onkeydown="movePrevSlideAns(event, this, 1, 'slide-36')"><input type="text" class="short-ans-box-slide" maxlength="1" id="ans_slide-36_3" oninput="moveNextSlideAns(this, 4, 'slide-36')" onkeydown="movePrevSlideAns(event, this, 2, 'slide-36')"><input type="text" class="short-ans-box-slide" maxlength="1" id="ans_slide-36_4" oninput="moveNextSlideAns(this, 5, 'slide-36')" onkeydown="movePrevSlideAns(event, this, 3, 'slide-36')"></div><div class="true-ans-text"></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Biến cố $A=\{(1; 4);(4; 1);(2; 3);(3; 2)\}$. <br> Biến cố $B=\{(1; 6);(6; 1);(1; 5);(5; 1);(1; 4);(4; 1);(1; 3);(3; 1);(1; 2);(2; 1);(1; 1)\}$. <br> Kết hợp tập hợp mô tả biến cố $A$, $B$ ở trên, ta có biến cố $AB=\{(1; 4);(4; 1)\}$ nên có $2$ phần tử.</div></div></div></div>
+<div class="slide" id="slide-37" data-checked="false" data-type="3" data-correctans="0,32"><div class="slide-header"><h2>Câu 38</h2><div style="display: flex; gap: 10px;"><button class="btn-check" onclick="checkAnswer(this, 'slide-37')">Kiểm tra</button><button class="btn-sol" onclick="toggleSolution(this, 'slide-37')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Hai đội $A$ và $B$ thi đấu trận chung kết bóng chuyền nữ chào mừng ngày 20 - 11 (trận chung kết tối đa $5$ hiệp). Đội nào thắng $3$ hiệp trước thì thắng trận. Xác suất để đội $A$ thắng mỗi hiệp là $0{,}4$ (không có hòa). Tính xác suất $\mathrm{P}$ để đội $A$ thắng trận.</div><div class="short-ans-group-slide"><input type="text" class="short-ans-box-slide" maxlength="1" id="ans_slide-37_1" oninput="moveNextSlideAns(this, 2, 'slide-37')" onkeydown="movePrevSlideAns(event, this, null, 'slide-37')"><input type="text" class="short-ans-box-slide" maxlength="1" id="ans_slide-37_2" oninput="moveNextSlideAns(this, 3, 'slide-37')" onkeydown="movePrevSlideAns(event, this, 1, 'slide-37')"><input type="text" class="short-ans-box-slide" maxlength="1" id="ans_slide-37_3" oninput="moveNextSlideAns(this, 4, 'slide-37')" onkeydown="movePrevSlideAns(event, this, 2, 'slide-37')"><input type="text" class="short-ans-box-slide" maxlength="1" id="ans_slide-37_4" oninput="moveNextSlideAns(this, 5, 'slide-37')" onkeydown="movePrevSlideAns(event, this, 3, 'slide-37')"></div><div class="true-ans-text"></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Xác suất đội $A$ thắng mỗi hiệp là $0{,}4$ (không có hòa) nên xác suất đội $A$ thua mỗi hiệp là $0{,}6$. <br> Gọi $X$ là biến cố đội $A$ thắng trận đấu với đội $B$. <br> Gọi $X_1, X_2, X_3$ tương ứng là biến cố đội $A$ thắng đội $B$ với tỉ số lần lượt là $3-0$; $3-1$; $3-2$. <br> Khi đó $X=X_1\cup X_2\cup X_3$ và $X_1, X_2, X_3$ đôi một xung khắc.<br> Ta có $\mathrm{P}(X) =\mathrm{P}($$X_1\cup X_2\cup X_3$$) =\mathrm{P}(X_1)+\mathrm{P}(X_2)+\mathrm{P}(X_3)$. <ul><li>Xét biến cố $X_1$: Đội $A$ thắng đội $B$ với tỉ số $3-0$. <br> Khi đó phải đấu $3$ hiệp và đội $A$ thắng cả $3$ hiệp $\Rightarrow \mathrm{P}(X_1)={(0{,}4)}^3=\dfrac{8}{125}$.</li><li>Xét biến cố $X_2$: Đội $A$ thắng đội $B$ với tỉ số $3-1$. <br> Khi đó phải đấu $4$ hiệp và đội $B$ thắng duy nhất $1$ trong $3$ hiệp đầu.<br> $\Rightarrow \mathrm{P}(X_2) = \mathrm{C}_3^1\cdot 0{,}6\cdot {{(0{,}4)}^2}\cdot 0{,}4=\dfrac{72}{625}$.</li><li>Xét biến cố $X_3$: Đội $A$ thắng đội $B$ với tỉ số $3-2$. <br> Khi đó phải đấu $5$ hiệp và đội $B$ thắng $2$ trong $4$ hiệp đầu, đội $A$ thắng $3$ hiệp còn lại.<br> $\Rightarrow \mathrm{P}(X_3) = \mathrm{C}_4^2{(0,6)^2}\cdot {(0,4)^2}\cdot 0{,}4=\dfrac{432}{3125}$.</li></ul> Vậy xác suất để đội $A$ thắng trận chung kết trên là:<br> $\mathrm{P}(X) = \dfrac{8}{125}+\dfrac{72}{625}+\dfrac{432}{3125}=\dfrac{992}{3125}=0{,}31744\approx 0{,}317$.</div></div></div></div>
+<div class="slide" id="slide-38" data-checked="false" data-type="4"><div class="slide-header"><h2>Câu 39</h2><div style="display: flex; gap: 10px;"><button class="btn-sol" onclick="toggleSolution(this, 'slide-38')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Trong một hộp có $8$ viên bi xanh và $6$ viên bi đỏ. Lấy ngẫu nhiên $2$ viên bi trong hộp. Gọi $A$ là biến cố: “Cả hai viên bi có màu xanh”; $B$ là biến cố: “có một viên bi màu xanh và một viên bi màu đỏ”. <ol><li>Tính $\mathrm{P}(A)$ và $\mathrm{P}(B)$.</li><li>Tính xác suất để trong hai viên bi lấy ra có ít nhất một viên bi màu xanh.</li></ol></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> <ol><li>Ta có $n(\Omega)=\mathrm{C}^2_{14}= 91$; $n(A)=\mathrm{C}^2_{8}= 28$, $n(B)=8\cdot 6= 48$. <br> Vậy $\mathrm{P}(A)=\dfrac{n(A)}{n(\Omega)} = \dfrac{28}{91}$, $\mathrm{P}(B)=\dfrac{n(B)}{n(\Omega)} = \dfrac{48}{91}$.</li><li><b>Cách 1:</b> Xét biến cố $C$: “Trong hai viên bi lấy ra có ít nhất một viên bi màu xanh”, nên $C$ là biến cố hợp của $A$ và $B$. Do $A$ và $B$ là hai biến cố xung khắc nên $\mathrm{P}(C)=\mathrm{P}(A)+\mathrm{P}(B)= \dfrac{28}{91}+\dfrac{48}{91}=\dfrac{76}{91}$. <br> <b>Cách 2:</b> Xét biến cố đối $\overline{C}$: “Cả hai viên bi lấy ra đều có màu đỏ”. Khi đó $n\left(\overline{C}\right)=\mathrm{C}^2_{6}= 15$. Suy ra $\mathrm{P}\left(\overline{C}\right)=\dfrac{15}{91}$. <br> Vậy $\mathrm{P}(C)=1-\mathrm{P}\left(\overline{C}\right)= 1-\dfrac{15}{91}=\dfrac{76}{91}$.</li></ol></div></div></div></div>
+<div class="slide" id="slide-39" data-checked="false" data-type="4"><div class="slide-header"><h2>Câu 40</h2><div style="display: flex; gap: 10px;"><button class="btn-sol" onclick="toggleSolution(this, 'slide-39')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Hai xạ thủ $X$, $Y$ mỗi người bắn một viên đạn vào một mục tiêu. Xét các biến cố $A$: “Xạ thủ $X$ bắn trúng”; $B$: “Xạ thủ $Y$ bắn trúng”. Nêu nội dung của các biến cố $AB$, $A \cup B$, $\overline{A}\;\overline{B}$, $\overline{A}B$, $A\overline{B}$, $\overline{A}B \cup A\overline{B}$.</div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> <ul><li>$AB$: “Cả hai xạ thủ bắn trúng”.</li><li>$A \cup B$: “Có ít nhất một xạ thủ bắn trúng”.</li><li>$\overline{A}\;\overline{B}$: “Cả hai xạ thủ bắn trượt”.</li><li>$\overline{A}B$: “Xạ thủ $X$ bắn trượt, xạ thủ $Y$ bắn trúng”.</li><li>$A\overline{B}$: “Xạ thủ $X$ bắn trúng, xạ thủ $Y$ bắn trượt”.</li><li>$\overline{A}B \cup A\overline{B}$: “Chỉ có một xạ thủ bắn trúng”.</li></ul></div></div></div></div>
+<div class="slide" id="slide-40" data-checked="false" data-type="4"><div class="slide-header"><h2>Câu 41</h2><div style="display: flex; gap: 10px;"><button class="btn-sol" onclick="toggleSolution(this, 'slide-40')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Hai vận động viên bắn súng $A$ và $B$ mỗi người bắn một viên đạn vào tấm bia một cách độc lập. Xét các biến cố sau:<ul><li>$M\colon$ “Vận động viên $A$ bắn trúng vòng $10$”;</li><li>$N\colon$ “Vận động viên $B$ bắn trúng vòng $10$”.</li></ul> Hãy biểu diễn các biến cố sau theo biến cố $M$ và $N$. <ul><li>$C:$ “Có ít nhất một vận động viên bắn trúng vòng 10”;</li><li>$D:$ “Cả hai vận động viên bắn trúng vòng 10”;</li><li>$E:$ “Cả hai vận động viên đều không bắn trúng vòng 10”;</li><li>$F:$ “Vận động viên $A$ bắn trúng và vận động viên $B$ không bắn trúng vòng 10”;</li><li>$G:$ “Chỉ có duy nhất một vận động viên bắn trúng vòng 10”.</li></ul></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Biến cố $C$ có thể biểu diễn là $\overline{\left(\overline{M}\cap\overline{N}\right)}=M\cup N$. <br> Biến cố $D$ có thể biểu diễn là $M\cap N$. <br> Biến cố $E$ có thể biểu diễn là $\overline{M}\cap\overline{N}$. <br> Biến cố $F$ có thể biểu diễn là $M\cap\overline{N}$. <br> Biến cố $G$ có thể biểu diễn là $\left(M\cap\overline{N}\right)\cup\left(\overline{M}\cap N\right)$.</div></div></div></div>
+<div class="slide" id="slide-41" data-checked="false" data-type="4"><div class="slide-header"><h2>Câu 42</h2><div style="display: flex; gap: 10px;"><button class="btn-sol" onclick="toggleSolution(this, 'slide-41')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Gieo hai con xúc xắc cân đối, đồng chất. Xét các biến cố sau:<br> $E$: “Số chấm xuất hiện trên hai con xúc xắc đều là số chẵn”;<br> $F$: “Số chấm xuất hiện trên hai con xúc xắc khác tính chẵn lẻ”;<br> $K$: “Tích số chấm xuất hiện trên hai con xúc xắc là số chẵn”.<br> Chứng minh rằng $K$ là biến cố hợp của $E$ và $F$.</div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Để tích của số chấm xuất hiện trên hai con xúc xắc là số chẵn thì có 2 trường hợp xảy ra. <ul><li>Trường hợp $1$: $1$ con xúc xắc xuất hiện mặt chẵn, con còn lại xuất hiện mặt lẻ.<br> Khi đó số chấm xuất hiện trên hai con xúc xắc khác tính chẵn lẽ.</li><li>Trường hợp $2$: $2$ con xúc xắc xuất hiện mặt chẵn.</li></ul> Do đó $K$ là biến cố hợp của $E$ và $F$.</div></div></div></div>
+<div class="slide" id="slide-42" data-checked="false" data-type="4"><div class="slide-header"><h2>Câu 43</h2><div style="display: flex; gap: 10px;"><button class="btn-sol" onclick="toggleSolution(this, 'slide-42')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Một hộp chứa $5$ viên bi xanh và $3$ viên bi đỏ có cùng kích thước và khối lượng. Lấy ra ngẫu nhiên đồng thời $2$ viên bi từ hộp. Gọi $A$ là biến cố “Hai viên bi lấy ra đều có màu xanh”, $B$ là biến cố “Hai viên bi lấy ra đều có màu đỏ”. <ol><li>Có bao nhiêu kết quả thuận lợi cho biến cố $A$? Có bao nhiêu kết quả thuận lợi cho biến cố $B$?</li><li>Hãy mô tả bằng lời biến cố $A \cup B$ và tính số kết quả thuận lợi cho biến cố $A \cup B$.</li></ol></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> <ol><li>Số kết quả thuận lợi cho biến cố $A$ là $\mathrm{C}_5^2=10$. Số kết quả thuận lợi cho biến cố $B$ là $\mathrm{C}_3^2=3$.</li><li>$A \cup B$ là biến cố “Hai viên bi lấy ra có cùng màu”. Số kết quả thuận lợi cho biến cố $A \cup B$ là $\mathrm{C}_5^2+\mathrm{C}_3^2=13$.</li></ol></div></div></div></div>
+<div class="slide" id="slide-43" data-checked="false" data-type="4"><div class="slide-header"><h2>Câu 44</h2><div style="display: flex; gap: 10px;"><button class="btn-sol" onclick="toggleSolution(this, 'slide-43')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Có hai chuồng nuôi thỏ. Chuồng I có $5$ con thỏ đen và $10$ con thỏ trắng. Chuồng II có $3$ con thỏ trắng và $7$ con thỏ đen. Từ mỗi chuồng bắt ngẫu nhiên ra một con thỏ. Xét hai biến cố sau: <ul><li>$A$: “Bắt được con thỏ trắng từ chuồng I”;</li><li>$B$: “Bắt được con thỏ đen từ chuồng Il”.</li></ul> Chứng tỏ rằng hai biến cố $A$ và $B$ độc lập.</div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Nếu $A$ xảy ra, tức là bắt được con thỏ trắng ở chuồng I. Khi đó, số thỏ ở chuồng II không bị thay đổi và có $3$ thỏ trắng và $7$ thỏ đen. Vậy $\mathrm{P}(B)=\dfrac{7}{10}$. <br> Nếu $A$ không xảy ra, tức là bắt được thỏ đen ở chuồng I.Khi đó, số thỏ ở chuồng II không bị thay đổi và có $3$ thỏ trắng và $7$ thỏ đen. Vậy $\mathrm{P}(B)=\dfrac{7}{10}$. <br> Như vậy, xác suất xảy ra của biến cố $B$ không thay đổi bởi việc xảy ra hay không xảy ra của biến cố $A$. <br> Tương tự $\mathrm{P}(A)=\dfrac{2}{3}$ dù biến cố $B$ xảy ra hay không xảy ra.<br> Vậy $A$ và $B$ độc lập.</div></div></div></div>
+<div class="slide" id="slide-44" data-checked="false" data-type="4"><div class="slide-header"><h2>Câu 45</h2><div style="display: flex; gap: 10px;"><button class="btn-sol" onclick="toggleSolution(this, 'slide-44')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Tung một đồng xu cân đối và đồng chất ba lần liên tiếp. Xét các biến&nbsp;cố: <ol><li>$A$: “Đồng xu xuất hiện mặt sấp (S) ở lần tung thứ nhất”.</li><li>$B$: “Đồng xu xuất hiện mặt ngửa (N) ở lần tung thứ nhất”.</li></ol> Hai biến cố trên có xung khắc hay không? Vì sao?</div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Ta có $\begin{aligned}[t]
+			A&amp;=\{\text{ SSS;SSN;SNS;SNN}\}\\
+			B&amp;=\{\text{ NSS;NSN;NNS;NNN}\}.
+		\end{aligned}$ <br> Suy ra $A \cap B=\varnothing$. Do đó $A$ và $B$ là hai biến cố xung khắc.</div></div></div></div>
+<div class="slide" id="slide-45" data-checked="false" data-type="4"><div class="slide-header"><h2>Câu 46</h2><div style="display: flex; gap: 10px;"><button class="btn-sol" onclick="toggleSolution(this, 'slide-45')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Mai, Lan và $5$ bạn cùng lớp xếp thành một hàng ngang theo thứ tự ngẫu nhiên. Tính xác suất của biến cố “Có ít nhất một trong hai bạn Mai và Lan đứng ở đầu hàng”.</div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Số cách xếp $7$ người thành một hàng ngang là $7!$. <br> Gọi $A$ là biến cố “Mai đứng ở đầu hàng”, $B$ là biến cố “Lan đứng ở đầu hàng”.<br> Xác suất của biến cố $A$ là $\mathrm{P}(A)=\dfrac{2 \cdot 6!}{7!}=\dfrac{2}{7}$. <br> Xác suất của biến cố $B$ là $\mathrm{P}(B)=\dfrac{2 \cdot 6!}{7!}=\dfrac{2}{7}$. <br> Xác suất của biến cố “Hai bạn Lan và Mai đứng ở hai đầu hàng”&nbsp;là \[
+		\mathrm{P}(A B)=\dfrac{2 \cdot 5!}{7!}=\dfrac{1}{21}.
+		\] Xác suất của biến cố “Có ít nhất một trong hai bạn Mai và Lan đứng ở đầu hàng”&nbsp;là \[
+		\mathrm{P}(A \cup B)=\mathrm{P}(A)+\mathrm{P}(B)-\mathrm{P}(A B)=\dfrac{2}{7}+\dfrac{2}{7}-\dfrac{1}{21}=\dfrac{11}{21}.
+		\]</div></div></div></div>
+<div class="slide" id="slide-46" data-checked="false" data-type="4"><div class="slide-header"><h2>Câu 47</h2><div style="display: flex; gap: 10px;"><button class="btn-sol" onclick="toggleSolution(this, 'slide-46')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Một hộp chứa $40$ tấm thẻ cùng loại được đánh số lần lượt từ $1$ đến $40$. Lấy ra ngẫu nhiên đồng thời hai thẻ từ hộp. Tính xác suất của các biến cố: <ol><li>“Tổng các số ghi trên $2$ thẻ lấy ra nhỏ hơn $4$ hoặc lớn hơn $76$”.</li><li>“Tích các số ghi trên $2$ thẻ lấy ra chia hết cho $10$”.</li></ol></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> <ol><li>Gọi $A$ là biến cố “Tổng các số ghi trên $2$ thẻ lấy ra nhỏ hơn $4$ hoặc lớn hơn $76$”. Gọi $\mathrm{A}_1$ là biến cố “Tổng các số ghi trên $2$ thẻ lấy ra nhỏ hơn $4$”, $\mathrm{A}_2$ là biến cố “Tổng các số ghi trên $2$ thẻ lấy ra lớn hơn $76$”.<br> Khi đó, ta có $A=\mathrm{A}_1\cup \mathrm{A}_2$. <br> Biến cố $\mathrm{A}_1$ xảy ra khi $2$ tấm thẻ được chọn ghi số $1$ và $2$. Do đó $\mathrm{P}(\mathrm{A}_1)=\dfrac{1}{\mathrm{C}_{40}^2}$. <br> Biến cố $\mathrm{A}_2$ xảy ra khi $2$ tấm thẻ được chọn ghi số $(37;40),(38;40),(39;40)$ hoặc $(38;39)$. Do đó, $\mathrm{P}(\mathrm{A}_2)=\dfrac{4}{\mathrm{C}_{40}^2}$. <br> Do $\mathrm{A}_1$ và $\mathrm{A}_2$ là hai biến cố xung khắc nên: \[\mathrm{P}(A)=\mathrm{P}\left(\mathrm{A}_1 \cup \mathrm{A}_2\right)=\mathrm{P}(\mathrm{A}_1)+\mathrm{P}(\mathrm{A}_2)=\dfrac{1}{156}.\]</li><li>Từ $1$ đến $40$ có $8$ số chia hết cho $5;20$ số chia hết cho $2$ và $4$ số chia hết cho $10$. Gọi $B$ là biến cố “Tích các số ghi trên $2$ thẻ lấy ra chia hết cho $10$”.<br> Gọi $B_1$ là biến cố “Tích các số ghi trên $2$ thẻ lấy ra không chia hết cho $5$”, $B_2$ là biến cố “Tích các số ghi trên $2$ thẻ lấy ra không chia hết cho $2$”.<br> Khi đó, $B$ là biến cố đối của biến cố $B_1\cup B_2$. <br> Ta có \[\mathrm{P}\left(B_1 \cup B_2\right)=\mathrm{P}(B_1)+\mathrm{P}(B_2)-\mathrm{P}(B_1 B_2)=\dfrac{\mathrm{C}_{32}^2}{\mathrm{C}_{40}^2}+\frac{\mathrm{C}_{20}^2}{\mathrm{C}_{40}^2}-\frac{\mathrm{C}_{16}^2}{\mathrm{C}_{40}^2}=\dfrac{283}{390}.\] Do đó, xác suất biến cố $B$ “Tích các số ghi trên hai thẻ chia hết cho $10$” là \[\mathrm{P}(B)=1-\mathrm{P}\left(B_1 \cup B_2\right)=\dfrac{107}{390}.\]</li></ol></div></div></div></div>
+<div class="slide" id="slide-47" data-checked="false" data-type="4"><div class="slide-header"><h2>Câu 48</h2><div style="display: flex; gap: 10px;"><button class="btn-sol" onclick="toggleSolution(this, 'slide-47')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Một nhà xuất bản phát hành hai cuốn sách $A$ và $B$. Thống kê cho thấy có $50 \%$ người mua sách $A$; $70 \%$ người mua sách $B$; $30 \%$ người mua cả sách $A$ và sách $B$. Chọn ngẫu nhiên một người mua. Tính xác suất để: <ol><li>Người mua đó mua ít nhất một trong hai sách $A$ hoặc $B$;</li><li>Người mua đó không mua cả sách $A$ và sách $B$.</li></ol></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Gọi $A$ là biến cố: “Người mua mua sách $A$”;<br> $B$ là biến cố: “Người mua mua sách $A$”.<br> Khi đó $A \cap B$ là biến cố: “Người mua cả sách $A$ và sách $B$”; <br> $A \cup B$ là biến cố: “Người mua ít nhất hoặc sách $A$ hoặc sách $B$”;<br> $\overline{A \cup B}$ là biến cố: “Người mua không mua cả sách $A$ và sách $B$”.<br> Ta có $\mathrm{P}(A) = 0{,}5, \, \mathrm{P}(B) = 0{,}7, \, \mathrm{P}(A\cap B) = 0{,}3$. <ol><li>Theo công thức cộng xác suất, ta có \begin{align*}
+				\mathrm{P}(A \cup B) &amp;= \mathrm{P}(A) + \mathrm{P}(B) - \mathrm{P}(A \cap B) \\
+				&amp;= 0{,}5 + 0{,}7 - 0{,}3 = 0{,}9.
+			\end{align*} Vậy xác suất người mua ít nhất một trong hai cuốn sách $A$ hoặc $B$ là $0.9$.</li><li>Theo tính chất xác suất đối lập, ta có $$\mathrm{P}\left(\overline{A \cup B}\right) = 1 - \mathrm{P}(A \cup B) = 1 - 0{,}9 = 0{,}1.$$ Vậy xác suất người không mua cả hai cuốn sách $A$ và $B$ là $0{,}1$.</li></ol></div></div></div></div>
+<div class="slide" id="slide-48" data-checked="false" data-type="4"><div class="slide-header"><h2>Câu 49</h2><div style="display: flex; gap: 10px;"><button class="btn-sol" onclick="toggleSolution(this, 'slide-48')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Tại các trường trung học phổ thông của một tỉnh, thống kê cho thấy có $63 \%$ giáo viên môn Toán tham khảo bộ sách giáo khoa $A, 56 \%$ giáo viên môn Toán tham khảo bộ sách giáo khoa B và $28,5 \%$ giáo viên môn Toán tham khảo cả hai bộ sách giáo khoa A và $B$. Tính tỉ lệ giáo viên môn Toán các trường trung học phổ thông của tỉnh đó không tham khảo cả hai bộ sách giáo khoa $A$ và $B$.</div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Gọi $A$ là biến cố: “Giáo viên môn Toán tham khảo bộ sách giáo khoa $A$”;<br> $B$ là biến cố: “Giáo viên môn Toán tham khảo bộ sách giáo khoa $B$”.<br> Khi đó $A \cap B$ là biến cố: “Giáo viên môn Toán tham khảo cả bộ sách giáo khoa $A$ và bộ sách giáo khoa $B$”; <br> $A \cup B$ là biến cố: “Giáo viên môn Toán tham khảo hoặc bộ sách giáo khoa $A$ hoặc bộ sách giáo khoa $B$”.<br> $\overline{A \cup B}$ là biến cố: “Giáo viên môn Toán không tham khảo cả bộ sách giáo khoa $A$ và bộ sách giáo khoa $B$”.<br> Ta có $\mathrm{P}(A) = 0{,}63, \, \mathrm{P}(B) = 0{,}56, \, \mathrm{P}(A\cap B) = 0{,}285$. <br> Theo công thức cộng xác suất, ta có \begin{align*}
+			\mathrm{P}(A \cup B) &amp;= \mathrm{P}(A) + \mathrm{P}(B) - \mathrm{P}(A \cap B) \\
+			&amp;= 0{,}63 + 0{,}56 - 0{,}285 = 0{,}905.
+		\end{align*} Theo tính chất xác suất đối lập, ta có $$\mathrm{P}\left(\overline{A \cup B}\right) = 1 - \mathrm{P}(A \cup B) = 1 - 0{,}905= 0{,}0905.$$ Vậy tỉ lệ giáo viên môn Toán không tham khảo cả hai bộ sách giáo khoa $A$ và $B$ là $9{,}05 \%$.</div></div></div></div>
+<div class="slide" id="slide-49" data-checked="false" data-type="4"><div class="slide-header"><h2>Câu 50</h2><div style="display: flex; gap: 10px;"><button class="btn-sol" onclick="toggleSolution(this, 'slide-49')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Chọn ngẫu nhiên hai người từ một nhóm $9$ nhà toán học tham dự hội thảo, trong nhóm có $5$ nhà toán học nam và $4$ nhà toán học nữ. Tính xác suất để hai người được chọn có cùng giới tính.</div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Gọi $A$ là biến cố: “Cả hai người là nam”,<br> $B$ là biến cố: “Cả hai người là nữ”.<br> $C$ là biến cố: “Hai người có cùng giới tính”.<br> Ta có<br> Hai biến cố $A$ và $B$ là xung khắc, $C=A \cup B$ nên $\mathrm{P}(C)=\mathrm{P}(A)+\mathrm{P}(B)$. <br> Mà $n(\Omega)=\mathrm{C}_{9}^{2}=36$, $n(A)=\mathrm{C}_{5}^{2}=10$ và $n(B)=\mathrm{C}_{4}^{2}=6$. <br> Do đó $\mathrm{P}(A)=\dfrac{10}{36}$, $\mathrm{P}(B)=\dfrac{6}{36}=\dfrac{1}{6}$. <br> Vậy $\mathrm{P}(C)=\mathrm{P}(A)+\mathrm{P}(B)=\dfrac{10}{36}+\dfrac{6}{36}=\dfrac{16}{36}=\dfrac{4}{9}$.</div></div></div></div>
+<div class="slide" id="slide-50" data-checked="false" data-type="4"><div class="slide-header"><h2>Câu 51</h2><div style="display: flex; gap: 10px;"><button class="btn-sol" onclick="toggleSolution(this, 'slide-50')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Một lớp có $40$ học sinh, trong đó có $34$ em thích ăn chuối, $22$ em thích ăn cam và $2$ em không thích ăn cả hai loại quả đó. Chọn ngẫu nhiên một học sinh trong lớp. Tính xác suất để em đó: <ol><li>Thích ăn ít nhất một trong hai loại quả chuối hoặc cam.</li><li>Thích ăn cả hai loại quả chuối và cam.</li></ol></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Gọi $A$ là biến cố: “Học sinh đó thích ăn chuối”,<br> $B$ là biến cố: “Học sinh đó thích ăn cam”.<br> Ta có $\mathrm{P}(A)=\dfrac{34}{40}$, $\mathrm{P}(B)=\dfrac{22}{40}$ và $\mathrm{P}\left(\overline{A}\;\overline{B}\right)=\dfrac{2}{40}=\dfrac{1}{20}$. <br> Khi đó <ol><li>$\mathrm{P}(A \cup B)=1-\mathrm{P}\left(\overline{A}\;\overline{B}\right)=1-\dfrac{2}{40}=\dfrac{38}{40}=\dfrac{19}{20}$.</li><li>$\mathrm{P}(A B)=\mathrm{P}(A)+\mathrm{P}(B)-\mathrm{P}(A \cup B)=\dfrac{34}{40}+\dfrac{22}{40}-\dfrac{38}{40}=\dfrac{18}{40}=\dfrac{9}{20}$.</li></ol></div></div></div></div>
+<div class="slide" id="slide-51" data-checked="false" data-type="4"><div class="slide-header"><h2>Câu 52</h2><div style="display: flex; gap: 10px;"><button class="btn-sol" onclick="toggleSolution(this, 'slide-51')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Một nhóm có $50$ người được phỏng vấn họ đã mua cành đào hay cây quất vào dịp Tết vừa qua, trong đó có $31$ người mua cành đào, $12$ người mua cây quất và $5$ người mua cả cành đào và cây quất. Chọn ngẫu nhiên một người. Tính xác suất để người đó: <ol><li>Mua cành đào hoặc cây quất.</li><li>Mua cành đào và không mua cây quất.</li><li>Không mua cành đào và không mua cây quất.</li><li>Mua cây quất và không mua cành đào.</li></ol></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Gọi $A$ là biến cố: “Người đó mua cành đào”, $B$ là biến cố: “Người đó mua cây quất”. <ol><li>Ta có: $\mathrm{P}(A) = \dfrac{31}{50}; \mathrm{P}(B)=\dfrac{12}{50}; \mathrm{P}(AB)=\dfrac{5}{50}=\dfrac{1}{10}$. <br> Vậy $\mathrm{P}(A \cup B)=\mathrm{P}(A)+\mathrm{P}(B)-\mathrm{P}(A B)=\dfrac{31}{50}+\dfrac{12}{50}-\dfrac{5}{50}=\dfrac{38}{50}=\dfrac{19}{25}$.</li><li>Ta có: $A=AB \cup A\overline{B}$, suy ra $\mathrm{P}(A)=\mathrm{P}(AB)+\mathrm{P}\left(A\overline{B}\right)$. <br> Vậy $\mathrm{P}\left(A\overline{B}\right)=\mathrm{P}(A)-\mathrm{P}(AB)=\dfrac{31}{50}-\dfrac{5}{50}=\dfrac{26}{50}=\dfrac{13}{25}$.</li><li>Ta có biến cố đối của biến cố $\overline{A}\;\overline{B}$ là biến cố $A \cup B$. <br> Vậy $\mathrm{P}\left(\overline{A}\;\overline{B}\right)=1-\mathrm{P}(A \cup B)=1-\dfrac{38}{50}=\dfrac{12}{50}=\dfrac{6}{25}$.</li><li>Ta có: $B=AB \cup \overline{A}B$, suy ra $\mathrm{P}(B)=\mathrm{P}(AB)+\mathrm{P}\left(\overline{A}B\right)$. <br> Vậy $\mathrm{P}\left(\overline{A}B\right)=\mathrm{P}(B)-\mathrm{P}(AB)=\dfrac{12}{50}-\dfrac{5}{50}=\dfrac{7}{50}$.</li></ol></div></div></div></div>
+<div class="slide" id="slide-52" data-checked="false" data-type="4"><div class="slide-header"><h2>Câu 53</h2><div style="display: flex; gap: 10px;"><button class="btn-sol" onclick="toggleSolution(this, 'slide-52')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Một nhóm $30$ bệnh nhân có $24$ người điều trị bệnh $X$, có $12$ người điều trị cả bệnh $X$ và bệnh $Y$, có $26$ người điều trị ít nhất một trong hai bệnh $X$ hoặc $Y$. Chọn ngẫu nhiên một bệnh nhân. Tính xác suất để người đó: <ol><li>Điều trị bệnh $Y$.</li><li>Điều trị bệnh $Y$ và không điều trị bệnh $X$.</li><li>Không điều trị cả hai bệnh $X$ và $Y$.</li></ol></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Gọi $A$ là biến cố: “Người đó điều trị bệnh $X$”;<br> $B$ là biến cố: “Người đó điều trị bệnh $Y$”.<br> Khi đó <ol><li>$\mathrm{P}(B)=\mathrm{P}(A \cup B)+\mathrm{P}(A B)-\mathrm{P}(A)=\dfrac{7}{15}$.</li><li>$B \overline{A}$ là biến cố: “Người đó điều trị bệnh $Y$ và không điều trị bệnh $X$”.<br> Ta có $B=\overline{BA} \cup BA$, suy ra $\mathrm{P}(B)=\mathrm{P}\left(B \overline{A} \cup B A\right)$. <br> Do đó<br>\begin{align*}
+				\mathrm{P}(B)&amp;= \mathrm{P}\left(B \overline{A} \cup B A\right)\\
+				&amp;= \mathrm{P}\left(B \overline{A}\right)+\mathrm{P}(B A) \Rightarrow \mathrm{P}\left(B \overline{A}\right)\\
+				&amp;= \mathrm{P}(B)-\mathrm{P}(B A)\\
+				&amp;= \dfrac{14}{30}-\dfrac{12}{30}\\
+				&amp;= \dfrac{1}{15}.
+			\end{align*}</li><li>$\overline{A}\;\overline{B}$ là biến cố: “Người đó không điều trị cả hai bệnh $X$ và $Y$”.<br> Ta có $\mathrm{P}\left(\overline{A}\;\overline{B}\right)=1-\mathrm{P}(A \cup B)=1-\dfrac{26}{30}=\dfrac{2}{15}$.</li></ol></div></div></div></div>
+<div class="slide" id="slide-53" data-checked="false" data-type="4"><div class="slide-header"><h2>Câu 54</h2><div style="display: flex; gap: 10px;"><button class="btn-sol" onclick="toggleSolution(this, 'slide-53')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Một dãy phố gồm $40$ gia đình, trong đó $23$ gia đình có điện thoại thông minh, $18$ gia đình có laptop và $26$ gia đình có ít nhất một trong hai thiết bị này. Chọn ngẫu nhiên một gia đình trong dãy phố. Tính xác suất để gia đình đó: <ol><li>Có điện thoại thông minh và laptop.</li><li>Có điện thoại thông minh nhưng không có laptop.</li><li>Không có cả điện thoại thông minh và laptop.</li></ol></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Gọi $A$ là biến cố: “Gia đình đó có điện thoại thông minh”;<br> $B$ là biến cố: “Gia đình đó có laptop”.<br> Khi đó <ol><li>$AB$ là biến cố: “Gia đình được chọn có điện thoại thông minh và laptop”.<br> Ta có $\mathrm{P}(A)=\dfrac{23}{40}$, $\mathrm{P}(B)=\dfrac{18}{40}$ và $\mathrm{P}(A \cup B)=\dfrac{26}{40}=\dfrac{13}{20}$. <br> Vậy $\mathrm{P}(AB)=\mathrm{P}(A)+\mathrm{P}(B)-\mathrm{P}(A \cup B)=\dfrac{23}{40}+\dfrac{18}{40}-\dfrac{26}{40}=\dfrac{15}{40}=\dfrac{3}{8}$.</li><li>$A \overline{B}$ là biến cố: “Gia đình được chọn có điện thoại thông minh nhưng không có laptop”.<br> Ta có $A=A B \cup A \overline{B}$, suy ra $\mathrm{P}(A)=\mathrm{P}(A B)+\mathrm{P}\left(A \overline{B}\right)$. <br> Do đó $\mathrm{P}\left(A \overline{B}\right)=\mathrm{P}(A)-\mathrm{P}(A B)=\dfrac{23}{40}-\dfrac{15}{40}=\dfrac{8}{40}=\dfrac{1}{5}$.</li><li>$\overline{A}\;\overline{B}$ là biến cố: “Gia đình được chọn không có cả điện thoại thông minh và laptop”.<br> Vậy $\mathrm{P}\left(\overline{A}\;\overline{B}\right)=1-\mathrm{P}(A \cup B)=1-\dfrac{26}{40}=\dfrac{14}{40}=\dfrac{7}{20}$.</li></ol></div></div></div></div>
+<div class="slide" id="slide-54" data-checked="false" data-type="4"><div class="slide-header"><h2>Câu 55</h2><div style="display: flex; gap: 10px;"><button class="btn-sol" onclick="toggleSolution(this, 'slide-54')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Có hai chuồng nuôi gà. Chuồng I có $9$ con gà mái và $3$ con gà trống. Chuồng II có $3$ con gà mái và $6$ con gà trống. Bắt ngẫu nhiên một con gà của chuồng I để đem bán rồi dồn các con gà còn lại của chuồng I vào chuồng II. Sau đó bắt ngẫu nhiên một con gà của chuồng II. Xét hai biến cố sau:<br> $E$: “Bắt được con gà trống từ chuồng I”;<br> $F$: “Bắt được con gà mái từ chuồng II”.<br> Chứng tỏ rằng hai biến cố $E$ và $F$ không độc lập.</div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Nếu $E$ xảy ra, tức là bắt được con gà trống từ chuồng I. Vì con gà trống bị bắt đem đi bán và số gà ở chuồng I dồn vô chuồng II, nên khi bắt gà mái từ chuồng II sẽ có $12$ gà mái và $8$ gà trống. Vậy $\mathrm{P}(F)=\dfrac{12}{20}=\dfrac{3}{5}$. <br> Nếu $E$ không xảy ra, tức là bắt được con gà mái từ chuồng I. Vì con gà mái bị bắt đem đi bán và số gà ở chuồng I dồn vô chuồng II, nên khi bắt gà mái từ chuồng II sẽ có $11$ gà mái và $9$ gà trống. Vậy $\mathrm{P}(F)=\dfrac{11}{20}$. <br> Như vậy, xác suất xảy ra của biến cố $F$ đã thay đổi phụ thuộc vào việc biến cố $E$ xảy ra hay không xảy ra. Do đó, hai biến cố $E$ và $F$ không độc lập.</div></div></div></div>
+<div class="slide" id="slide-55" data-checked="false" data-type="4"><div class="slide-header"><h2>Câu 56</h2><div style="display: flex; gap: 10px;"><button class="btn-sol" onclick="toggleSolution(this, 'slide-55')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Có hai chiếc hộp $A,B$ mỗi hộp đựng $30$ tấm thẻ, đánh số từ $1$ đến $30$. Từ mỗi hộp rút ngẫu nhiên một tấm thẻ. Kí hiệu $a,b$ là số ghi trên thẻ tương ứng rút từ hộp $A$ và hộp $B$. Gọi $M$ là biến cố: “a là số chẵn”; $N$ là biến cố: “b là số chẵn”. Xét biến cố E: “$a+b$ là số lẻ”. Chứng tỏ rằng $E=\overline{M}N \cup M\overline{N}$.</div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Nếu $\overline{M}N$ xảy ra thì $a$ là số chẵn, $b$ là số lẻ, do đó $a+b$ lẻ tức là $E$ xảy ra.<br> Nếu $M\overline{N}$ xảy ra thì $a$ là số lẻ, $b$ là số chẵn, do đó $a+b$ lẻ tức là $E$ xảy ra.<br> Ngược lại, nếu $E$ xảy ra thì $a$ và $b$ phải khác tính chẵn lẻ. Nếu $a$ chẵn, $b$ lẻ thì $\overline{M}N$ xảy ra. Nếu $a$ lẻ, $b$ chẵn thì $M\overline{N}$ xảy ra.<br> Vậy $E=\overline{M}N \cup M\overline{N}$.</div></div></div></div>
+<div class="slide" id="slide-56" data-checked="false" data-type="4"><div class="slide-header"><h2>Câu 57</h2><div style="display: flex; gap: 10px;"><button class="btn-sol" onclick="toggleSolution(this, 'slide-56')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Gieo hai con xúc xắc cân đối và đồng chất. Gọi $A$ là biến cố “Tổng số chấm xuất hiện trên hai con xúc xắc bằng $5$”, $B$ là biến cố “Tích số chấm xuất hiện trên hai con xúc xắc bằng $6$”. <ol><li>Hãy viết tập hợp mô tả các biến cố trên.</li><li>Hãy liệt kê các kết quả của phép thử làm cho cả hai biến cố $A$ và $B$ cùng xảy ra.</li></ol></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> <ol><li>Biến cố $A=\{(1; 4);(4; 1);(2; 3);(3; 2)\}$. <br> Biến cố $B=\{(1; 6);(6; 1);(2; 3);(3; 2)\}$.</li><li>Kết quả của phép thử làm cho cả hai biến cố $A$ và $B$ cùng xảy ra là $\{(2; 3);(3; 2)\}$.</li></ol></div></div></div></div>
+<div class="slide" id="slide-57" data-checked="false" data-type="4"><div class="slide-header"><h2>Câu 58</h2><div style="display: flex; gap: 10px;"><button class="btn-sol" onclick="toggleSolution(this, 'slide-57')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Trong bình đựng có $10$ viên bi, trong đó có $4$ viên bi đỏ. Lấy ngẫu nhiên $3$ viên bi. Tính xác suất để trong $3$ viên bi lấy được $1$ hoặc $2$ viên bi đỏ.</div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Đặt $\mathrm{A}_1$ là biến cố “trong $3$ viên lấy ra được đúng $1$ viên bi đỏ” và $\mathrm{A}_2$ là biến cố “trong $3$ viên lấy ra có đúng $2$ viên bi đỏ”.<br> Ta phải tính xác suất của biến cố $A$ là biến cố trong $3$ viên lấy ra một hoặc hai viên bi đỏ. Các biến cố $\mathrm{A}_1$ và $\mathrm{A}_2$ là xung khắc. Do đó \begin{align*}
+			\mathrm{P}(\mathrm{A}_1 + \mathrm{A}_2) &amp;= \mathrm{P}(\mathrm{A}_1) + \mathrm{P}(\mathrm{A}_2) \\
+			\mathrm{P}(\mathrm{A}_1) &amp;= \frac{\mathrm{\mathrm{C}_{4}^1} \mathrm{\mathrm{C}_{6}^2}}{\mathrm{\mathrm{C}_{10}^3}} = \frac{1}{2} \\
+			\mathrm{P}(\mathrm{A}_2) &amp;= \frac{\mathrm{\mathrm{C}_{4}^2} \mathrm{\mathrm{C}_{6}^1}}{\mathrm{\mathrm{C}_{10}^3}} = \frac{3}{10}
+		\end{align*} Vậy \[\mathrm{P}(A) = \frac{1}{2} + \frac{3}{10} = \frac{4}{5}.\]</div></div></div></div>
+<div class="slide" id="slide-58" data-checked="false" data-type="4"><div class="slide-header"><h2>Câu 59</h2><div style="display: flex; gap: 10px;"><button class="btn-sol" onclick="toggleSolution(this, 'slide-58')">Xem lời giải</button></div></div><div class="slide-content"><div class="question-box"><div class="tp">Một hộp đựng $4$ viên bi xanh, $5$ viên bi đỏ và $6$ viên bi vàng. Chọn ngẫu nhiên hai viên biên. Tính xác suất để chọn được hai viên bi cùng màu.</div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Gọi $A$ là biến cố “Chọn được hai viên bi xanh”.<br> $B$ là biến cố “Chọn được hai viên bi đỏ”.<br> $C$ là biến cố “Chọn được hai viên bi vàng”.<br> Khi đó biến cố “Chọn được hai viên bi cùng màu” là biến cố $A\cup B\cup C$. Do $A,B,C$ đôi một xung khắc với nhau nên theo quy tắc cộng ta có $\mathrm{P}\left(A\cup B\cup C\right)=\mathrm{P}(A)+\mathrm{P}(B)+\mathrm{P}(C)$. <br> Ta có $\mathrm{P}(A)=\dfrac{\mathrm{C}_4^2}{\mathrm{C}_{15}^2}=\dfrac{2}{35};\ \mathrm{P}(B)=\dfrac{\mathrm{C}_5^2}{\mathrm{C}_{15}^2}=\dfrac{2}{21};\ \mathrm{P}(C)=\dfrac{\mathrm{C}_6^2}{\mathrm{C}_{15}^2}=\dfrac{1}{7}$. <br> Vậy $\mathrm{P}\left(A\cup B\cup C\right)=\dfrac{2}{35}+\dfrac{2}{21}+\dfrac{1}{7}=\dfrac{31}{105}$.</div></div></div></div>
+        
+        <div class="controls">
+            <button class="btn-nav btn-toc" id="tocBtn" onclick="openToc()" aria-haspopup="dialog">📋 Mục lục</button>
+            <button class="btn-nav" id="prevBtn" onclick="changeSlide(-1)" aria-label="Câu trước">Quay lại</button>
+            <span class="slide-counter" id="slideCounter" aria-live="polite"></span>
+            <button class="btn-nav" id="nextBtn" onclick="changeSlide(1)" aria-label="Câu sau">Tiếp theo</button>
+            <button class="btn-nav btn-fs" id="fsBtn" onclick="toggleFullscreen()" title="Toàn màn hình (F)" aria-label="Toàn màn hình">⛶</button>
+        </div>
+        <div class="author-footer">Liên hệ Trần Lê Nam - 0947306694 TeX &gt; HTML</div>
+    </div>
+
+    <!-- KHUNG POPUP MỤC LỤC -->
+    <div id="tocModal" class="toc-modal" role="dialog" aria-modal="true" aria-labelledby="tocTitle">
+        <div class="toc-content">
+            <div class="toc-handle" id="tocHandle" aria-hidden="true"><span></span></div>
+            <h3 id="tocTitle">Danh sách câu hỏi</h3>
+            <div class="toc-summary" id="tocSummary" aria-live="polite"></div>
+            <div class="toc-legend" aria-hidden="true">
+                <span class="toc-s-correct">✔ Đúng</span><span class="toc-s-wrong">✘ Sai</span><span class="toc-s-partial">½ Đúng một phần</span>
+                <span class="toc-s-picked">● Đã chọn, chưa kiểm tra</span><span class="toc-s-empty">Chưa làm</span>
+            </div>
+            <div class="toc-scroll" id="tocBody"></div>
+            <div class="toc-footer"><button type="button" class="btn-nav toc-close" onclick="closeToc()">Đóng</button></div>
+        </div>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        
+        function showSlide(index) {
+            slides.forEach((slide, i) => {
+                slide.classList.remove('active');
+                if (i === index) slide.classList.add('active');
+            });
+            document.getElementById('prevBtn').disabled = index === 0;
+            document.getElementById('nextBtn').disabled = index === slides.length - 1;
+            document.getElementById('slideCounter').textContent = (index + 1) + ' / ' + slides.length;
+            
+            const activeContent = slides[index].querySelector('.slide-content');
+            if (activeContent) activeContent.scrollTop = 0;
+
+            // slide vừa hiện ra mới đo được kích thước SVG/ảnh
+            requestAnimationFrame(initMedia);
+        }
+        
+        function changeSlide(step) {
+            currentSlide += step;
+            if (currentSlide < 0) currentSlide = 0;
+            if (currentSlide >= slides.length) currentSlide = slides.length - 1;
+            showSlide(currentSlide);
+        }
+        
+        function selectOption(element, slideId) {
+            const slide = document.getElementById(slideId);
+            if (slide.dataset.checked === "true") return; 
+            const options = slide.querySelectorAll('.options div');
+            options.forEach(opt => opt.classList.remove('selected'));
+            element.classList.add('selected');
+        }
+
+        function selectTF(btn, slideId, rowIndex, value) {
+            const slide = document.getElementById(slideId);
+            if (slide.dataset.checked === "true") return;
+            const row = slide.querySelectorAll('.tf-row')[rowIndex];
+            row.querySelectorAll('.tf-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            btn.dataset.val = value;
+        }
+
+        function moveNextSlideAns(current, nextIdx, slideId) {
+            current.value = current.value.replace('.', ',');
+            if (current.value.length > 1) current.value = current.value.slice(0, 1);
+            if (current.value.length === 1) {
+                const nextInput = document.getElementById(`ans_${slideId}_${nextIdx}`);
+                if(nextInput) nextInput.focus();
+            }
+        }
+        function movePrevSlideAns(e, current, prevIdx, slideId) {
+            if (e.key === "Backspace" && current.value === "" && prevIdx >= 1) {
+                const prevInput = document.getElementById(`ans_${slideId}_${prevIdx}`);
+                if(prevInput) prevInput.focus();
+            }
+        }
+
+        function checkAnswer(btn, slideId) {
+            const slide = document.getElementById(slideId);
+            if (slide.dataset.checked === "true") return; 
+            const type = slide.dataset.type;
+
+            if (type === "1") { 
+                const selected = slide.querySelector('.options div.selected');
+                if (!selected) { alert("Vui lòng chọn một phương án!"); return; }
+                const isCorrect = selected.getAttribute('data-correct') === 'true';
+                if (isCorrect) selected.classList.add('correct');
+                else {
+                    selected.classList.add('incorrect');
+                    const correctOption = slide.querySelector('.options div[data-correct="true"]');
+                    if (correctOption) correctOption.classList.add('correct');
+                }
+                slide.querySelectorAll('.options div').forEach(opt => opt.classList.add('disabled'));
+            } 
+            else if (type === "2") { 
+                const rows = slide.querySelectorAll('.tf-row');
+                let allSelected = true;
+                rows.forEach(row => { if (!row.querySelector('.tf-btn.selected')) allSelected = false; });
+                if (!allSelected) { alert("Vui lòng chọn Đúng hoặc Sai cho tất cả các ý!"); return; }
+
+                rows.forEach(row => {
+                    const selectedBtn = row.querySelector('.tf-btn.selected');
+                    const correctVal = row.dataset.correct;
+                    if (selectedBtn.dataset.val === correctVal) {
+                        selectedBtn.classList.add('correct');
+                    } else {
+                        selectedBtn.classList.add('incorrect');
+                        row.querySelectorAll('.tf-btn').forEach(b => {
+                            if (b.innerText === correctVal) b.classList.add('correct');
+                        });
+                    }
+                    row.querySelectorAll('.tf-btn').forEach(b => {
+                        b.style.pointerEvents = 'none';
+                        if(!b.classList.contains('selected') && !b.classList.contains('correct')) b.style.opacity = '0.5';
+                    });
+                });
+            } 
+            else if (type === "3") { 
+                const inputs = slide.querySelectorAll('.short-ans-box-slide');
+                let userAns = "";
+                inputs.forEach(inp => userAns += inp.value);
+                if (userAns.trim() === "") { alert("Vui lòng nhập đáp án!"); return; }
+
+                const correctAns = slide.dataset.correctans;
+                let studentAnsClean = userAns.replace(/,/g, '.').replace(/\s+/g, '');
+                let trueAnsClean = correctAns.replace(/,/g, '.').replace(/\s+/g, '');
+
+                const isCorrect = (studentAnsClean === trueAnsClean);
+                inputs.forEach(inp => {
+                    inp.readOnly = true;
+                    if (isCorrect) inp.classList.add('correct');
+                    else inp.classList.add('incorrect');
+                });
+                
+                const trueAnsDiv = slide.querySelector('.true-ans-text');
+                trueAnsDiv.innerHTML = "Đáp án đúng: " + correctAns;
+                trueAnsDiv.style.display = 'block';
+            }
+
+            // ghi lại kết quả để mục lục tô màu
+            if (type === "1") slide.dataset.result = slide.querySelector('.options div.selected.correct') ? 'correct' : 'wrong';
+            else if (type === "2") {
+                let ok = 0;
+                const rs = slide.querySelectorAll('.tf-row');
+                rs.forEach(r => { const sb = r.querySelector('.tf-btn.selected'); if (sb && sb.dataset.val === r.dataset.correct) ok++; });
+                slide.dataset.result = ok === rs.length ? 'correct' : (ok === 0 ? 'wrong' : 'partial');
+            }
+            else if (type === "3") slide.dataset.result = slide.querySelector('.short-ans-box-slide.correct') ? 'correct' : 'wrong';
+
+            slide.dataset.checked = "true";
+            btn.disabled = true;
+        }
+        
+        function toggleSolution(btn, slideId) {
+            const slide = document.getElementById(slideId);
+            const solBox = slide.querySelector('.solution-box');
+            const contentDiv = slide.querySelector('.slide-content');
+            
+            if (!solBox) { alert("Câu hỏi này chưa có lời giải!"); return; }
+            
+            if (solBox.style.display === 'none' || solBox.style.display === '') {
+                solBox.style.display = 'block';
+                btn.innerHTML = "Ẩn lời giải";
+                btn.style.background = "#dc3545";
+                contentDiv.classList.add('scale-down'); 
+                requestAnimationFrame(initMedia);   // lời giải vừa hiện, đo lại SVG/ảnh bên trong
+            } else {
+                solBox.style.display = 'none';
+                btn.innerHTML = "Xem lời giải";
+                btn.style.background = "#28a745";
+                contentDiv.classList.remove('scale-down');
+            }
+        }
+
+        const MEDIA_SCOPE = '.slide';
+        // =====================================================================
+        // XỬ LÝ SVG / ẢNH (dùng chung cho quiz và trình chiếu)
+        // Mỗi template khai báo trước: const MEDIA_SCOPE = '.vung-chua-hinh, ...';
+        // =====================================================================
+        const MEDIA_SVG_SEL = MEDIA_SCOPE.split(',').map(s => s.trim() + ' svg').join(', ');
+        const MEDIA_ALL_SEL = MEDIA_SCOPE.split(',').map(s => s.trim()).flatMap(s => [s + ' svg', s + ' img']).join(', ');
+
+        // Chỉ nhận số thuần hoặc "px"; "10cm", "50%", "auto"... trả về NaN để không đọc sai đơn vị
+        function svgNum(v) {
+            if (v == null) return NaN;
+            const m = String(v).trim().match(/^([0-9]*\.?[0-9]+)(px)?$/i);
+            return m ? parseFloat(m[1]) : NaN;
+        }
+
+        // Đổi id trong từng SVG thành duy nhất để các hình không dùng nhầm clipPath/marker/gradient của nhau
+        let __svgSeq = 0;
+        function uniquifySvgIds(svg) {
+            if (svg.dataset.idsDone) return;
+            svg.dataset.idsDone = '1';
+            const withId = svg.querySelectorAll('[id]');
+            if (!withId.length) return;
+            const prefix = 'svg' + (++__svgSeq) + '_';
+            const map = {};
+            withId.forEach(n => { map[n.id] = prefix + n.id; });
+            const ids = Object.keys(map);
+            const esc = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const urlRe = /url\(\s*(['"]?)#([^)'"\s]+)\1\s*\)/g;
+            const fixUrls = str => str.replace(urlRe, (m, q, id) => map[id] ? `url(${q}#${map[id]}${q})` : m);
+
+            svg.querySelectorAll('*').forEach(n => {
+                if (n.tagName.toLowerCase() === 'style') {
+                    let css = fixUrls(n.textContent);
+                    css = css.replace(new RegExp('#(' + ids.map(esc).join('|') + ')(?![\\w-])', 'g'), '#' + prefix + '$1');
+                    n.textContent = css;
+                    return;
+                }
+                Array.from(n.attributes).forEach(a => {
+                    if (a.name === 'id' || a.value.indexOf('#') < 0) return;
+                    if ((a.name === 'href' || a.name === 'xlink:href') && a.value.charAt(0) === '#') {
+                        const id = a.value.slice(1);
+                        if (map[id]) n.setAttribute(a.name, '#' + map[id]);
+                    } else {
+                        const nv = fixUrls(a.value);
+                        if (nv !== a.value) n.setAttribute(a.name, nv);
+                    }
+                });
+            });
+            withId.forEach(n => { n.id = map[n.id]; });
+        }
+
+        // Chuẩn hóa SVG: id duy nhất + thêm viewBox nếu thiếu để SVG co giãn đúng
+        function normalizeSvgs() {
+            document.querySelectorAll(MEDIA_SVG_SEL).forEach(svg => {
+                if (svg.closest('mjx-container')) return;
+                uniquifySvgIds(svg);
+                if (svg.dataset.normalized) return;
+                const w = svgNum(svg.getAttribute('width'));
+                const h = svgNum(svg.getAttribute('height'));
+
+                if (!svg.hasAttribute('viewBox')) {
+                    if (w > 0 && h > 0) {
+                        svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
+                    } else {
+                        try {   // đang bị ẩn thì getBBox lỗi -> sẽ thử lại khi phần chứa nó hiện ra
+                            const b = svg.getBBox();
+                            if (b.width && b.height)
+                                svg.setAttribute('viewBox', `${b.x - 2} ${b.y - 2} ${b.width + 4} ${b.height + 4}`);
+                        } catch (e) { return; }
+                    }
+                }
+                if (svg.hasAttribute('viewBox')) {
+                    if (w > 0) { svg.style.width = '100%'; svg.style.maxWidth = w + 'px'; }  // kích thước gốc làm trần
+                    svg.removeAttribute('height');
+                    svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+                    svg.dataset.normalized = '1';
+                }
+            });
+        }
+
+        // Zoom: phóng to bằng cách tăng chiều rộng thật, khung tự cao theo, cuộn bằng thanh cuộn gốc
+        const __zoomRefresh = new Set();
+        let __zoomResizeTimer;
+        window.addEventListener('resize', () => {
+            clearTimeout(__zoomResizeTimer);
+            __zoomResizeTimer = setTimeout(() => __zoomRefresh.forEach(fn => fn()), 150);
+        });
+
+        function setupImageZoom() {
+            document.querySelectorAll(MEDIA_ALL_SEL).forEach(el => {
+                if (el.closest('.zoom-container') || el.closest('mjx-container') || el.classList.contains('no-zoom')) return;
+
+                const wrapper = document.createElement('div');
+                wrapper.className = 'zoom-container';
+                const viewport = document.createElement('div');
+                viewport.className = 'zoom-viewport';
+                el.parentNode.insertBefore(wrapper, el);
+                viewport.appendChild(el);
+                wrapper.appendChild(viewport);
+                el.classList.add('zoom-media');
+
+                let scale = 1;
+                const STEP = 0.25, MIN = 1, MAX = 4;
+
+                const toolbar = document.createElement('div');
+                toolbar.className = 'zoom-toolbar';
+                const mk = (txt, title) => {
+                    const b = document.createElement('button');
+                    b.type = 'button'; b.className = 'zoom-btn'; b.innerHTML = txt; b.title = title;
+                    b.setAttribute('aria-label', title);
+                    return b;
+                };
+                const btnIn = mk('➕', 'Phóng to'), btnOut = mk('➖', 'Thu nhỏ'), btnReset = mk('↺', 'Mặc định');
+
+                function apply(newScale) {
+                    const cx = viewport.scrollWidth ? (viewport.scrollLeft + viewport.clientWidth / 2) / viewport.scrollWidth : 0.5;
+                    const cy = viewport.scrollHeight ? (viewport.scrollTop + viewport.clientHeight / 2) / viewport.scrollHeight : 0.5;
+
+                    scale = Math.min(MAX, Math.max(MIN, Math.round(newScale * 100) / 100));
+
+                    el.classList.remove('zoomed');
+                    el.style.removeProperty('--zw');
+                    const base = el.getBoundingClientRect().width;   // chiều rộng vừa khung hiện tại
+                    if (scale > 1 && base > 0) {
+                        el.style.setProperty('--zw', (base * scale) + 'px');
+                        el.classList.add('zoomed');
+                        viewport.scrollLeft = cx * viewport.scrollWidth - viewport.clientWidth / 2;
+                        viewport.scrollTop = cy * viewport.scrollHeight - viewport.clientHeight / 2;
+                    }
+                    viewport.classList.toggle('can-pan', el.classList.contains('zoomed'));
+                    btnIn.disabled = scale >= MAX;
+                    btnOut.disabled = scale <= MIN;
+                }
+
+                btnIn.onclick = () => apply(scale + STEP);
+                btnOut.onclick = () => apply(scale - STEP);
+                btnReset.onclick = () => apply(1);
+                __zoomRefresh.add(() => { if (scale > 1) apply(scale); });
+
+                // Ctrl + lăn chuột để zoom, nhấp đúp để phóng to/reset
+                viewport.addEventListener('wheel', e => {
+                    if (!e.ctrlKey) return;
+                    e.preventDefault();
+                    apply(scale + (e.deltaY < 0 ? STEP : -STEP));
+                }, { passive: false });
+                viewport.addEventListener('dblclick', () => apply(scale > 1 ? 1 : 2));
+
+                // Kéo thả bằng chuột (cảm ứng dùng cuộn gốc của trình duyệt)
+                let dragging = false, sx = 0, sy = 0, sl = 0, st = 0;
+                viewport.addEventListener('pointerdown', e => {
+                    if (e.pointerType !== 'mouse' || !el.classList.contains('zoomed')) return;
+                    dragging = true; sx = e.clientX; sy = e.clientY; sl = viewport.scrollLeft; st = viewport.scrollTop;
+                    viewport.setPointerCapture(e.pointerId);
+                    viewport.classList.add('dragging');
+                });
+                viewport.addEventListener('pointermove', e => {
+                    if (!dragging) return;
+                    viewport.scrollLeft = sl - (e.clientX - sx);
+                    viewport.scrollTop = st - (e.clientY - sy);
+                });
+                const stop = () => { dragging = false; viewport.classList.remove('dragging'); };
+                viewport.addEventListener('pointerup', stop);
+                viewport.addEventListener('pointercancel', stop);
+
+                toolbar.append(btnIn, btnOut, btnReset);
+                wrapper.appendChild(toolbar);
+                apply(1);
+            });
+        }
+
+        // Bọc từng <table> trong khung cuộn ngang (bỏ qua bảng của MathJax hoặc bảng đã được bọc)
+        const MEDIA_TABLE_SEL = MEDIA_SCOPE.split(',').map(s => s.trim() + ' table').join(', ');
+        function wrapTables() {
+            document.querySelectorAll(MEDIA_TABLE_SEL).forEach(t => {
+                if (t.closest('mjx-container, .table-scroll, .table-responsive, #tblOverlay')) return;
+                if (!t.parentNode) return;
+                const w = document.createElement('div');
+                w.className = 'table-scroll';
+                t.parentNode.insertBefore(w, t);
+                w.appendChild(t);
+            });
+        }
+
+        // ---- Bảng rộng: gợi ý vuốt ngang, cột đầu cố định, nút xem toàn màn hình ----
+        const __tblRefresh = [];
+        window.addEventListener('resize', () => __tblRefresh.forEach(fn => fn()));
+        function tblState(box, sc) {
+            const over = sc.scrollWidth > sc.clientWidth + 2;
+            box.classList.toggle('has-scroll', over);
+            box.classList.toggle('at-end', !over || sc.scrollLeft + sc.clientWidth >= sc.scrollWidth - 2);
+        }
+        function enhanceTables() {
+            document.querySelectorAll('.table-responsive, .table-scroll').forEach(sc => {
+                if (sc.dataset.tblDone || sc.closest('#tblOverlay')) return;
+                const table = sc.querySelector('table');
+                if (!table || !sc.parentNode) return;
+                sc.dataset.tblDone = '1';
+                const box = document.createElement('div'); box.className = 'tbl-box';
+                const hint = document.createElement('div'); hint.className = 'tbl-hint';
+                const msg = document.createElement('span'); msg.textContent = '\u2194 Vuốt ngang để xem thêm';
+                const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'tbl-open'; btn.textContent = '\u26F6 Xem toàn màn hình';
+                btn.addEventListener('click', e => { e.stopPropagation(); openTableOverlay(table); });
+                hint.append(msg, btn);
+                const wrap = document.createElement('div'); wrap.className = 'tbl-wrap';
+                const fade = document.createElement('div'); fade.className = 'tbl-fade';
+                sc.parentNode.insertBefore(box, sc);
+                box.append(hint, wrap);
+                wrap.append(sc, fade);
+                const first = table.rows[0];
+                if (first && first.cells.length >= 4 && first.cells[0].colSpan === 1 && first.cells[0].rowSpan === 1) table.classList.add('sticky-first');
+                const upd = () => tblState(box, sc);
+                sc.addEventListener('scroll', upd, { passive: true });
+                if (window.ResizeObserver) new ResizeObserver(upd).observe(table);
+                __tblRefresh.push(upd);
+                upd();
+            });
+        }
+        let tblOv = null, tblScale = 1;
+        function closeTableOverlay() {
+            if (!tblOv) return;
+            tblOv.classList.remove('open');
+            document.documentElement.style.overflow = '';
+        }
+        function openTableOverlay(table) {
+            if (!tblOv) {
+                tblOv = document.createElement('div'); tblOv.id = 'tblOverlay';
+                tblOv.innerHTML = '<div class="tbl-ov-bar"><span class="ttl">Kéo để xem; A+ / A\u2212 đổi cỡ chữ</span>'
+                    + '<button type="button" class="zoom-btn" data-a="-">A\u2212</button><button type="button" class="zoom-btn" data-a="+">A+</button>'
+                    + '<button type="button" class="zoom-btn" data-a="x">\u2715 Đóng</button></div><div class="tbl-ov-body"></div>';
+                document.body.appendChild(tblOv);
+                tblOv.addEventListener('click', e => {
+                    const b = e.target.closest('button[data-a]');
+                    if (!b) return;
+                    if (b.dataset.a === 'x') { closeTableOverlay(); return; }
+                    tblScale = Math.min(2.6, Math.max(0.6, tblScale + (b.dataset.a === '+' ? 0.2 : -0.2)));
+                    tblOv.style.setProperty('--tbl-s', tblScale);
+                });
+                window.addEventListener('keydown', e => {                 // đang xem bảng: không để phím chuyển câu / slide
+                    if (!tblOv.classList.contains('open')) return;
+                    e.stopImmediatePropagation();
+                    if (e.key === 'Escape') closeTableOverlay();
+                }, true);
+            }
+            const body = tblOv.querySelector('.tbl-ov-body');
+            body.innerHTML = '';
+            const c = table.cloneNode(true);
+            c.querySelectorAll('[id]').forEach(n => n.removeAttribute('id'));
+            c.classList.remove('sticky-first');
+            body.appendChild(c);
+            tblScale = 1;
+            tblOv.style.setProperty('--tbl-s', 1);
+            tblOv.classList.add('open');
+            document.documentElement.style.overflow = 'hidden';
+            body.scrollTo(0, 0);
+        }
+
+        function initMedia() { wrapTables(); enhanceTables(); normalizeSvgs(); setupImageZoom(); }
+
+        window.addEventListener('load', () => setTimeout(initMedia, 300));
+
+
+        // --- MỤC LỤC ---
+        const TOC_GROUPS = { '1': 'Phần I · Trắc nghiệm', '2': 'Phần II · Đúng/Sai', '3': 'Phần III · Trả lời ngắn', '4': 'Phần IV · Tự luận', 'other': 'Câu khác' };
+        const TOC_MARK = { correct: '✔', wrong: '✘', partial: '½', picked: '●', empty: '', none: '' };
+        const TOC_TEXT = { correct: 'đúng', wrong: 'sai', partial: 'đúng một phần', picked: 'đã chọn, chưa kiểm tra', empty: 'chưa làm', none: '' };
+        let tocOpener = null;
+
+        // Trạng thái một câu: correct | wrong | partial | picked | empty | none (câu không chấm điểm)
+        function slideState(slide) {
+            const type = slide.dataset.type;
+            if (type !== '1' && type !== '2' && type !== '3') return 'none';
+            if (slide.dataset.checked === 'true') return slide.dataset.result || 'none';
+            if (type === '1' && slide.querySelector('.options div.selected')) return 'picked';
+            if (type === '2' && slide.querySelector('.tf-btn.selected')) return 'picked';
+            if (type === '3' && Array.from(slide.querySelectorAll('.short-ans-box-slide')).some(i => i.value.trim() !== '')) return 'picked';
+            return 'empty';
+        }
+
+        function buildToc() {
+            const body = document.getElementById('tocBody');
+            body.textContent = '';
+            const groups = {};
+            const n = { total: 0, done: 0, correct: 0, wrong: 0, partial: 0 };
+
+            slides.forEach((slide, i) => {
+                const st = slideState(slide);
+                const key = TOC_GROUPS[slide.dataset.type] && slide.dataset.type !== 'other' ? slide.dataset.type : 'other';
+                (groups[key] = groups[key] || []).push({ i, st });
+                if (st !== 'none') {
+                    n.total++;
+                    if (st === 'correct' || st === 'wrong' || st === 'partial') { n.done++; n[st]++; }
+                }
+            });
+
+            const keys = ['1', '2', '3', '4', 'other'].filter(k => groups[k]);
+            keys.forEach(k => {
+                if (keys.length > 1) {
+                    const h = document.createElement('h4');
+                    h.className = 'toc-group-title';
+                    h.textContent = TOC_GROUPS[k];
+                    body.appendChild(h);
+                }
+                const grid = document.createElement('div');
+                grid.className = 'toc-grid';
+                groups[k].forEach(({ i, st }) => {
+                    const b = document.createElement('button');
+                    b.type = 'button';
+                    b.className = 'toc-item toc-s-' + st + (i === currentSlide ? ' current' : '');
+                    b.dataset.idx = i;
+                    const label = 'Câu ' + (i + 1) + (TOC_TEXT[st] ? ', ' + TOC_TEXT[st] : '') + (i === currentSlide ? ' (đang xem)' : '');
+                    b.setAttribute('aria-label', label);
+                    b.title = label;
+                    if (i === currentSlide) b.setAttribute('aria-current', 'true');
+                    const num = document.createElement('span'); num.textContent = i + 1;
+                    const mark = document.createElement('span'); mark.className = 'm'; mark.setAttribute('aria-hidden', 'true'); mark.textContent = TOC_MARK[st];
+                    b.append(num, mark);
+                    b.onclick = () => { currentSlide = i; showSlide(i); closeToc(true); };
+                    grid.appendChild(b);
+                });
+                body.appendChild(grid);
+            });
+
+            let txt = 'Đã kiểm tra ' + n.done + '/' + n.total + ' câu';
+            if (n.done) txt += ' · Đúng ' + n.correct + ' · Sai ' + n.wrong + (n.partial ? ' · Một phần ' + n.partial : '');
+            document.getElementById('tocSummary').textContent = n.total ? txt : '';
+        }
+
+        function openToc() {
+            const modal = document.getElementById('tocModal');
+            if (modal.classList.contains('active')) return;
+            tocOpener = document.activeElement;
+            buildToc();
+            modal.classList.add('active');
+            // đợi hộp hiện ra rồi mới chuyển tiêu điểm vào câu đang xem
+            setTimeout(() => {
+                const cur = modal.querySelector('.toc-item.current') || modal.querySelector('.toc-item');
+                if (cur) { cur.focus({ preventScroll: true }); cur.scrollIntoView({ block: 'center', inline: 'nearest' }); }
+            }, 60);
+        }
+
+        // toSlides = true khi vừa chọn một câu: đưa tiêu điểm về vùng trình chiếu để Space/mũi tên tiếp tục chuyển câu
+        function closeToc(toSlides) {
+            const modal = document.getElementById('tocModal');
+            if (!modal.classList.contains('active')) return;
+            modal.classList.remove('active');
+            if (toSlides) document.getElementById('mainContainer').focus({ preventScroll: true });
+            else if (tocOpener && document.contains(tocOpener) && tocOpener.focus) tocOpener.focus({ preventScroll: true });
+            tocOpener = null;
+        }
+
+        (function () {
+            const modal = document.getElementById('tocModal');
+
+            // bấm vào nền tối để đóng (bỏ qua khi kéo chuột từ trong hộp ra ngoài)
+            let downOnBackdrop = false;
+            modal.addEventListener('pointerdown', e => { downOnBackdrop = (e.target === modal); });
+            modal.addEventListener('click', e => { if (e.target === modal && downOnBackdrop) closeToc(); });
+
+            // bàn phím: mũi tên di chuyển giữa các ô, Tab quay vòng trong hộp thoại
+            function vertical(items, cur, dir) {
+                const r = items[cur].getBoundingClientRect(), cx = r.left + r.width / 2;
+                let best = null, bestDy = Infinity, bestDx = Infinity;
+                items.forEach(it => {
+                    if (it === items[cur]) return;
+                    const b = it.getBoundingClientRect();
+                    const dy = dir > 0 ? b.top - r.top : r.top - b.top;
+                    if (dy <= 4) return;                           // chỉ xét các hàng phía dưới (hoặc phía trên)
+                    const dx = Math.abs(b.left + b.width / 2 - cx);
+                    if (dy < bestDy - 4 || (Math.abs(dy - bestDy) <= 4 && dx < bestDx)) { best = it; bestDy = dy; bestDx = dx; }
+                });
+                return best;
+            }
+            modal.addEventListener('keydown', e => {
+                if (e.ctrlKey || e.metaKey || e.altKey) return;
+                if (e.key === 'Tab') {
+                    const f = Array.from(modal.querySelectorAll('button'));
+                    if (e.shiftKey && document.activeElement === f[0]) { f[f.length - 1].focus(); e.preventDefault(); }
+                    else if (!e.shiftKey && document.activeElement === f[f.length - 1]) { f[0].focus(); e.preventDefault(); }
+                    return;
+                }
+                const items = Array.from(modal.querySelectorAll('.toc-item'));
+                const cur = items.indexOf(document.activeElement);
+                if (cur < 0) return;
+                let target;
+                switch (e.key) {
+                    case 'ArrowRight': target = items[cur + 1]; break;
+                    case 'ArrowLeft': target = items[cur - 1]; break;
+                    case 'ArrowDown': target = vertical(items, cur, 1); break;
+                    case 'ArrowUp': target = vertical(items, cur, -1); break;
+                    case 'Home': target = items[0]; break;
+                    case 'End': target = items[items.length - 1]; break;
+                    default: return;
+                }
+                if (target) target.focus();
+                e.preventDefault();
+            });
+
+            // điện thoại: vuốt thanh nắm xuống để đóng
+            const content = modal.querySelector('.toc-content'), handle = document.getElementById('tocHandle');
+            let y0 = 0, dy = 0, dragging = false;
+            handle.addEventListener('touchstart', e => { y0 = e.touches[0].clientY; dy = 0; dragging = true; content.style.transition = 'none'; }, { passive: true });
+            handle.addEventListener('touchmove', e => { if (!dragging) return; dy = Math.max(0, e.touches[0].clientY - y0); content.style.transform = 'translateY(' + dy + 'px)'; }, { passive: true });
+            const endDrag = () => {
+                if (!dragging) return;
+                dragging = false;
+                content.style.transition = ''; content.style.transform = '';
+                if (dy > 90) closeToc();
+            };
+            handle.addEventListener('touchend', endDrag);
+            handle.addEventListener('touchcancel', endDrag);
+        })();
+
+                // --- ĐIỀU HƯỚNG BẰNG BÀN PHÍM, VUỐT VÀ TOÀN MÀN HÌNH ---
+        function toggleFullscreen() {
+            if (!document.fullscreenEnabled) return;
+            if (document.fullscreenElement) document.exitFullscreen();
+            else document.documentElement.requestFullscreen().catch(() => {});
+        }
+        if (!document.fullscreenEnabled) document.getElementById('fsBtn').style.display = 'none';
+
+        document.addEventListener('keydown', e => {
+            if (e.ctrlKey || e.metaKey || e.altKey) return;
+            const t = e.target, tag = t && t.tagName;
+            if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || (t && t.isContentEditable)) return;   // đang gõ đáp án
+            const tocOpen = document.getElementById('tocModal').classList.contains('active');
+
+            if (e.key === 'Escape') { if (tocOpen) { closeToc(); e.preventDefault(); } return; }
+            if (e.key === 't' || e.key === 'T') { tocOpen ? closeToc() : openToc(); e.preventDefault(); return; }
+            if (tocOpen) return;
+
+            switch (e.key) {
+                case 'ArrowRight': case 'PageDown': changeSlide(1); break;
+                case 'ArrowLeft': case 'PageUp': changeSlide(-1); break;
+                case ' ': if (tag === 'BUTTON') return; changeSlide(e.shiftKey ? -1 : 1); break;
+                case 'Home': currentSlide = 0; showSlide(0); break;
+                case 'End': currentSlide = slides.length - 1; showSlide(currentSlide); break;
+                case 'f': case 'F': toggleFullscreen(); break;
+                default: return;
+            }
+            e.preventDefault();
+        });
+
+        // Vuốt ngang để chuyển câu (bỏ qua khi vuốt trong ảnh đang phóng to, công thức, bảng, ô nhập)
+        (function () {
+            let x0 = 0, y0 = 0, t0 = 0, track = false;
+            const box = document.getElementById('mainContainer');
+            box.addEventListener('touchstart', e => {
+                const blocked = e.target.closest('.zoom-viewport.can-pan, mjx-container, .table-responsive, .table-scroll, .tbl-hint, input, textarea, .controls');
+                if (e.touches.length !== 1 || blocked) { track = false; return; }
+                x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; t0 = Date.now(); track = true;
+            }, { passive: true });
+            box.addEventListener('touchend', e => {
+                if (!track) return;
+                track = false;
+                const dx = e.changedTouches[0].clientX - x0, dy = e.changedTouches[0].clientY - y0;
+                if (Math.abs(dx) > 60 && Math.abs(dx) > 1.5 * Math.abs(dy) && Date.now() - t0 < 800) changeSlide(dx < 0 ? 1 : -1);
+            }, { passive: true });
+        })();
+
+        if (slides.length) showSlide(currentSlide);
+    </script>
+<script>
+(function () {
+    var ov = null, body = null, stage = null, hint = null, base = 16, scale = 1.2, histPushed = false;
+    var root = document.documentElement;
+
+    function setScale(s) {
+        scale = Math.max(0.35, Math.min(4, s));
+        if (stage) stage.style.fontSize = (base * scale) + 'px';
+    }
+    function dist(t) { return Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY); }
+    function updateHint() {
+        if (!hint) return;
+        var portrait = window.matchMedia && window.matchMedia('(orientation: portrait)').matches;
+        hint.style.display = (portrait && window.innerWidth < 700) ? 'block' : 'none';
+    }
+    function fit() {
+        var m = stage.querySelector('mjx-math');
+        if (!m) return;
+        var w = m.getBoundingClientRect().width;
+        if (w > 0) setScale(scale * (body.clientWidth - 24) / w);
+        body.scrollLeft = 0;
+    }
+    function buildOv() {
+        if (ov) return;
+        ov = document.createElement('div');
+        ov.className = 'fv-ov';
+        ov.setAttribute('role', 'dialog');
+        ov.setAttribute('aria-modal', 'true');
+        ov.innerHTML = '<div class="fv-bar"><span class="fv-t">Công thức dài</span>' +
+            '<button type="button" data-fv="minus" aria-label="Thu nhỏ">A−</button>' +
+            '<button type="button" data-fv="plus" aria-label="Phóng to">A+</button>' +
+            '<button type="button" data-fv="fit">Vừa màn hình</button>' +
+            '<button type="button" data-fv="close" aria-label="Đóng">✕</button></div>' +
+            '<div class="fv-hint">💡 Xoay ngang điện thoại, kéo để xem tiếp hoặc chụm 2 ngón để phóng to / thu nhỏ.</div>' +
+            '<div class="fv-body"><div class="fv-stage"></div></div>';
+        document.body.appendChild(ov);
+        body = ov.querySelector('.fv-body');
+        stage = ov.querySelector('.fv-stage');
+        hint = ov.querySelector('.fv-hint');
+        ov.addEventListener('click', function (e) {
+            var b = e.target.closest ? e.target.closest('[data-fv]') : null;
+            if (!b) return;
+            var a = b.getAttribute('data-fv');
+            if (a === 'minus') setScale(scale / 1.2);
+            else if (a === 'plus') setScale(scale * 1.2);
+            else if (a === 'fit') fit();
+            else if (a === 'close') closeViewer(false);
+        });
+        var pd = 0, ps = 1;
+        body.addEventListener('touchstart', function (e) { if (e.touches.length === 2) { pd = dist(e.touches); ps = scale; } }, { passive: true });
+        body.addEventListener('touchmove', function (e) {
+            if (e.touches.length === 2 && pd) { e.preventDefault(); setScale(ps * dist(e.touches) / pd); }
+        }, { passive: false });
+        body.addEventListener('touchend', function (e) { if (e.touches.length < 2) pd = 0; }, { passive: true });
+    }
+    function openViewer(src) {
+        if (!src || !src.isConnected) return;
+        buildOv();
+        stage.innerHTML = '';
+        var c = src.cloneNode(true);
+        c.classList.remove('fv-wide');
+        stage.appendChild(c);
+        base = parseFloat(window.getComputedStyle(src).fontSize) || 16;
+        setScale(1.2);
+        ov.classList.add('open');
+        root.classList.add('fv-lock');
+        body.scrollTop = 0;
+        body.scrollLeft = 0;
+        updateHint();
+        try { history.pushState({ fv: 1 }, ''); histPushed = true; } catch (e) { histPushed = false; }
+    }
+    function closeViewer(fromPop) {
+        if (!ov || !ov.classList.contains('open')) return;
+        ov.classList.remove('open');
+        root.classList.remove('fv-lock');
+        stage.innerHTML = '';
+        if (!fromPop && histPushed) { histPushed = false; try { history.back(); } catch (e) {} }
+    }
+    window.addEventListener('popstate', function () { histPushed = false; closeViewer(true); });
+    window.addEventListener('resize', updateHint);
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && ov && ov.classList.contains('open')) { e.stopPropagation(); closeViewer(false); }
+    }, true);
+
+    // ---- nhận biết công thức quá rộng ----
+    function isVisible(el) { return el.getClientRects().length > 0; }
+    function isWide(el) {
+        if (el.getAttribute('display') === 'true') return el.scrollWidth - el.clientWidth > 2;
+        var host = el.parentElement;
+        while (host && window.getComputedStyle(host).display === 'inline') host = host.parentElement;
+        var hw = host ? host.clientWidth : window.innerWidth;
+        var r = el.getBoundingClientRect();
+        return r.width > hw - 4 || r.right > window.innerWidth + 2;
+    }
+    function mark(el) {
+        var blk = el.getAttribute('display') === 'true';
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'fv-btn' + (blk ? ' blk' : '');
+        b.textContent = blk ? '🔍 Xem công thức đầy đủ' : '🔍';
+        b.title = 'Xem công thức dài';
+        b._fvSrc = el;
+        el.classList.add('fv-wide');
+        el._fvBtn = b;
+        el.insertAdjacentElement('afterend', b);
+    }
+    function unmark(el) {
+        el.classList.remove('fv-wide');
+        if (el._fvBtn) el._fvBtn.remove();
+        el._fvBtn = null;
+    }
+    function scan() {
+        Array.prototype.forEach.call(document.querySelectorAll('.fv-btn'), function (b) {
+            if (!b._fvSrc || !b._fvSrc.isConnected) b.remove();      // MathJax dàn lại -> nút cũ mồ côi
+        });
+        Array.prototype.forEach.call(document.querySelectorAll('mjx-container'), function (el) {
+            if (el.closest('.fv-ov') || !isVisible(el)) return;
+            var wide = isWide(el);
+            if (wide && !el._fvBtn) mark(el);
+            else if (!wide && el._fvBtn) unmark(el);
+        });
+    }
+    var timer = 0;
+    function later(d) { clearTimeout(timer); timer = setTimeout(scan, d || 200); }
+    new MutationObserver(function (muts) {
+        for (var i = 0; i < muts.length; i++) {
+            var t = muts[i].target;
+            if (!(t && t.closest && t.closest('.fv-ov'))) { later(200); return; }
+        }
+    }).observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['class', 'style', 'hidden'] });
+    window.addEventListener('resize', function () { later(250); });
+    window.addEventListener('orientationchange', function () { later(400); });
+    window.addEventListener('load', function () { later(300); });
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { later(200); });
+    if (window.MathJax && MathJax.startup && MathJax.startup.promise) MathJax.startup.promise.then(function () { later(300); });
+    [1000, 2500, 5000].forEach(function (ms) { setTimeout(scan, ms); });
+
+    // bấm nút 🔍 (chặn không cho lọt xuống phương án đang chọn); chạm công thức ở đề / lời giải cũng mở được
+    document.addEventListener('click', function (e) {
+        var t = e.target;
+        if (!t || !t.closest) return;
+        var b = t.closest('.fv-btn');
+        if (b) { e.preventDefault(); e.stopPropagation(); openViewer(b._fvSrc); return; }
+        var f = t.closest('mjx-container.fv-wide');
+        if (f && !f.closest('.fv-ov') && !f.closest('.options, .tf-options, .tf-row, .short-ans-group-slide')) openViewer(f);
+    }, true);
+})();
+</script>
+</body>
+</html>
