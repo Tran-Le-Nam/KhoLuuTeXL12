@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lớp 11 Chương 6 - Ôn tập - Trình Chiếu</title>
+    <title>Lớp 11 Chương 9 - Ôn tập - Trình Chiếu</title>
     <style>
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #eccfa0; font-family: Arial, sans-serif; display: flex; justify-content: center; align-items: center; overflow: hidden; }
         .slide-container { width: 95vw; height: 95vh; height: 95dvh; background: #fff; border-radius: 5px; box-shadow: 0 5px 15px rgba(0,0,0,0.5); display: flex; flex-direction: column; position: relative; padding: 10px; box-sizing: border-box; }
@@ -272,22 +272,8 @@
         };
     </script>
     <script id="MathJax-script" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-chtml.min.js"></script>
-<style>
-mjx-container[jax="CHTML"][display="true"] { max-width: 100%; overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; }
-mjx-container.fv-wide { cursor: zoom-in; outline: 1px dashed rgba(30,136,229,.6); outline-offset: 2px; border-radius: 3px; }
-.fv-btn { font: bold 12px Arial, sans-serif; line-height: 1.4; color: #1565c0; background: #fff; border: 1px solid #1e88e5; border-radius: 12px; padding: 2px 9px; margin: 0 4px; cursor: pointer; vertical-align: middle; white-space: nowrap; }
-.fv-btn.blk { display: block; margin: 2px 0 8px auto; }
-.fv-btn:active { background: #e3f0fb; }
-html.fv-lock, html.fv-lock body { overflow: hidden !important; }
-.fv-ov { position: fixed; inset: 0; z-index: 100000; display: none; flex-direction: column; background: #fff; color: #1c2b3a; font-family: Arial, sans-serif; }
-.fv-ov.open { display: flex; }
-.fv-bar { flex: 0 0 auto; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; padding: 8px 10px; background: #1e88e5; color: #fff; }
-.fv-bar .fv-t { flex: 1 1 auto; font-weight: bold; font-size: 14px; }
-.fv-bar button { background: #fff; color: #1565c0; border: none; border-radius: 5px; padding: 6px 11px; min-width: 38px; font-weight: bold; font-size: 14px; cursor: pointer; }
-.fv-hint { flex: 0 0 auto; display: none; background: #fff3cd; color: #7a5600; font-size: 12px; padding: 4px 10px; }
-.fv-body { flex: 1 1 auto; overflow: auto; -webkit-overflow-scrolling: touch; touch-action: pan-x pan-y; padding: 16px 12px 40px; background: #fff; }
-.fv-stage { width: max-content; min-width: 100%; }
-.fv-stage mjx-container { display: block !important; margin: 0 !important; max-width: none !important; overflow: visible !important; text-align: left !important; }
+<style id="fv-scroll">
+mjx-container { max-width: 100%; overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; }
 </style>
 </head>
 <body>
@@ -1528,153 +1514,5 @@ html.fv-lock, html.fv-lock body { overflow: hidden !important; }
 
         if (slides.length) showSlide(currentSlide);
     </script>
-<script>
-(function () {
-    var ov = null, body = null, stage = null, hint = null, base = 16, scale = 1.2, histPushed = false;
-    var root = document.documentElement;
-
-    function setScale(s) {
-        scale = Math.max(0.35, Math.min(4, s));
-        if (stage) stage.style.fontSize = (base * scale) + 'px';
-    }
-    function dist(t) { return Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY); }
-    function updateHint() {
-        if (!hint) return;
-        var portrait = window.matchMedia && window.matchMedia('(orientation: portrait)').matches;
-        hint.style.display = (portrait && window.innerWidth < 700) ? 'block' : 'none';
-    }
-    function fit() {
-        var m = stage.querySelector('mjx-math');
-        if (!m) return;
-        var w = m.getBoundingClientRect().width;
-        if (w > 0) setScale(scale * (body.clientWidth - 24) / w);
-        body.scrollLeft = 0;
-    }
-    function buildOv() {
-        if (ov) return;
-        ov = document.createElement('div');
-        ov.className = 'fv-ov';
-        ov.setAttribute('role', 'dialog');
-        ov.setAttribute('aria-modal', 'true');
-        ov.innerHTML = '<div class="fv-bar"><span class="fv-t">Công thức dài</span>' +
-            '<button type="button" data-fv="minus" aria-label="Thu nhỏ">A−</button>' +
-            '<button type="button" data-fv="plus" aria-label="Phóng to">A+</button>' +
-            '<button type="button" data-fv="fit">Vừa màn hình</button>' +
-            '<button type="button" data-fv="close" aria-label="Đóng">✕</button></div>' +
-            '<div class="fv-hint">💡 Xoay ngang điện thoại, kéo để xem tiếp hoặc chụm 2 ngón để phóng to / thu nhỏ.</div>' +
-            '<div class="fv-body"><div class="fv-stage"></div></div>';
-        document.body.appendChild(ov);
-        body = ov.querySelector('.fv-body');
-        stage = ov.querySelector('.fv-stage');
-        hint = ov.querySelector('.fv-hint');
-        ov.addEventListener('click', function (e) {
-            var b = e.target.closest ? e.target.closest('[data-fv]') : null;
-            if (!b) return;
-            var a = b.getAttribute('data-fv');
-            if (a === 'minus') setScale(scale / 1.2);
-            else if (a === 'plus') setScale(scale * 1.2);
-            else if (a === 'fit') fit();
-            else if (a === 'close') closeViewer(false);
-        });
-        var pd = 0, ps = 1;
-        body.addEventListener('touchstart', function (e) { if (e.touches.length === 2) { pd = dist(e.touches); ps = scale; } }, { passive: true });
-        body.addEventListener('touchmove', function (e) {
-            if (e.touches.length === 2 && pd) { e.preventDefault(); setScale(ps * dist(e.touches) / pd); }
-        }, { passive: false });
-        body.addEventListener('touchend', function (e) { if (e.touches.length < 2) pd = 0; }, { passive: true });
-    }
-    function openViewer(src) {
-        if (!src || !src.isConnected) return;
-        buildOv();
-        stage.innerHTML = '';
-        var c = src.cloneNode(true);
-        c.classList.remove('fv-wide');
-        stage.appendChild(c);
-        base = parseFloat(window.getComputedStyle(src).fontSize) || 16;
-        setScale(1.2);
-        ov.classList.add('open');
-        root.classList.add('fv-lock');
-        body.scrollTop = 0;
-        body.scrollLeft = 0;
-        updateHint();
-        try { history.pushState({ fv: 1 }, ''); histPushed = true; } catch (e) { histPushed = false; }
-    }
-    function closeViewer(fromPop) {
-        if (!ov || !ov.classList.contains('open')) return;
-        ov.classList.remove('open');
-        root.classList.remove('fv-lock');
-        stage.innerHTML = '';
-        if (!fromPop && histPushed) { histPushed = false; try { history.back(); } catch (e) {} }
-    }
-    window.addEventListener('popstate', function () { histPushed = false; closeViewer(true); });
-    window.addEventListener('resize', updateHint);
-    document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape' && ov && ov.classList.contains('open')) { e.stopPropagation(); closeViewer(false); }
-    }, true);
-
-    // ---- nhận biết công thức quá rộng ----
-    function isVisible(el) { return el.getClientRects().length > 0; }
-    function isWide(el) {
-        if (el.getAttribute('display') === 'true') return el.scrollWidth - el.clientWidth > 2;
-        var host = el.parentElement;
-        while (host && window.getComputedStyle(host).display === 'inline') host = host.parentElement;
-        var hw = host ? host.clientWidth : window.innerWidth;
-        var r = el.getBoundingClientRect();
-        return r.width > hw - 4 || r.right > window.innerWidth + 2;
-    }
-    function mark(el) {
-        var blk = el.getAttribute('display') === 'true';
-        var b = document.createElement('button');
-        b.type = 'button';
-        b.className = 'fv-btn' + (blk ? ' blk' : '');
-        b.textContent = blk ? '🔍 Xem công thức đầy đủ' : '🔍';
-        b.title = 'Xem công thức dài';
-        b._fvSrc = el;
-        el.classList.add('fv-wide');
-        el._fvBtn = b;
-        el.insertAdjacentElement('afterend', b);
-    }
-    function unmark(el) {
-        el.classList.remove('fv-wide');
-        if (el._fvBtn) el._fvBtn.remove();
-        el._fvBtn = null;
-    }
-    function scan() {
-        Array.prototype.forEach.call(document.querySelectorAll('.fv-btn'), function (b) {
-            if (!b._fvSrc || !b._fvSrc.isConnected) b.remove();      // MathJax dàn lại -> nút cũ mồ côi
-        });
-        Array.prototype.forEach.call(document.querySelectorAll('mjx-container'), function (el) {
-            if (el.closest('.fv-ov') || !isVisible(el)) return;
-            var wide = isWide(el);
-            if (wide && !el._fvBtn) mark(el);
-            else if (!wide && el._fvBtn) unmark(el);
-        });
-    }
-    var timer = 0;
-    function later(d) { clearTimeout(timer); timer = setTimeout(scan, d || 200); }
-    new MutationObserver(function (muts) {
-        for (var i = 0; i < muts.length; i++) {
-            var t = muts[i].target;
-            if (!(t && t.closest && t.closest('.fv-ov'))) { later(200); return; }
-        }
-    }).observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['class', 'style', 'hidden'] });
-    window.addEventListener('resize', function () { later(250); });
-    window.addEventListener('orientationchange', function () { later(400); });
-    window.addEventListener('load', function () { later(300); });
-    if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { later(200); });
-    if (window.MathJax && MathJax.startup && MathJax.startup.promise) MathJax.startup.promise.then(function () { later(300); });
-    [1000, 2500, 5000].forEach(function (ms) { setTimeout(scan, ms); });
-
-    // bấm nút 🔍 (chặn không cho lọt xuống phương án đang chọn); chạm công thức ở đề / lời giải cũng mở được
-    document.addEventListener('click', function (e) {
-        var t = e.target;
-        if (!t || !t.closest) return;
-        var b = t.closest('.fv-btn');
-        if (b) { e.preventDefault(); e.stopPropagation(); openViewer(b._fvSrc); return; }
-        var f = t.closest('mjx-container.fv-wide');
-        if (f && !f.closest('.fv-ov') && !f.closest('.options, .tf-options, .tf-row, .short-ans-group-slide')) openViewer(f);
-    }, true);
-})();
-</script>
 </body>
 </html>
