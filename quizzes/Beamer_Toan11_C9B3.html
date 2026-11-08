@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Lớp 11 Chương 9 - Bài 3</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: auto; padding: 15px; line-height: 1.6; padding-top: 70px; overflow-x: hidden; background: #f7fbff; }
+        .header-bar { position: fixed; top: 0; left: 0; width: 100%; background: #1e88e5; color: white; padding: 10px 15px; z-index: 1000; display: flex; justify-content: space-between; align-items: center; box-sizing: border-box; box-shadow: 0 2px 6px rgba(30,136,229,0.2); }
+        .header-bar h2 { margin: 0; font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 65%; }
+        #timer { font-size: 16px; font-weight: bold; background: #e53935; padding: 5px 10px; border-radius: 4px; white-space: nowrap; }
+        
+        .zalo-warning { background: #eef6fc; color: #1565c0; padding: 10px; border: 1px solid #b3d4fc; border-radius: 4px; margin-bottom: 15px; font-weight: bold; text-align: justify; font-size: 14px; }
+        
+        h3 { color: #1565c0; border-bottom: 2px solid #b3d4fc; padding-bottom: 5px; margin-top: 30px; text-transform: uppercase; font-size: 18px; }
+        .info-group { margin-bottom: 15px; }
+        .info-group input { width: 100%; padding: 12px; box-sizing: border-box; border: 1px solid #b3d4fc; border-radius: 4px; font-size: 16px; background: #fff; }
+        .info-group input:focus { border-color: #1e88e5; outline: none; box-shadow: 0 0 0 3px rgba(30,136,229,0.12); }
+        
+        .question { background: #eef6fc; padding: 15px; margin-bottom: 20px; border-radius: 5px; border: 1px solid #b3d4fc; box-sizing: border-box; width: 100%; overflow-x: auto; }
+        .question-text { margin-bottom: 15px; word-wrap: break-word; } 
+        
+        mjx-container { max-width: 100%; overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; }
+        
+        .options label { display: block; padding: 10px; margin: 8px 0; background: #ffffff; border: 1px solid #b3d4fc; border-radius: 4px; cursor: pointer; transition: 0.3s; }
+        .options label:hover { background: #e3f0fb; border-color: #1e88e5; }
+        
+        .table-responsive { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 15px 0; }
+        .tf-table { width: 100%; border-collapse: collapse; background: #fff; min-width: 320px; }
+        .tf-table td { padding: 10px; border: 1px solid #b3d4fc; }
+        .tf-radio-group { display: flex; gap: 10px; justify-content: center; }
+        .tf-radio-group label { cursor: pointer; font-weight: bold; padding: 5px; border-radius: 3px; transition: 0.3s; }
+        
+        .short-ans-group { display: flex; gap: 8px; margin-top: 5px; flex-wrap: wrap; }
+        .short-ans-box { width: 50px; height: 55px; font-size: 24px; text-align: center; border: 2px solid #1e88e5; border-radius: 5px; box-sizing: border-box; font-weight: bold; color: #1565c0; background: #fff; transition: 0.3s; }
+        .short-ans-box:focus { border-color: #0d47a1; outline: none; box-shadow: 0 0 6px rgba(30,136,229,0.3); }
+        
+        .essay-input { width: 100%; padding: 12px; font-size: 16px; border: 2px solid #b3d4fc; border-radius: 4px; box-sizing: border-box; height: 150px; resize: vertical; background: #fff; }
+        .essay-input:focus { border-color: #1e88e5; outline: none; }
+        
+        .solution-box { display: none; margin-top: 15px; padding: 15px; background: #e8f4fc; border-left: 5px solid #0288d1; border-radius: 4px; overflow-x: auto; }
+        
+        button.submit-btn { width: 100%; padding: 15px; background: #1e88e5; color: white; border: none; border-radius: 4px; font-size: 18px; cursor: pointer; margin-top: 15px; font-weight: bold; margin-bottom: 5px; }
+        button.submit-btn:hover { background: #1565c0; }
+        #result { display: none; margin-top: 20px; padding: 15px; border-radius: 4px; text-align: center; font-weight: bold; font-size: 18px; background: #eef6fc; color: #0d47a1; border: 1px solid #b3d4fc; margin-bottom: 20px;}
+        
+        #passwordPrompt { display: none; margin-top: 20px; padding: 20px; background: #eef6fc; border: 1px solid #b3d4fc; border-radius: 5px; text-align: center; margin-bottom: 40px; }
+        #passwordPrompt h4 { color: #1565c0; margin-top: 0; margin-bottom: 10px; }
+        #passwordPrompt input { padding: 10px; width: 60%; max-width: 250px; border: 1px solid #b3d4fc; border-radius: 4px; font-size: 16px; }
+        #passwordPrompt button { width: auto; padding: 10px 20px; background: #1e88e5; color: white; border: none; border-radius: 4px; font-size: 16px; cursor: pointer; font-weight: bold; margin-top: 10px; margin-left: 10px; }
+        
+        /* --- SVG / ẢNH + KHUNG ZOOM DÙNG CHUNG (khung tự co giãn, không đặt chiều cao cố định) --- */
+        :root {
+            --zoom-accent: #1e88e5; --zoom-accent-hover: #1565c0;
+            --zoom-border: #b3d4fc; --zoom-bar-bg: #eef6fc; --zoom-max-h: none;
+        }
+        svg { max-width: 100%; height: auto; display: block; margin: 10px auto; overflow: visible; }
+        svg text { font-family: Arial, sans-serif; }
+        img { max-width: 100%; height: auto; }
+        .zoom-container { display: flex; align-items: flex-start; gap: 10px; margin: 15px 0; }
+        .zoom-viewport {
+            flex: 1 1 auto; min-width: 0;
+            overflow: auto; -webkit-overflow-scrolling: touch;
+            border: 1px solid var(--zoom-border); border-radius: 4px; background: #fff;
+            box-sizing: border-box; padding: 4px;
+        }
+        /* chỉ giới hạn chiều cao và giữ cuộn bên trong khi ảnh đang được phóng to */
+        .zoom-viewport.can-pan { cursor: grab; max-height: var(--zoom-max-h); overscroll-behavior: contain; }
+        .zoom-viewport.dragging { cursor: grabbing; user-select: none; }
+        .zoom-toolbar { display: flex; flex-direction: column; gap: 5px; background: var(--zoom-bar-bg); padding: 5px; border-radius: 4px; border: 1px solid var(--zoom-border); flex-shrink: 0; }
+        .zoom-btn { background: var(--zoom-accent); color: #fff; border: none; padding: 6px 10px; font-size: 14px; border-radius: 4px; cursor: pointer; transition: background .2s, opacity .2s; white-space: nowrap; }
+        .zoom-btn:hover:not(:disabled) { background: var(--zoom-accent-hover); }
+        .zoom-btn:disabled { background: #ccc; cursor: not-allowed; opacity: .6; }
+        .zoom-media { display: block; margin: 0 auto; max-width: 100%; height: auto; user-select: none; -webkit-user-drag: none; }
+        .zoom-media.zoomed { width: var(--zw) !important; max-width: none !important; height: auto !important; }
+        /* --- BẢNG DÀI: bọc trong khung cuộn ngang, không làm tràn lề --- */
+        .table-scroll { display: block; width: 100%; max-width: 100%; min-width: 0; box-sizing: border-box; overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain; margin: 10px 0; }
+        .table-scroll > table { margin: 0; max-width: 100%; border-collapse: collapse; }
+        .table-scroll th, .table-scroll td { overflow-wrap: break-word; }
+        /* .table-responsive do TeX2HTML tạo ra: trước đây chỉ mẫu làm bài có CSS này nên bảng rộng bị tràn ở trình chiếu / luyện tập */
+        .table-responsive { display: block; width: 100%; max-width: 100%; min-width: 0; box-sizing: border-box; overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain; margin: 15px 0; }
+        /* --- BẢNG RỘNG TRÊN ĐIỆN THOẠI: gợi ý vuốt ngang, cột đầu cố định, xem toàn màn hình --- */
+        .tbl-box { position: relative; margin: 12px 0; max-width: 100%; min-width: 0; }
+        .tbl-box > .tbl-wrap { position: relative; }
+        .tbl-box .table-responsive, .tbl-box .table-scroll { margin: 0; }
+        .tbl-hint { display: none; align-items: center; justify-content: space-between; gap: 8px; margin: 0 0 4px; font-size: 12.5px; color: #5f7b94; }
+        .tbl-box.has-scroll > .tbl-hint { display: flex; }
+        .tbl-open { font: inherit; font-size: 12.5px; padding: 4px 10px; border-radius: 14px; border: 1px solid var(--zoom-border); background: var(--zoom-bar-bg); color: var(--zoom-accent-hover); cursor: pointer; white-space: nowrap; }
+        .tbl-fade { display: none; position: absolute; top: 0; right: 0; bottom: 0; width: 30px; pointer-events: none; background: linear-gradient(to right, rgba(255,255,255,0), rgba(120,140,160,.28)); }
+        .tbl-box.has-scroll:not(.at-end) .tbl-fade { display: block; }
+        .tbl-box.has-scroll table.sticky-first tr > :first-child { position: sticky; left: 0; z-index: 2; background: #fff; box-shadow: 2px 0 4px -2px rgba(0,0,0,.35); }
+        @media (max-width: 600px) {
+            .tbl-box td, .tbl-box th { font-size: 14px; padding: 4px 7px !important; }
+        }
+        #tblOverlay { position: fixed; inset: 0; z-index: 99999; background: #fff; display: none; flex-direction: column; }
+        #tblOverlay.open { display: flex; }
+        .tbl-ov-bar { display: flex; align-items: center; gap: 8px; padding: 8px 10px; background: var(--zoom-bar-bg); border-bottom: 1px solid var(--zoom-border); }
+        .tbl-ov-bar .ttl { flex: 1; min-width: 0; font-size: 13px; font-weight: bold; color: #333; }
+        .tbl-ov-body { flex: 1; overflow: auto; -webkit-overflow-scrolling: touch; padding: 10px; touch-action: pan-x pan-y; }
+        .tbl-ov-body table { margin: 0; width: auto; max-width: none; border-collapse: collapse; font-size: calc(15px * var(--tbl-s, 1)); }
+        .tbl-ov-body td, .tbl-ov-body th { font-size: inherit !important; padding: 5px 9px; }
+
+        
+        /* ===== Bổ sung của bộ chuyển đổi TeX2HTML (PyQt6) ===== */
+        .tp { margin: 6px 0; }
+        .center { text-align: center; }
+        /* Huy hiệu mức độ khó (suy ra từ ID câu hỏi, HTML bài giảng) */
+        .lvl { display: inline-block; margin-left: 8px; padding: 1px 10px; border-radius: 12px; border: 1px solid; font-size: 12px; font-weight: bold; line-height: 1.6; white-space: nowrap; vertical-align: middle; cursor: help; }
+        .lvl .dots { letter-spacing: 1px; margin-right: 4px; }
+        .lvl.lv1 { background: #e6f4ea; border-color: #34a853; color: #1b6b32; }
+        .lvl.lv2 { background: #e3f0fb; border-color: #4a90d9; color: #0d47a1; }
+        .lvl.lv3 { background: #fff3e0; border-color: #fb8c00; color: #8a4b00; }
+        .lvl.lv4 { background: #fdeaea; border-color: #e53935; color: #a31515; }
+        .figure svg, .figure img { max-width: 100%; height: auto; }
+        .fig-error { color: #b00020; border: 1px dashed #b00020; padding: 6px 10px; text-align: center; margin: 8px 0; font-size: 14px; }
+        .fbox { border: 1px solid currentColor; padding: 0 4px; }
+        blockquote { margin: 8px 20px; }
+        img { max-width: 100%; height: auto; }
+        ul, ol { margin: 6px 0; padding-left: 24px; }
+        ul.desc, li.cl { list-style: none; }
+        li.cl .lbl { font-weight: bold; margin-right: .4em; }
+        ol[class^="paren-"] { list-style: none; counter-reset: pc; padding-left: 2.2em; }
+        ol[class^="paren-"] > li { counter-increment: pc; position: relative; margin: 4px 0; }
+        ol[class^="paren-"] > li::before { position: absolute; left: -2.2em; width: 2em; text-align: right; font-weight: bold; }
+        ol.paren-a > li::before { content: counter(pc, lower-alpha) ")"; }
+        ol.paren-A > li::before { content: counter(pc, upper-alpha) ")"; }
+        ol.paren-i > li::before { content: counter(pc, lower-roman) ")"; }
+        ol.paren-I > li::before { content: counter(pc, upper-roman) ")"; }
+        ol.paren-1 > li::before { content: counter(pc, decimal) ")"; }
+        table.tex-table { border-collapse: collapse; margin: 8px auto; }
+        table.tex-table td { padding: 4px 10px; }
+        table.tex-table.bordered td { border: 1px solid #555; }
+        .tex-fa { margin: 0 .25em; font-style: normal; }
+
+
+
+        .author-footer { margin: 30px 0 10px; padding-top: 10px; border-top: 1px solid #b3d4fc; text-align: center; color: #5f7b94; font-size: 13px; }
+        .author-footer:empty { display: none; }
+    </style>
+    
+    <script>
+        window.MathJax = {
+          tex: {
+            inlineMath: [['$','$'], ['\\(','\\)']],
+            displayMath: [['$$','$$'], ['\\[','\\]']],
+            processEscapes: true,
+            macros: {"wideparen": ["\\overset{\\frown}{#1}", 1], "overarc": ["\\overset{\\frown}{#1}", 1], "colorInterval": "white", "skipInterval": "0.4cm", "Interval": ["\\coordinate [label={center:$#1$},label=below:$\\rule{0pt}{\\skipInterval}#2$] (a) at (#2,0); \n \\coordinate [label={center:$#3$},label=below:$\\rule{0pt}{\\skipInterval}#4$] (b) at (#4,0); \n \\draw[color=\\colorInterval] decorate[decoration={ticks,amplitude=3pt,segment length=1mm}] {(a)--(b)};\n", 4], "IntervalR": ["\\coordinate [label={center:$#1$},label=below:$\\rule{0pt}{\\skipInterval}#2$] (a) at (#2,0); \n \\coordinate [label={center:$#3$},label=below:$\\rule{0pt}{\\skipInterval}#4$] (b) at (#4,0); \n \\draw decorate[decoration={markings,mark=between positions 0 and 1 step 1mm\n with\n {\n\\draw[color=\\colorInterval] (-3pt,-3pt) -- (3pt,3pt);\n }}] {(a)--(b)};\n", 4], "IntervalL": ["\\coordinate [label={center:$#1$},label=below:$\\rule{0pt}{\\skipInterval}#2$] (a) at (#2,0); \n \\coordinate [label={center:$#3$},label=below:$\\rule{0pt}{\\skipInterval}#4$] (b) at (#4,0); \n \\draw decorate[decoration={\n\t\tmarkings,\n\t\tmark=between positions 0 and 1 step 1mm\n with\n {\n\t\t\\draw[color=\\colorInterval] (-3pt,3pt) -- (3pt,-3pt);\n }\n\t\t}\n\t\t] {(a)--(b)};\n", 4], "IntervalLF": ["\\coordinate [label={center:$#1$},label=below:$\\rule{0pt}{\\skipInterval}#2$] (a) at (#2,0); \n \\coordinate [label={center:$#3$},label=below:$\\rule{0pt}{\\skipInterval}#4$] (b) at (#4,0); \n \\fill[pattern=north west lines,pattern color=\\colorInterval](#2,-3pt)rectangle(#4,3pt);\n", 4], "IntervalRF": ["\\coordinate [label={center:$#1$},label=below:$\\rule{0pt}{\\skipInterval}#2$] (a) at (#2,0); \n \\coordinate [label={center:$#3$},label=below:$\\rule{0pt}{\\skipInterval}#4$] (b) at (#4,0); \n \\fill[pattern=north east lines,pattern color=\\colorInterval](#2,-3pt)rectangle(#4,3pt);\n", 4], "pre": "0", "next": "2", "IntervalLR": ["\n\\def\\pre{#1}\n\\def\\next{#2}\n", 2], "IntervalG": ["\\coordinate [label={center:$#1$},label=below:$\\rule{0pt}{\\skipInterval}#2$] (a) at (\\pre,0); \n \\coordinate [label={center:$#3$},label=below:$\\rule{0pt}{\\skipInterval}#4$] (b) at (\\next,0); \n \\draw[color=\\colorInterval] decorate[decoration={ticks,amplitude=3pt,segment length=1mm}] {(a)--(b)};\n", 4], "IntervalGL": ["\\coordinate [label={center:$#1$},label=below:$\\rule{0pt}{\\skipInterval}#2$] (a) at (\\pre,0); \n \\coordinate [label={center:$#3$},label=below:$\\rule{0pt}{\\skipInterval}#4$] (b) at (\\next,0); \n \\draw decorate[decoration={markings,mark=between positions 0 and 1 step 1mm\n with\n {\n\\draw[color=\\colorInterval] (-3pt,3pt) -- (3pt,-3pt);\n }}] {(a)--(b)};\n", 4], "IntervalGR": ["\\coordinate [label={center:$#1$},label=below:$\\rule{0pt}{\\skipInterval}#2$] (a) at (\\pre,0); \n \\coordinate [label={center:$#3$},label=below:$\\rule{0pt}{\\skipInterval}#4$] (b) at (\\next,0); \n \\draw decorate[decoration={markings,mark=between positions 0 and 1 step 1mm\n with\n {\n\\draw[color=\\colorInterval] (-3pt,-3pt) -- (3pt,3pt);\n }}] {(a)--(b)};\n", 4], "IntervalGLF": ["\\coordinate [label={center:$#1$},label=below:$\\rule{0pt}{\\skipInterval}#2$] (a) at (\\pre,0); \n \\coordinate [label={center:$#3$},label=below:$\\rule{0pt}{\\skipInterval}#4$] (b) at (\\next,0); \n \\fill[pattern=north west lines,pattern color=\\colorInterval](\\pre,-3pt)rectangle(\\next,3pt);\n", 4], "IntervalGRF": ["\\coordinate [label={center:$#1$},label=below:$\\rule{0pt}{\\skipInterval}#2$] (a) at (\\pre,0); \n \\coordinate [label={center:$#3$},label=below:$\\rule{0pt}{\\skipInterval}#4$] (b) at (\\next,0); \n \\fill[pattern=north east lines,pattern color=\\colorInterval](\\pre,-3pt)rectangle(\\next,3pt);\n", 4], "tikzsetnextfilename": ["", 1], "phone": "0947 306 694", "facenhom": "\\raisebox{-1pt}{\\scriptsize\\faFacebook}\\ LaTeX\\ Theme and Related Topics"}
+          },
+          options: { enableMenu: false }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-chtml.min.js"></script>
+</head>
+<body>
+    <div class="header-bar">
+        <h2>Lớp 11 Chương 9 - Bài 3</h2>
+        <div id="timer">Đang tải...</div>
+    </div>
+    
+    <div class="zalo-warning" id="zaloWarning">
+        ⚠️ CHÚ Ý: Nếu em đang mở bài này trực tiếp trên Zalo/Messenger, hãy bấm vào biểu tượng "Dấu 3 chấm" ở góc phải màn hình và chọn "Mở bằng trình duyệt" (Chrome/Safari) để không bị lỗi kết nối.
+    </div>
+
+    <div class="info-group">
+        <label>Họ và tên học sinh:</label>
+        <input type="text" id="studentName" placeholder="Nhập họ và tên..." required>
+    </div>
+    <div class="info-group">
+        <label>Lớp:</label>
+        <input type="text" id="studentClass" placeholder="Nhập lớp..." required>
+    </div>
+
+    <hr>
+    <form id="quizForm" onsubmit="return false;">
+        <h3>PHẦN 1. Câu trắc nghiệm nhiều phương án lựa chọn</h3>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 1:</b> Nếu $f'(x)=x^5$ thì</div></div><div class="options"><label><input type="radio" name="P1_Cau_1" value="A"> <b>A.</b> $f''(x)=x^4$</label><label><input type="radio" name="P1_Cau_1" value="B"> <b>B.</b> $f''(x)=5 x^4$</label><label><input type="radio" name="P1_Cau_1" value="C"> <b>C.</b> $f''(x)=20 x^3$</label><label><input type="radio" name="P1_Cau_1" value="D"> <b>D.</b> $f''(x)=\dfrac{x^6}{6}$</label></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Ta có $f''(x)=\left(x^5\right)'=5x^4$.</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 2:</b> Nếu $f(x)=x^5$ thì</div></div><div class="options"><label><input type="radio" name="P1_Cau_2" value="A"> <b>A.</b> $f''(x)=x^4$</label><label><input type="radio" name="P1_Cau_2" value="B"> <b>B.</b> $f''(x)=5 x^4$</label><label><input type="radio" name="P1_Cau_2" value="C"> <b>C.</b> $f''(x)=20 x^3$</label><label><input type="radio" name="P1_Cau_2" value="D"> <b>D.</b> $f''(x)=\dfrac{x^6}{6}$</label></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Ta có</div><div class="tp">\begin{align*}
+				f'(x)&amp;= \left(x^5\right)'=5x^4;\\
+				f''(x)&amp;= \left(5x^4\right)'=20x^3.
+		\end{align*}</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 3:</b> Phát biểu nào sau đây là đúng?</div></div><div class="options"><label><input type="radio" name="P1_Cau_3" value="A"> <b>A.</b> $(\sin x)''=\cos x$</label><label><input type="radio" name="P1_Cau_3" value="B"> <b>B.</b> $(\sin x)''=-\cos x$</label><label><input type="radio" name="P1_Cau_3" value="C"> <b>C.</b> $(\sin x)''=\sin x$</label><label><input type="radio" name="P1_Cau_3" value="D"> <b>D.</b> $(\sin x)''=-\sin x$</label></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Ta có</div><div class="tp">\begin{align*}
+				(\sin x)'&amp;= \cos x;\\
+				(\sin x)''&amp;= (\cos x)'=-\sin x.
+		\end{align*}</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 4:</b> Phát biểu nào sau đây là đúng?</div></div><div class="options"><label><input type="radio" name="P1_Cau_4" value="A"> <b>A.</b> $(\cos x)''=\cos x$</label><label><input type="radio" name="P1_Cau_4" value="B"> <b>B.</b> $(\cos x)''=-\cos x$</label><label><input type="radio" name="P1_Cau_4" value="C"> <b>C.</b> $(\cos x)''=\sin x$</label><label><input type="radio" name="P1_Cau_4" value="D"> <b>D.</b> $(\cos x)''=-\sin x$</label></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Ta có</div><div class="tp">\begin{align*}
+				(\cos x)'&amp;= -\sin x;\\
+				(\cos x)''&amp;= (-\sin x)'=-\cos x.
+		\end{align*}</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 5:</b> Cho hàm số $y=f(x)$ xác định trên khoảng $(a ; b)$ và điểm $x_0$ thuộc khoảng đó. Nếu $f(x)$ có đạo hàm cấp hai tại $x_0$ thì</div></div><div class="options"><label><input type="radio" name="P1_Cau_5" value="A"> <b>A.</b> $f''(x_0)=\lim\limits_{x \rightarrow x_0} \dfrac{f(x)-f(x_0)}
+		{x-x_0}$</label><label><input type="radio" name="P1_Cau_5" value="B"> <b>B.</b> $f''(x_0)=\lim\limits_{x \rightarrow x_0} \dfrac{f(x)-f'(x_0)}
+		{x-x_0}$</label><label><input type="radio" name="P1_Cau_5" value="C"> <b>C.</b> $f''(x_0)=\lim\limits_{x \rightarrow x_0} \dfrac{f'(x)-f(x_0)}{x-x_0}$</label><label><input type="radio" name="P1_Cau_5" value="D"> <b>D.</b> $f''(x_0)=\lim\limits_{x \rightarrow x_0} \dfrac{f'(x)-f'(x_0)}{x-x_0}$</label></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Cho hàm số $y=f(x)$ xác định trên khoảng $(a ; b)$ và điểm $x_0$ thuộc khoảng đó. <ul><li>Nếu $f(x)$ có đạo hàm tại $x_0$ thì $f'(x_0)=\lim\limits_{x \rightarrow x_0} \dfrac{f(x)-f(x_0)}{x-x_0}$.</li><li>Suy ra, $f''(x)$ là đạo hàm của hàm số $f'(x)$ thì $f''(x_0)=\lim\limits_{x \rightarrow x_0} \dfrac{f'(x)-f'(x_0)}{x-x_0}$.</li></ul></div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 6:</b> Cho hàm số $f(x) = \ln x$. Đạo hàm cấp hai của hàm số $f(x)$ trên khoảng $(0;+\infty)$ là</div></div><div class="options"><label><input type="radio" name="P1_Cau_6" value="A"> <b>A.</b> $f''(x) = \dfrac{1}
+		{x}$</label><label><input type="radio" name="P1_Cau_6" value="B"> <b>B.</b> $f''(x) = -\dfrac{1}
+		{x^2}$</label><label><input type="radio" name="P1_Cau_6" value="C"> <b>C.</b> $f''(x) = \dfrac{1}{x^2}$</label><label><input type="radio" name="P1_Cau_6" value="D"> <b>D.</b> $f''(x) = \ln x$</label></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Ta có $f'(x) = (\ln x)' = \dfrac{1}{x}$.<br> Suy ra $f''(x) = \left(\dfrac{1}{x}\right)' = -\dfrac{1}{x^2}$.</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 7:</b> Cho hàm số $f(x) = \mathrm{e}^{ax}$ (với $a$ là số thực). Khi đó, $f''(x)$ bằng</div></div><div class="options"><label><input type="radio" name="P1_Cau_7" value="A"> <b>A.</b> $\mathrm{e}^{ax}$</label><label><input type="radio" name="P1_Cau_7" value="B"> <b>B.</b> $a^2\mathrm{e}^{ax}$</label><label><input type="radio" name="P1_Cau_7" value="C"> <b>C.</b> $a^2\mathrm{e}^{x}$</label><label><input type="radio" name="P1_Cau_7" value="D"> <b>D.</b> $\mathrm{e}^{2ax}$</label></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Ta có $f'(x)= (ax)'\cdot \mathrm{e}^{ax} = a\mathrm{e}^{ax}$.<br> Suy ra $f''(x) = a\cdot (ax)'\cdot\mathrm{e}^{ax} = a^2\mathrm{e}^{ax}$.</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 8:</b> Cho $f(x)=(x^2-x)\mathrm{e}^{-x}$. Giá trị của $f''(0)$ là</div></div><div class="options"><label><input type="radio" name="P1_Cau_8" value="A"> <b>A.</b> $4$</label><label><input type="radio" name="P1_Cau_8" value="B"> <b>B.</b> $-4$</label><label><input type="radio" name="P1_Cau_8" value="C"> <b>C.</b> $0$</label><label><input type="radio" name="P1_Cau_8" value="D"> <b>D.</b> $-1$</label></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Ta có $f'(x)=(2x-1)\mathrm{e}^{-x}-(x^2-x)\mathrm{e}^{-x}=(-x^2+3x-1)\mathrm{e}^{-x}$.<br> $f''(x)=(-2x+3)\mathrm{e}^{-x}-(-x^2+3x-1)\mathrm{e}^{-x}=(x^2-5x+4)\mathrm{e}^{-x}$.<br> Do đó, $f''(0)=4$.</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 9:</b> Cho hàm số $y=5-\dfrac{3}{x}$. Tính giá trị biểu thức $M=xy''+2y'$.</div></div><div class="options"><label><input type="radio" name="P1_Cau_9" value="A"> <b>A.</b> $M=0$</label><label><input type="radio" name="P1_Cau_9" value="B"> <b>B.</b> $M=1$</label><label><input type="radio" name="P1_Cau_9" value="C"> <b>C.</b> $M=4$</label><label><input type="radio" name="P1_Cau_9" value="D"> <b>D.</b> $M=10$</label></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> <ul><li>Ta có $y'=\dfrac{3}{x^2}\Rightarrow y''=-\dfrac{6}{x^3}$.</li><li>Khi đó $M=x\left(-\dfrac{6}{x^3}\right)+2\cdot \dfrac{3}{x^2}=-\dfrac{6}{x^2}+\dfrac{6}{x^2}=0$.</li></ul></div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 10:</b> Cho hàm số $y= \cos2x$ có đạo hàm là $y'$ và $y''$. Mệnh đề nào sau đây đúng?</div></div><div class="options"><label><input type="radio" name="P1_Cau_10" value="A"> <b>A.</b> $y+y''=0$</label><label><input type="radio" name="P1_Cau_10" value="B"> <b>B.</b> $4y''-y=0$</label><label><input type="radio" name="P1_Cau_10" value="C"> <b>C.</b> $y''+4y=0$</label><label><input type="radio" name="P1_Cau_10" value="D"> <b>D.</b> $y+2y'=0$</label></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Ta có $y'=-2\sin 2x\Rightarrow y''=-4\cos 2x=-4y\Rightarrow y''+4y=0$.</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 11:</b> Cho hai hàm số $f(x)=x^4-4x^2+3$ và $g(x)=3+10x-7x^2$. Nghiệm của phương trình $f''(x)+g'(x)=0$ là</div></div><div class="options"><label><input type="radio" name="P1_Cau_11" value="A"> <b>A.</b> $x=1$; $x=\dfrac{1}{6}$</label><label><input type="radio" name="P1_Cau_11" value="B"> <b>B.</b> $x=-1$; $x=\dfrac{1}{6}$</label><label><input type="radio" name="P1_Cau_11" value="C"> <b>C.</b> $x=-1$; $x=-\dfrac{1}{6}$</label><label><input type="radio" name="P1_Cau_11" value="D"> <b>D.</b> $x=1$; $x=-\dfrac{1}{6}$</label></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> <ul><li>Ta có $\left\{\begin{aligned}&amp; f'(x)=4x^3-8x \\ &amp; g'(x)=-14x+10\end{aligned}\right. \Rightarrow \left\{\begin{aligned}&amp; f''(x)=12x^2-8 \\ &amp;g'x=-14x+10.\end{aligned}\right.$</li><li>Khi đó, phương trình $$f''(x)+g'(x)=0\Leftrightarrow \left(12x^2-8\right)+\left(-14x+10\right)=0 \Leftrightarrow 12x^2-14x+2=0\Leftrightarrow \left[\begin{aligned}&amp; x=1 \\ &amp; x=\dfrac{1}{6}. \end{aligned}\right.$$</li></ul></div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 12:</b> Cho chuyển động thẳng xác định bởi phương trình $s(t)=t^3+4t^2$, trong đó $t&gt;0$, $t$ tính bằng giây và $s(t)$ tính bằng mét. Gia tốc của chuyển động tại thời điểm mà vận tốc của chuyển động bằng $11$ m/s là</div></div><div class="options"><label><input type="radio" name="P1_Cau_12" value="A"> <b>A.</b> $12$ m/s$^2$</label><label><input type="radio" name="P1_Cau_12" value="B"> <b>B.</b> $16$ m/s$^2$</label><label><input type="radio" name="P1_Cau_12" value="C"> <b>C.</b> $14$ m/s$^2$</label><label><input type="radio" name="P1_Cau_12" value="D"> <b>D.</b> $18$ m/s$^2$</label></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> <ul><li>Ta có $v(t)=s'(t)=3t^2+8t\Rightarrow a(t)=v'(t)=6t+8$.</li><li>Ta có $v(t)=11\Leftrightarrow 3t^2+8t=11\Leftrightarrow \left[\begin{aligned}
+				&amp; t=1 \\
+				&amp; t=-\dfrac{11}{3} \text{ (loại).}\end{aligned}\right.$</li><li>Với $t=1$, ta có $a(1)=14$ m/s$^2$.</li></ul></div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 13:</b> Cho hàm số $y=\sin 2x$. Chọn khẳng định đúng.</div></div><div class="options"><label><input type="radio" name="P1_Cau_13" value="A"> <b>A.</b> $4y-y'=0$</label><label><input type="radio" name="P1_Cau_13" value="B"> <b>B.</b> $4y+y''=0$</label><label><input type="radio" name="P1_Cau_13" value="C"> <b>C.</b> $y=y'\tan 2x$</label><label><input type="radio" name="P1_Cau_13" value="D"> <b>D.</b> $y^2=\left(y'\right)^2=4$</label></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Ta có $y'=2\cos 2x$ và $y''=-4\sin 2x$.<br> Vậy $4y+y''=0$.</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 14:</b> Một chất điểm chuyển động theo phương trình $s=f(t)$ thỏa mãn $f''(t)=2+3t$, với $t$ (giây) là khoảng thời gian tính từ khi vật bắt đầu chuyển động và $s$ (mét) là quãng đường vật đi được trong thời gian đó. Gia tốc tức thời tại điểm $t=1$ giây của chuyển động bằng</div></div><div class="options"><label><input type="radio" name="P1_Cau_14" value="A"> <b>A.</b> $5$ m/s$^2$</label><label><input type="radio" name="P1_Cau_14" value="B"> <b>B.</b> $3$ m/s$^2$</label><label><input type="radio" name="P1_Cau_14" value="C"> <b>C.</b> $2$ m/s$^2$</label><label><input type="radio" name="P1_Cau_14" value="D"> <b>D.</b> $6$ m/s$^2$</label></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Ta có $a(t)=s''(t)=f''(t)=2+3t$.<br> Vậy gia tốc tức thời tại điểm $t=1$ giây của chuyển động là $a(1)=2+3\cdot 1=5$ m/s$^2$.</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 15:</b> Cho hàm số $f(x)=ax^2+bx+3$ ($a$, $b$ là các hằng số). Biết $f'(1)=0$ và $f''(1)=-2$. Tính $a+b$ bằng</div></div><div class="options"><label><input type="radio" name="P1_Cau_15" value="A"> <b>A.</b> $1$</label><label><input type="radio" name="P1_Cau_15" value="B"> <b>B.</b> $2$</label><label><input type="radio" name="P1_Cau_15" value="C"> <b>C.</b> $-1$</label><label><input type="radio" name="P1_Cau_15" value="D"> <b>D.</b> $0$</label></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Ta có <ul><li>$f'(x)=2ax+b\Rightarrow f'(1)=2a+b=0$.</li><li>$f''(x)=2a\Rightarrow f''(1)=2a=-2\Leftrightarrow a=-1$. Thay vào trên, ta được $b=2$.</li></ul> Vậy $a+b=1$.</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 16:</b> Cho hàm số $f(x)=ax^2+bx+c$. Đồ thị của hàm số $y=f(x)$, $y=f'(x)$, $y=f''(x)$ được vẽ trong cùng một hệ trục tọa độ $Oxy$ như hình dưới. Trong hình vẽ, đồ thị $\left(C_1 \right)$ là đường cong được vẽ bằng nét mảnh nhất, đồ thị $\left(C_3 \right)$ được vẽ bằng nét đậm nhất và đường còn lại là $\left(C_2 \right)$. Khẳng định nào sau đây đúng? <div class="center"><div class="tp"><div class="table-responsive figure" style="text-align:center;margin:10px 0"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="207.135pt" height="155.546pt" viewBox="0 0 207.135 155.546" version="1.2"><defs><g><symbol overflow="visible" id="f1_glyph0-0"><path style="stroke:none;" d="" /></symbol><symbol overflow="visible" id="f1_glyph0-1"><path style="stroke:none;" d="M 5.641 -4.859 C 5.266 -4.781 5.125 -4.5 5.125 -4.281 C 5.125 -3.984 5.344 -3.891 5.516 -3.891 C 5.875 -3.891 6.125 -4.203 6.125 -4.531 C 6.125 -5.031 5.547 -5.25 5.047 -5.25 C 4.328 -5.25 3.922 -4.531 3.812 -4.312 C 3.531 -5.203 2.797 -5.25 2.578 -5.25 C 1.375 -5.25 0.719 -3.688 0.719 -3.422 C 0.719 -3.375 0.781 -3.328 0.859 -3.328 C 0.953 -3.328 0.969 -3.391 1 -3.438 C 1.406 -4.766 2.203 -5.016 2.547 -5.016 C 3.078 -5.016 3.188 -4.516 3.188 -4.234 C 3.188 -3.969 3.125 -3.688 2.969 -3.125 L 2.578 -1.484 C 2.391 -0.781 2.047 -0.125 1.422 -0.125 C 1.359 -0.125 1.062 -0.125 0.812 -0.281 C 1.234 -0.359 1.328 -0.719 1.328 -0.859 C 1.328 -1.094 1.156 -1.234 0.922 -1.234 C 0.641 -1.234 0.328 -0.984 0.328 -0.609 C 0.328 -0.109 0.891 0.125 1.406 0.125 C 1.969 0.125 2.375 -0.328 2.625 -0.828 C 2.828 -0.125 3.422 0.125 3.859 0.125 C 5.078 0.125 5.719 -1.438 5.719 -1.703 C 5.719 -1.766 5.672 -1.812 5.594 -1.812 C 5.484 -1.812 5.484 -1.75 5.438 -1.656 C 5.125 -0.609 4.422 -0.125 3.891 -0.125 C 3.484 -0.125 3.25 -0.422 3.25 -0.922 C 3.25 -1.172 3.297 -1.375 3.484 -2.156 L 3.906 -3.781 C 4.078 -4.484 4.484 -5.016 5.031 -5.016 C 5.062 -5.016 5.391 -5.016 5.641 -4.859 Z M 5.641 -4.859 " /></symbol><symbol overflow="visible" id="f1_glyph0-2"><path style="stroke:none;" d="M 3.125 1.328 C 2.812 1.781 2.344 2.188 1.766 2.188 C 1.625 2.188 1.047 2.172 0.875 1.625 C 0.906 1.625 0.969 1.625 0.984 1.625 C 1.344 1.625 1.578 1.328 1.578 1.047 C 1.578 0.781 1.359 0.672 1.172 0.672 C 0.984 0.672 0.578 0.828 0.578 1.406 C 0.578 2.016 1.078 2.422 1.766 2.422 C 2.953 2.422 4.156 1.328 4.484 0.016 L 5.656 -4.625 C 5.672 -4.688 5.688 -4.766 5.688 -4.828 C 5.688 -5.016 5.547 -5.125 5.375 -5.125 C 5.266 -5.125 5.016 -5.078 4.922 -4.734 L 4.031 -1.219 C 3.984 -1.016 3.984 -0.984 3.875 -0.859 C 3.641 -0.531 3.25 -0.125 2.672 -0.125 C 2.016 -0.125 1.953 -0.781 1.953 -1.094 C 1.953 -1.781 2.281 -2.688 2.594 -3.547 C 2.719 -3.891 2.797 -4.062 2.797 -4.297 C 2.797 -4.797 2.438 -5.25 1.859 -5.25 C 0.766 -5.25 0.328 -3.531 0.328 -3.422 C 0.328 -3.375 0.375 -3.328 0.453 -3.328 C 0.562 -3.328 0.578 -3.375 0.625 -3.531 C 0.906 -4.531 1.359 -5.016 1.828 -5.016 C 1.922 -5.016 2.125 -5.016 2.125 -4.625 C 2.125 -4.312 2 -3.969 1.828 -3.516 C 1.234 -1.953 1.234 -1.562 1.234 -1.281 C 1.234 -0.141 2.047 0.125 2.641 0.125 C 2.984 0.125 3.422 0.016 3.828 -0.422 L 3.844 -0.422 C 3.672 0.281 3.547 0.75 3.125 1.328 Z M 3.125 1.328 " /></symbol><symbol overflow="visible" id="f1_glyph0-3"><path style="stroke:none;" d="M 8.641 -5.219 C 8.641 -7.172 7.359 -8.375 5.688 -8.375 C 3.141 -8.375 0.578 -5.641 0.578 -2.891 C 0.578 -1.031 1.812 0.25 3.531 0.25 C 6.031 0.25 8.641 -2.359 8.641 -5.219 Z M 3.609 -0.031 C 2.625 -0.031 1.594 -0.734 1.594 -2.594 C 1.594 -3.672 1.984 -5.453 2.969 -6.641 C 3.828 -7.688 4.828 -8.125 5.625 -8.125 C 6.672 -8.125 7.688 -7.359 7.688 -5.641 C 7.688 -4.578 7.234 -2.922 6.438 -1.797 C 5.578 -0.578 4.484 -0.031 3.609 -0.031 Z M 3.609 -0.031 " /></symbol><symbol overflow="visible" id="f1_glyph0-4"><path style="stroke:none;" d="M 8.891 -8.281 C 8.891 -8.375 8.812 -8.375 8.781 -8.375 C 8.766 -8.375 8.719 -8.375 8.625 -8.266 L 7.797 -7.266 C 7.375 -7.984 6.734 -8.375 5.828 -8.375 C 3.266 -8.375 0.594 -5.781 0.594 -2.969 C 0.594 -0.984 1.984 0.25 3.734 0.25 C 4.672 0.25 5.516 -0.156 6.203 -0.734 C 7.234 -1.609 7.547 -2.766 7.547 -2.859 C 7.547 -2.969 7.453 -2.969 7.422 -2.969 C 7.312 -2.969 7.297 -2.891 7.281 -2.844 C 6.734 -0.984 5.125 -0.094 3.922 -0.094 C 2.672 -0.094 1.578 -0.906 1.578 -2.594 C 1.578 -2.969 1.688 -5.047 3.031 -6.609 C 3.688 -7.375 4.812 -8.031 5.938 -8.031 C 7.25 -8.031 7.828 -6.953 7.828 -5.734 C 7.828 -5.422 7.797 -5.172 7.797 -5.125 C 7.797 -5.016 7.922 -5.016 7.953 -5.016 C 8.078 -5.016 8.094 -5.031 8.141 -5.234 Z M 8.891 -8.281 " /></symbol><symbol overflow="visible" id="f1_glyph1-0"><path style="stroke:none;" d="" /></symbol><symbol overflow="visible" id="f1_glyph1-1"><path style="stroke:none;" d="M 3.875 2.891 C 3.875 2.859 3.875 2.828 3.672 2.625 C 2.469 1.422 1.812 -0.531 1.812 -2.969 C 1.812 -5.281 2.375 -7.266 3.75 -8.672 C 3.875 -8.781 3.875 -8.797 3.875 -8.828 C 3.875 -8.906 3.812 -8.922 3.766 -8.922 C 3.609 -8.922 2.625 -8.078 2.047 -6.906 C 1.438 -5.703 1.172 -4.422 1.172 -2.969 C 1.172 -1.906 1.328 -0.484 1.953 0.781 C 2.656 2.219 3.625 2.984 3.766 2.984 C 3.812 2.984 3.875 2.969 3.875 2.891 Z M 3.875 2.891 " /></symbol><symbol overflow="visible" id="f1_glyph1-2"><path style="stroke:none;" d="M 3.359 -2.969 C 3.359 -3.875 3.234 -5.344 2.578 -6.734 C 1.875 -8.156 0.891 -8.922 0.766 -8.922 C 0.719 -8.922 0.656 -8.906 0.656 -8.828 C 0.656 -8.797 0.656 -8.781 0.859 -8.578 C 2.047 -7.375 2.719 -5.406 2.719 -2.969 C 2.719 -0.672 2.156 1.328 0.781 2.719 C 0.656 2.828 0.656 2.859 0.656 2.891 C 0.656 2.969 0.719 2.984 0.766 2.984 C 0.922 2.984 1.891 2.125 2.469 0.969 C 3.078 -0.25 3.359 -1.531 3.359 -2.969 Z M 3.359 -2.969 " /></symbol><symbol overflow="visible" id="f1_glyph2-0"><path style="stroke:none;" d="" /></symbol><symbol overflow="visible" id="f1_glyph2-1"><path style="stroke:none;" d="M 2.016 -2.656 C 2.641 -2.656 3.031 -2.188 3.031 -1.359 C 3.031 -0.359 2.469 -0.078 2.047 -0.078 C 1.609 -0.078 1.016 -0.234 0.734 -0.656 C 1.031 -0.656 1.219 -0.828 1.219 -1.094 C 1.219 -1.344 1.047 -1.531 0.781 -1.531 C 0.578 -1.531 0.344 -1.391 0.344 -1.078 C 0.344 -0.328 1.156 0.172 2.062 0.172 C 3.125 0.172 3.859 -0.562 3.859 -1.359 C 3.859 -2.016 3.328 -2.625 2.531 -2.797 C 3.156 -3.016 3.625 -3.562 3.625 -4.188 C 3.625 -4.828 2.906 -5.281 2.078 -5.281 C 1.234 -5.281 0.594 -4.812 0.594 -4.219 C 0.594 -3.922 0.781 -3.797 0.984 -3.797 C 1.234 -3.797 1.391 -3.969 1.391 -4.203 C 1.391 -4.5 1.141 -4.609 0.969 -4.609 C 1.297 -5.047 1.906 -5.078 2.062 -5.078 C 2.266 -5.078 2.859 -5.016 2.859 -4.188 C 2.859 -3.641 2.641 -3.297 2.531 -3.172 C 2.281 -2.922 2.109 -2.906 1.625 -2.875 C 1.469 -2.875 1.406 -2.859 1.406 -2.766 C 1.406 -2.656 1.469 -2.656 1.609 -2.656 Z M 2.016 -2.656 " /></symbol><symbol overflow="visible" id="f1_glyph2-2"><path style="stroke:none;" d="M 2.234 -1.625 C 2.359 -1.734 2.703 -2 2.828 -2.109 C 3.312 -2.562 3.781 -3 3.781 -3.719 C 3.781 -4.672 3 -5.281 2 -5.281 C 1.047 -5.281 0.422 -4.562 0.422 -3.844 C 0.422 -3.453 0.734 -3.406 0.844 -3.406 C 1.016 -3.406 1.25 -3.531 1.25 -3.828 C 1.25 -4.234 0.859 -4.234 0.766 -4.234 C 0.984 -4.812 1.531 -5.016 1.906 -5.016 C 2.656 -5.016 3.031 -4.391 3.031 -3.719 C 3.031 -2.891 2.453 -2.297 1.516 -1.328 L 0.516 -0.297 C 0.422 -0.219 0.422 -0.203 0.422 0 L 3.562 0 L 3.781 -1.422 L 3.547 -1.422 C 3.516 -1.266 3.453 -0.859 3.359 -0.719 C 3.312 -0.656 2.703 -0.656 2.578 -0.656 L 1.172 -0.656 Z M 2.234 -1.625 " /></symbol><symbol overflow="visible" id="f1_glyph2-3"><path style="stroke:none;" d="M 2.5 -5.062 C 2.5 -5.266 2.469 -5.281 2.266 -5.281 C 1.938 -4.953 1.516 -4.766 0.766 -4.766 L 0.766 -4.516 C 0.969 -4.516 1.406 -4.516 1.859 -4.719 L 1.859 -0.656 C 1.859 -0.359 1.844 -0.266 1.094 -0.266 L 0.812 -0.266 L 0.812 0 C 1.141 -0.031 1.812 -0.031 2.172 -0.031 C 2.531 -0.031 3.219 -0.031 3.547 0 L 3.547 -0.266 L 3.266 -0.266 C 2.516 -0.266 2.5 -0.359 2.5 -0.656 Z M 2.5 -5.062 " /></symbol></g></defs><g id="f1_surface1"><path style="fill:none;stroke-width:0.3985;stroke-linecap:butt;stroke-linejoin:miter;stroke:rgb(0%,0%,0%);stroke-opacity:1;stroke-miterlimit:10;" d="M 3.185 -124.11 L 186.016 -124.11" transform="matrix(0.995841,0,0,-0.995841,0,0)" /><path style=" stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;" d="M 187.227 123.594 L 184.051 122.004 L 185.242 123.594 L 184.051 125.18 " /><g style="fill:rgb(0%,0%,0%);fill-opacity:1;"><use xlink:href="#f1_glyph0-1" x="191.308" y="132.802" /></g><path style="fill:none;stroke-width:0.3985;stroke-linecap:butt;stroke-linejoin:miter;stroke:rgb(0%,0%,0%);stroke-opacity:1;stroke-miterlimit:10;" d="M 74.623 -152.454 L 74.623 -12.713" transform="matrix(0.995841,0,0,-0.995841,0,0)" /><path style=" stroke:none;fill-rule:nonzero;fill:rgb(0%,0%,0%);fill-opacity:1;" d="M 74.312 10.676 L 72.723 13.852 L 74.312 12.66 L 75.898 13.852 " /><g style="fill:rgb(0%,0%,0%);fill-opacity:1;"><use xlink:href="#f1_glyph0-2" x="64.117" y="12.083" /></g><g style="fill:rgb(0%,0%,0%);fill-opacity:1;"><use xlink:href="#f1_glyph0-3" x="60.995" y="135.812" /></g><path style="fill:none;stroke-width:0.3985;stroke-linecap:butt;stroke-linejoin:miter;stroke:rgb(0%,0%,0%);stroke-opacity:1;stroke-miterlimit:10;" d="M 46.274 -10.72 C 46.274 -10.72 46.824 -12.913 47.035 -13.745 C 47.247 -14.576 47.585 -15.906 47.796 -16.726 C 48.008 -17.55 48.346 -18.856 48.557 -19.668 C 48.769 -20.48 49.107 -21.77 49.318 -22.567 C 49.53 -23.367 49.868 -24.642 50.079 -25.426 C 50.291 -26.215 50.629 -27.47 50.84 -28.246 C 51.052 -29.023 51.39 -30.259 51.601 -31.024 C 51.813 -31.788 52.15 -33.008 52.362 -33.762 C 52.57 -34.515 52.911 -35.715 53.123 -36.456 C 53.331 -37.202 53.672 -38.382 53.884 -39.112 C 54.092 -39.845 54.433 -41.007 54.645 -41.728 C 54.853 -42.446 55.194 -43.591 55.402 -44.301 C 55.614 -45.011 55.955 -46.137 56.163 -46.835 C 56.375 -47.53 56.716 -48.64 56.924 -49.326 C 57.136 -50.013 57.477 -51.103 57.685 -51.778 C 57.897 -52.453 58.238 -53.523 58.446 -54.186 C 58.658 -54.849 58.995 -55.904 59.207 -56.556 C 59.419 -57.207 59.756 -58.246 59.968 -58.886 C 60.18 -59.525 60.517 -60.545 60.729 -61.172 C 60.941 -61.804 61.278 -62.804 61.49 -63.42 C 61.702 -64.04 62.039 -65.02 62.251 -65.625 C 62.463 -66.233 62.8 -67.197 63.012 -67.79 C 63.224 -68.386 63.561 -69.331 63.773 -69.916 C 63.985 -70.5 64.322 -71.426 64.534 -71.999 C 64.746 -72.571 65.083 -73.481 65.295 -74.042 C 65.507 -74.603 65.844 -75.494 66.056 -76.043 C 66.268 -76.592 66.605 -77.467 66.817 -78.004 C 67.029 -78.545 67.366 -79.397 67.578 -79.926 C 67.79 -80.452 68.127 -81.287 68.339 -81.805 C 68.551 -82.319 68.888 -83.139 69.1 -83.645 C 69.312 -84.147 69.649 -84.947 69.861 -85.441 C 70.073 -85.936 70.41 -86.716 70.622 -87.199 C 70.834 -87.681 71.171 -88.442 71.383 -88.913 C 71.595 -89.383 71.932 -90.129 72.144 -90.588 C 72.356 -91.047 72.693 -91.776 72.905 -92.223 C 73.113 -92.671 73.454 -93.381 73.666 -93.816 C 73.874 -94.251 74.215 -94.946 74.427 -95.369 C 74.635 -95.793 74.976 -96.468 75.188 -96.879 C 75.396 -97.295 75.737 -97.95 75.949 -98.35 C 76.157 -98.754 76.498 -99.39 76.706 -99.782 C 76.918 -100.174 77.259 -100.79 77.467 -101.171 C 77.679 -101.551 78.02 -102.151 78.228 -102.52 C 78.44 -102.889 78.781 -103.469 78.989 -103.826 C 79.2 -104.183 79.538 -104.748 79.75 -105.093 C 79.961 -105.439 80.299 -105.984 80.511 -106.321 C 80.722 -106.655 81.06 -107.18 81.272 -107.506 C 81.483 -107.827 81.821 -108.337 82.033 -108.647 C 82.244 -108.961 82.582 -109.451 82.794 -109.753 C 83.005 -110.051 83.343 -110.526 83.555 -110.816 C 83.766 -111.103 84.104 -111.558 84.316 -111.836 C 84.527 -112.115 84.865 -112.55 85.076 -112.817 C 85.288 -113.084 85.626 -113.503 85.837 -113.758 C 86.049 -114.013 86.387 -114.413 86.598 -114.657 C 86.81 -114.9 87.148 -115.284 87.359 -115.516 C 87.571 -115.747 87.909 -116.112 88.12 -116.331 C 88.332 -116.551 88.67 -116.9 88.881 -117.108 C 89.093 -117.32 89.431 -117.646 89.642 -117.846 C 89.854 -118.042 90.192 -118.352 90.403 -118.54 C 90.615 -118.728 90.952 -119.018 91.164 -119.195 C 91.376 -119.368 91.713 -119.642 91.925 -119.807 C 92.137 -119.972 92.474 -120.227 92.686 -120.38 C 92.898 -120.533 93.235 -120.768 93.447 -120.909 C 93.655 -121.054 93.996 -121.27 94.208 -121.399 C 94.416 -121.533 94.757 -121.733 94.969 -121.851 C 95.177 -121.968 95.518 -122.153 95.73 -122.258 C 95.938 -122.368 96.279 -122.533 96.491 -122.627 C 96.699 -122.725 97.04 -122.87 97.248 -122.957 C 97.46 -123.039 97.801 -123.169 98.009 -123.243 C 98.221 -123.318 98.562 -123.427 98.77 -123.486 C 98.982 -123.549 99.323 -123.643 99.531 -123.694 C 99.743 -123.745 100.084 -123.816 100.292 -123.855 C 100.504 -123.898 100.841 -123.953 101.053 -123.98 C 101.265 -124.008 101.602 -124.043 101.814 -124.063 C 102.026 -124.079 102.363 -124.098 102.575 -124.102 C 102.787 -124.11 103.124 -124.11 103.336 -124.106 C 103.548 -124.098 103.885 -124.082 104.097 -124.063 C 104.309 -124.047 104.646 -124.012 104.858 -123.984 C 105.07 -123.953 105.407 -123.902 105.619 -123.863 C 105.831 -123.82 106.168 -123.749 106.38 -123.698 C 106.592 -123.647 106.929 -123.557 107.141 -123.494 C 107.353 -123.431 107.69 -123.325 107.902 -123.251 C 108.114 -123.176 108.451 -123.051 108.663 -122.965 C 108.875 -122.878 109.212 -122.737 109.424 -122.639 C 109.636 -122.545 109.973 -122.38 110.185 -122.27 C 110.397 -122.164 110.734 -121.984 110.946 -121.862 C 111.158 -121.745 111.495 -121.545 111.707 -121.415 C 111.919 -121.286 112.256 -121.066 112.468 -120.925 C 112.68 -120.784 113.017 -120.548 113.229 -120.395 C 113.441 -120.242 113.778 -119.987 113.99 -119.826 C 114.202 -119.662 114.539 -119.387 114.751 -119.211 C 114.959 -119.038 115.3 -118.748 115.512 -118.559 C 115.72 -118.371 116.061 -118.065 116.273 -117.865 C 116.481 -117.669 116.822 -117.34 117.034 -117.132 C 117.241 -116.924 117.583 -116.579 117.795 -116.355 C 118.002 -116.135 118.344 -115.771 118.552 -115.539 C 118.763 -115.308 119.105 -114.927 119.313 -114.684 C 119.524 -114.441 119.866 -114.041 120.074 -113.786 C 120.285 -113.531 120.627 -113.111 120.835 -112.844 C 121.046 -112.582 121.384 -112.142 121.596 -111.868 C 121.807 -111.589 122.145 -111.134 122.357 -110.848 C 122.568 -110.557 122.906 -110.087 123.117 -109.785 C 123.329 -109.487 123.667 -108.992 123.878 -108.682 C 124.09 -108.373 124.428 -107.863 124.639 -107.541 C 124.851 -107.215 125.189 -106.69 125.4 -106.356 C 125.612 -106.023 125.95 -105.478 126.161 -105.133 C 126.373 -104.787 126.711 -104.223 126.922 -103.866 C 127.134 -103.509 127.472 -102.928 127.683 -102.559 C 127.895 -102.191 128.233 -101.59 128.444 -101.214 C 128.656 -100.833 128.993 -100.214 129.205 -99.825 C 129.417 -99.433 129.754 -98.798 129.966 -98.394 C 130.178 -97.994 130.515 -97.338 130.727 -96.927 C 130.939 -96.511 131.276 -95.84 131.488 -95.416 C 131.7 -94.989 132.037 -94.298 132.249 -93.863 C 132.461 -93.428 132.798 -92.718 133.01 -92.27 C 133.222 -91.823 133.559 -91.098 133.771 -90.639 C 133.983 -90.18 134.32 -89.434 134.532 -88.964 C 134.744 -88.493 135.081 -87.732 135.293 -87.25 C 135.501 -86.767 135.842 -85.987 136.054 -85.496 C 136.262 -85.002 136.603 -84.202 136.815 -83.696 C 137.023 -83.194 137.364 -82.378 137.576 -81.86 C 137.784 -81.346 138.125 -80.511 138.337 -79.981 C 138.545 -79.455 138.886 -78.6 139.094 -78.063 C 139.306 -77.526 139.647 -76.655 139.855 -76.102 C 140.067 -75.553 140.408 -74.662 140.616 -74.101 C 140.828 -73.544 141.169 -72.634 141.377 -72.061 C 141.589 -71.489 141.93 -70.563 142.138 -69.979 C 142.35 -69.394 142.687 -68.453 142.899 -67.856 C 143.111 -67.26 143.448 -66.299 143.66 -65.691 C 143.872 -65.087 144.209 -64.106 144.421 -63.487 C 144.633 -62.871 144.97 -61.871 145.182 -61.243 C 145.394 -60.611 145.731 -59.596 145.943 -58.956 C 146.155 -58.317 146.492 -57.277 146.704 -56.626 C 146.916 -55.975 147.253 -54.924 147.465 -54.261 C 147.677 -53.598 148.014 -52.523 148.226 -51.848 C 148.438 -51.178 148.775 -50.087 148.987 -49.401 C 149.199 -48.714 149.536 -47.608 149.748 -46.91 C 149.96 -46.212 150.297 -45.086 150.509 -44.38 C 150.721 -43.67 151.058 -42.525 151.27 -41.807 C 151.482 -41.085 151.819 -39.924 152.031 -39.194 C 152.243 -38.461 152.58 -37.28 152.792 -36.539 C 153.004 -35.797 153.341 -34.597 153.553 -33.844 C 153.764 -33.091 154.102 -31.871 154.314 -31.106 C 154.525 -30.341 154.863 -29.105 155.075 -28.333 C 155.286 -27.556 155.624 -26.301 155.836 -25.512 C 156.047 -24.728 156.385 -23.453 156.597 -22.657 C 156.804 -21.857 157.146 -20.566 157.358 -19.754 C 157.565 -18.946 157.907 -17.636 158.119 -16.816 C 158.326 -15.996 158.668 -14.667 158.88 -13.835 C 159.087 -13.003 159.64 -10.815 159.64 -10.815" transform="matrix(0.995841,0,0,-0.995841,0,0)" /><path style="fill:none;stroke-width:0.59776;stroke-linecap:butt;stroke-linejoin:miter;stroke:rgb(0%,0%,0%);stroke-opacity:1;stroke-miterlimit:10;" d="M 90.78 -141.118 L 173.836 -24.897" transform="matrix(0.995841,0,0,-0.995841,0,0)" /><g style="fill:rgb(0%,0%,0%);fill-opacity:1;"><use xlink:href="#f1_glyph1-1" x="177.293" y="37.903" /></g><g style="fill:rgb(0%,0%,0%);fill-opacity:1;"><use xlink:href="#f1_glyph0-4" x="181.827" y="37.903" /></g><g style="fill:rgb(0%,0%,0%);fill-opacity:1;"><use xlink:href="#f1_glyph2-1" x="190.167" y="39.689" /></g><g style="fill:rgb(0%,0%,0%);fill-opacity:1;"><use xlink:href="#f1_glyph1-2" x="194.879" y="37.903" /></g><path style="fill:none;stroke-width:0.3985;stroke-linecap:butt;stroke-linejoin:miter;stroke:rgb(95.684814%,66.273499%,31.373596%);stroke-opacity:1;stroke-miterlimit:10;" d="M 17.926 -81.589 L 188.008 -81.589" transform="matrix(0.995841,0,0,-0.995841,0,0)" /><g style="fill:rgb(0%,0%,0%);fill-opacity:1;"><use xlink:href="#f1_glyph1-1" x="176.165" y="74.19" /></g><g style="fill:rgb(0%,0%,0%);fill-opacity:1;"><use xlink:href="#f1_glyph0-4" x="180.698" y="74.19" /></g><g style="fill:rgb(0%,0%,0%);fill-opacity:1;"><use xlink:href="#f1_glyph2-2" x="189.039" y="75.976" /></g><g style="fill:rgb(0%,0%,0%);fill-opacity:1;"><use xlink:href="#f1_glyph1-2" x="193.752" y="74.19" /></g><g style="fill:rgb(0%,0%,0%);fill-opacity:1;"><use xlink:href="#f1_glyph1-1" x="161.023" y="17.733" /></g><g style="fill:rgb(0%,0%,0%);fill-opacity:1;"><use xlink:href="#f1_glyph0-4" x="165.556" y="17.733" /></g><g style="fill:rgb(0%,0%,0%);fill-opacity:1;"><use xlink:href="#f1_glyph2-3" x="173.896" y="19.519" /></g><g style="fill:rgb(0%,0%,0%);fill-opacity:1;"><use xlink:href="#f1_glyph1-2" x="178.609" y="17.733" /></g></g></svg></div></div></div></div></div><div class="options"><label><input type="radio" name="P1_Cau_16" value="A"> <b>A.</b> $\left(C_1 \right)\colon y=f(x)$, $\left(C_2 \right)\colon y=f'(x)$, $\left(C_3 \right)\colon y=f''(x)$</label><label><input type="radio" name="P1_Cau_16" value="B"> <b>B.</b> $\left(C_1 \right)\colon y=f''(x)$, $\left(C_2 \right)\colon y=f'(x)$, $\left(C_3 \right)\colon y=f(x)$</label><label><input type="radio" name="P1_Cau_16" value="C"> <b>C.</b> $\left(C_1 \right)\colon y=f(x)$, $\left(C_2 \right)\colon y=f''(x)$, $\left(C_3 \right)\colon y=f'(x)$</label><label><input type="radio" name="P1_Cau_16" value="D"> <b>D.</b> $\left(C_1 \right)\colon y=f'(x)$, $\left(C_2 \right)\colon y=f''(x)$, $\left(C_3 \right)\colon y=f(x)$</label></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Vì $f(x)=ax^2+bx+c$ là một parabol nên $\left(C_1 \right)\colon y=f(x)$.<br> Ta có $f'(x)=2ax+b$ và $f''(x)=2a$.<br> Suy ra đồ thị hàm số $f''(x)$ là một đường thẳng song song với trục hoành.<br> Vậy $\left(C_2 \right)\colon y=f''(x),\left(C_3 \right)\colon y=f'(x)$..</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 17:</b> Hàm số $y=\dfrac{x}{x-2}$ có đạo hàm cấp hai là</div></div><div class="options"><label><input type="radio" name="P1_Cau_17" value="A"> <b>A.</b> $y''=0$</label><label><input type="radio" name="P1_Cau_17" value="B"> <b>B.</b> $y''=\dfrac{1}{(x-2)^2}$</label><label><input type="radio" name="P1_Cau_17" value="C"> <b>C.</b> $y''=-\dfrac{4}{(x-2)^2}$</label><label><input type="radio" name="P1_Cau_17" value="D"> <b>D.</b> $y''=\dfrac{4}{(x-2)^3}$</label></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Ta có $y'=\left(\dfrac{x}{x-2}\right)'=\dfrac{-2}{(x-2)^2}$.<br> Vậy $y''=\left(\dfrac{-2}{(x-2)^2}\right)'=2\cdot\dfrac{2(x-2)}{(x-2)^4}=\dfrac{4}{(x-2)^3}$.</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 18:</b> Hàm số $y=\tan x$ có đạo hàm cấp hai bằng</div></div><div class="options"><label><input type="radio" name="P1_Cau_18" value="A"> <b>A.</b> $y''=-\dfrac{2\sin x}{\cos^3x}$</label><label><input type="radio" name="P1_Cau_18" value="B"> <b>B.</b> $y''=\dfrac{1}{\cos^2x}$</label><label><input type="radio" name="P1_Cau_18" value="C"> <b>C.</b> $y''=-\dfrac{1}{\cos^2x}$</label><label><input type="radio" name="P1_Cau_18" value="D"> <b>D.</b> $y''=\dfrac{2\sin x}{\cos^3x}$</label></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Ta có $y'=\dfrac{1}{\cos^2x}$.<br> Vậy $y''=-\dfrac{2\cos x(-\sin x)}{\cos^4x}=\dfrac{2\sin x}{\cos^3x}$.</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 19:</b> Hàm số $y=\dfrac{-2x^2+3x}{1-x}$ có đạo hàm cấp hai bằng</div></div><div class="options"><label><input type="radio" name="P1_Cau_19" value="A"> <b>A.</b> $y''=2+\dfrac{1}{(1-x)^2}$</label><label><input type="radio" name="P1_Cau_19" value="B"> <b>B.</b> $y''=\dfrac{2}{(1-x)^3}$</label><label><input type="radio" name="P1_Cau_19" value="C"> <b>C.</b> $y''=\dfrac{-2}{(1-x)^3}$</label><label><input type="radio" name="P1_Cau_19" value="D"> <b>D.</b> $y''=\dfrac{2}{(1-x)^4}$</label></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Ta có $y=2x-1+\dfrac{1}{1-x} \Rightarrow y'=2+\dfrac{1}{(1-x)^2}$.<br> Vậy $y''=\dfrac{2}{(1-x)^3}$.</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 20:</b> Cho hàm số $y=-\dfrac{1}{x}$. Khi đó $y''\left(\dfrac{1}{2}\right)$ bằng</div></div><div class="options"><label><input type="radio" name="P1_Cau_20" value="A"> <b>A.</b> $-16$</label><label><input type="radio" name="P1_Cau_20" value="B"> <b>B.</b> $-8$</label><label><input type="radio" name="P1_Cau_20" value="C"> <b>C.</b> $8$</label><label><input type="radio" name="P1_Cau_20" value="D"> <b>D.</b> $16$</label></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Ta có $y'=\dfrac{1}{x^2} \Rightarrow y''=-\dfrac{2}{x^3}$.<br> Vậy $y''\left(\dfrac{1}{2}\right)=-16$.</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 21:</b> Chuyển động của một vật có phương trình <div class="center"><div class="tp">$s=5+\sin\left(0{,}8\pi t+\dfrac{\pi}{6}\right)$,</div></div> ở đó $s$ tính bằng centimet và thời gian $t$ tính bằng giây. Tại các thời điểm vận tốc bằng $0$, giá trị tuyệt đối của gia tốc của vật gần với giá trị nào sau đây nhất?</div></div><div class="options"><label><input type="radio" name="P1_Cau_21" value="A"> <b>A.</b> $4{,}5$ cm/s$^2$</label><label><input type="radio" name="P1_Cau_21" value="B"> <b>B.</b> $5{,}5$ cm/s$^2$</label><label><input type="radio" name="P1_Cau_21" value="C"> <b>C.</b> $6{,}3$ cm/s$^2$</label><label><input type="radio" name="P1_Cau_21" value="D"> <b>D.</b> $7{,}1$ cm/s$^2$</label></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Ta có $v=s'=0{,}8\pi\cos\left(0{,}8\pi t+\dfrac{\pi}{6}\right)$ và $a=v'=-0{,}64\pi^2\sin \left(0{,}8\pi t+\dfrac{\pi}{6}\right)$.<br> Thời điểm vận tốc bằng $0$ tương đương với $\cos\left(0{,}8\pi t+\dfrac{\pi}{6}\right)=0\Leftrightarrow \left|\sin\left(0{,}8\pi t+\dfrac{\pi}{6}\right)\right|=1$.<br> Khi đó, $|a|=0{,}64\pi^2\left|\sin\left(0{,}8\pi t+\dfrac{\pi}{6}\right)\right|=0{,}64\pi^2\approx 6{,}3$.</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 22:</b> Vị trí của một vật chuyển động (tính bằng mét) sau $t$ giây được xác định bởi $s=t^4-4t^3-20t^2+20t$, $t&gt;0$. Gia tốc của vật tại thời điểm mà vận tốc $v=20$ m/s là</div></div><div class="options"><label><input type="radio" name="P1_Cau_22" value="A"> <b>A.</b> $140$ m/s$^2$</label><label><input type="radio" name="P1_Cau_22" value="B"> <b>B.</b> $120$ m/s$^2$</label><label><input type="radio" name="P1_Cau_22" value="C"> <b>C.</b> $130$ m/s$^2$</label><label><input type="radio" name="P1_Cau_22" value="D"> <b>D.</b> $100$ m/s$^2$</label></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Ta có $v=s'=4t^3-12t^2-40t+20$ và $a=v'=12t^2-24t-40$.<br> Theo đề bài ta có $v=20\Leftrightarrow 4t^3-12t^2-40t=0\Leftrightarrow\left[\begin{aligned}&amp;t=0\,(\text{loại})\\&amp;t=-2\,(\text{loại})\\&amp;t=5\,(\text{nhận}).\end{aligned}\right.$<br> Do đó, gia tốc $a=12\cdot 5^2-24\cdot 5-40=140$ m/s$^2$.</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 23:</b> Cho $y=\mathrm{e}^x\cos x$. Đẳng thức đúng là</div></div><div class="options"><label><input type="radio" name="P1_Cau_23" value="A"> <b>A.</b> $y''-2y'-2y=0$</label><label><input type="radio" name="P1_Cau_23" value="B"> <b>B.</b> $y''-2y'+2y=0$</label><label><input type="radio" name="P1_Cau_23" value="C"> <b>C.</b> $y''+2y'-2y=0$</label><label><input type="radio" name="P1_Cau_23" value="D"> <b>D.</b> $y''+2y'+2y=0$</label></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Ta có $y'=\mathrm{e}^x\cos x-\mathrm{e}^x\sin x=\mathrm{e}^x(\cos x-\sin x)$.<br> $y''=\mathrm{e}^x(\cos x-\sin x)+\mathrm{e}^x(-\sin x-\cos x)=-2\mathrm{e}^x\sin x$.<br> Suy ra $y''-2y'=-2\mathrm{e}^x\sin x-2\mathrm{e}^x(\cos x-\sin x)=-2\cos x\mathrm{e}^x=-2y$.<br> Do đó, $y''-2y'+2y=0$.</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 24:</b> Đạo hàm cấp hai của hàm số $y = \tan x$ là</div></div><div class="options"><label><input type="radio" name="P1_Cau_24" value="A"> <b>A.</b> $y'' = \dfrac{2\sin x}
+		{\cos^3 x}$</label><label><input type="radio" name="P1_Cau_24" value="B"> <b>B.</b> $y'' = \dfrac{1}
+		{\cos^2 x}$</label><label><input type="radio" name="P1_Cau_24" value="C"> <b>C.</b> $y'' = -\dfrac{2\sin x}{\cos^3 x}$</label><label><input type="radio" name="P1_Cau_24" value="D"> <b>D.</b> $y'' = \dfrac{2}{\cos^2 x}$</label></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Ta có $y' = (\tan x)' = \dfrac{1}{\cos^2 x}$.<br> Đạo hàm cấp hai $y'' = \left(\dfrac{1}{\cos^2 x}\right)' = \dfrac{-(2\cos x \cdot (-\sin x))}{\cos^4 x} = \dfrac{2\sin x \cos x}{\cos^4 x} = \dfrac{2\sin x}{\cos^3 x}$.</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 25:</b> Một chất điểm có phương trình chuyển động <div class="center"><div class="tp">$s(t)=3 \sin\left(t + \dfrac{\pi}{3} \right) $,</div></div> trong đó $t&gt;0$, $t$ tính bằng giây, $s(t)$ tính bằng centimet. Tính gia tốc của chất điểm tại thời điểm $t= \dfrac{\pi}{2}$ (s).</div></div><div class="options"><label><input type="radio" name="P1_Cau_25" value="A"> <b>A.</b> $-\dfrac{2\sqrt{3}}{3}$</label><label><input type="radio" name="P1_Cau_25" value="B"> <b>B.</b> $-\dfrac{3\sqrt{3}}{2}$</label><label><input type="radio" name="P1_Cau_25" value="C"> <b>C.</b> $-\dfrac{3\sqrt{2}}{2}$</label><label><input type="radio" name="P1_Cau_25" value="D"> <b>D.</b> $-\dfrac{2\sqrt{2}}{3}$</label></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Ta có $a(t)=s''(t)=3\cos\left(t + \dfrac{\pi}{3} \right) $.<br> $a\left(\dfrac{\pi}{2} \right) =3\cos\left(\dfrac{\pi}{2} + \dfrac{\pi}{3} \right) = 3\cos \left(\dfrac{5\pi}{6} \right)=-\dfrac{3\sqrt{3}}{2} $ ($\mathrm{m/s^2}$).</div></div></div>
+<h3>PHẦN 2. Câu trắc nghiệm đúng sai</h3>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 1:</b> Cho hàm số $f(x)=\dfrac{x+2}{x-1}$.</div></div><div class="options"><div class="table-responsive"><table class="tf-table"><tr><td><b>a.</b> Nếu các hàm số $u(x)$, $v(x)$ có đạo hàm trên $(a ; b)$ và $v(x)$ nhận giá trị khác $0$ trên $(a ; b)$ thì hàm số $y=\dfrac{u(x)}{v(x)}$ có đạo hàm <div class="center"><div class="tp">$y'=\dfrac{u'(x) \cdot v(x)-u(x) \cdot v'(x)}{v^2(x)}$</div></div> trên $(a ; b)$</td><td style="width: 120px;"><div class="tf-radio-group"><label><input type="radio" name="P2_Cau_1_a" value="Đúng"> Đ</label><label><input type="radio" name="P2_Cau_1_a" value="Sai"> S</label></div></td></tr><tr><td><b>b.</b> $f'(x)=\dfrac{3}{(x-1)^2}$, $x \neq 1$</td><td style="width: 120px;"><div class="tf-radio-group"><label><input type="radio" name="P2_Cau_1_b" value="Đúng"> Đ</label><label><input type="radio" name="P2_Cau_1_b" value="Sai"> S</label></div></td></tr><tr><td><b>c.</b> $\left[(x-1)^2\right]'=2(x-1)$</td><td style="width: 120px;"><div class="tf-radio-group"><label><input type="radio" name="P2_Cau_1_c" value="Đúng"> Đ</label><label><input type="radio" name="P2_Cau_1_c" value="Sai"> S</label></div></td></tr><tr><td><b>d.</b> $f''(x)=\dfrac{-6}{(x-1)^3}$, $x \neq 1$</td><td style="width: 120px;"><div class="tf-radio-group"><label><input type="radio" name="P2_Cau_1_d" value="Đúng"> Đ</label><label><input type="radio" name="P2_Cau_1_d" value="Sai"> S</label></div></td></tr></table></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> <ol class="paren-a"><li>Nếu các hàm số $u(x)$, $v(x)$ có đạo hàm trên $(a ; b)$ và $v(x)$ nhận giá trị khác $0$ trên $(a ; b)$ thì $$\left(\dfrac{u(x)}{v(x)}\right)'=\dfrac{u'(x) \cdot v(x)-u(x) \cdot v'(x)}{v^2(x)}.$$</li><li>Ta có $f'(x)=\left(\dfrac{x+2}{x-1}\right)'=\dfrac{-3}{(x-1)^2}$, $x \neq 1$</li><li>Ta có $\left[(x-1)^2\right]'=2(x-1)(x-1)'=2(x-1).$</li><li>Ta có $f'(x)=\dfrac{-3}{(x-1)^2}$, $x \neq 1$. Suy ra $$
+				f''(x)=\dfrac{(-3)'(x-1)^2-(-3)\left[(x-1)^2\right]'}{\left[(x-1)^2\right]^2}=\dfrac{6(x-1)}{(x-1)^4}=\dfrac{6}{(x-1)^3}, x \neq 1
+				.$$</li></ol></div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 2:</b> Cho hàm số $f(x)=\mathrm{e}^x \cos x$.</div></div><div class="options"><div class="table-responsive"><table class="tf-table"><tr><td><b>a.</b> $(\cos x)'=-\sin x$</td><td style="width: 120px;"><div class="tf-radio-group"><label><input type="radio" name="P2_Cau_2_a" value="Đúng"> Đ</label><label><input type="radio" name="P2_Cau_2_a" value="Sai"> S</label></div></td></tr><tr><td><b>b.</b> $\left(\mathrm{e}^x\right)'=\mathrm{e}^x$</td><td style="width: 120px;"><div class="tf-radio-group"><label><input type="radio" name="P2_Cau_2_b" value="Đúng"> Đ</label><label><input type="radio" name="P2_Cau_2_b" value="Sai"> S</label></div></td></tr><tr><td><b>c.</b> $f'(x)=\mathrm{e}^x(\cos x+\sin x)$</td><td style="width: 120px;"><div class="tf-radio-group"><label><input type="radio" name="P2_Cau_2_c" value="Đúng"> Đ</label><label><input type="radio" name="P2_Cau_2_c" value="Sai"> S</label></div></td></tr><tr><td><b>d.</b> $f''(x)=2 \mathrm{e}^x \cos x$</td><td style="width: 120px;"><div class="tf-radio-group"><label><input type="radio" name="P2_Cau_2_d" value="Đúng"> Đ</label><label><input type="radio" name="P2_Cau_2_d" value="Sai"> S</label></div></td></tr></table></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> <ol class="paren-a"><li>Ta có $(\cos x)'=-\sin x$.</li><li>Ta có $\left(\mathrm{e}^x\right)'=\mathrm{e}^x$.</li><li>Ta có $$f'(x)=\left(\mathrm{e}^x\right)' \cos x+\mathrm{e}^x (\cos x)'=\mathrm{e}^x \cos x-\mathrm{e}^x \sin x=\mathrm{e}^x(\cos x-\sin x).$$</li><li>Ta đã có $f'(x)=\mathrm{e}^x(\cos x-\sin x).$ Suy ra<br>\begin{align*}
+					f''(x)&amp;= \left(\mathrm{e}^x\right)'(\cos x-\sin x)+\mathrm{e}^x(\cos x-\sin x)'\\
+					&amp;= \mathrm{e}^x(\cos x-\sin x)+\mathrm{e}^x(-\sin x-\cos x)\\
+					&amp;= -2\mathrm{e}^x \sin x.
+			\end{align*}</li></ol></div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 3:</b> Một vật chuyển động theo phương trình $s(t) = t^3 - 3t^2 + 4t + 5$ ($t$ tính bằng giây, $s$ tính bằng mét).</div></div><div class="options"><div class="table-responsive"><table class="tf-table"><tr><td><b>a.</b> Vận tốc tức thời của vật tại thời điểm $t$ là $v(t) = 3t^2 - 6t + 4$</td><td style="width: 120px;"><div class="tf-radio-group"><label><input type="radio" name="P2_Cau_3_a" value="Đúng"> Đ</label><label><input type="radio" name="P2_Cau_3_a" value="Sai"> S</label></div></td></tr><tr><td><b>b.</b> Gia tốc tức thời của vật là một hằng số không đổi theo thời gian</td><td style="width: 120px;"><div class="tf-radio-group"><label><input type="radio" name="P2_Cau_3_b" value="Đúng"> Đ</label><label><input type="radio" name="P2_Cau_3_b" value="Sai"> S</label></div></td></tr><tr><td><b>c.</b> Tại thời điểm $t = 2$ s, gia tốc của vật bằng $6$ m/s$^2$</td><td style="width: 120px;"><div class="tf-radio-group"><label><input type="radio" name="P2_Cau_3_c" value="Đúng"> Đ</label><label><input type="radio" name="P2_Cau_3_c" value="Sai"> S</label></div></td></tr><tr><td><b>d.</b> Vật chuyển động có gia tốc bằng $0$ tại thời điểm $t = 1$ s</td><td style="width: 120px;"><div class="tf-radio-group"><label><input type="radio" name="P2_Cau_3_d" value="Đúng"> Đ</label><label><input type="radio" name="P2_Cau_3_d" value="Sai"> S</label></div></td></tr></table></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> <ol class="paren-a"><li>Vận tốc tức thời của vật là $v(t) = s'(t) = 3t^2 - 6t + 4$.</li><li>Gia tốc tức thời của vật là $a(t) = v'(t) = 6t - 6$. Vì $a(t)$ vẫn phụ thuộc vào biến $t$ nên gia tốc không phải là hằng số.</li><li>Tại thời điểm $t = 2$ s, gia tốc của vật là $a(2) = 6 \cdot 2 - 6 = 6$ m/s$^2$.</li><li>Gia tốc bằng $0$ khi $a(t) = 0 \Leftrightarrow 6t - 6 = 0 \Leftrightarrow t = 1$ s.</li></ol></div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 4:</b> Cho hàm số $f(x)=ax^2+bx+2$, $a\ne 0$ có đồ thị là một parabol&nbsp;$\left(P\right)$.</div></div><div class="options"><div class="table-responsive"><table class="tf-table"><tr><td><b>a.</b> Biết $f'\left(-1\right)=-1$ và $f''(1)=4$. Khi đó $a+b=6$</td><td style="width: 120px;"><div class="tf-radio-group"><label><input type="radio" name="P2_Cau_4_a" value="Đúng"> Đ</label><label><input type="radio" name="P2_Cau_4_a" value="Sai"> S</label></div></td></tr><tr><td><b>b.</b> $\left(P\right)$ có trục đối xứng là đường thẳng $x=3$, $f''(3)=2$. Khi đó $b=6$</td><td style="width: 120px;"><div class="tf-radio-group"><label><input type="radio" name="P2_Cau_4_b" value="Đúng"> Đ</label><label><input type="radio" name="P2_Cau_4_b" value="Sai"> S</label></div></td></tr><tr><td><b>c.</b> $\left(P\right)$ đi qua điểm $A\left(1;2\right)$, $f''(2024)=-2$. Khi đó $b=1$</td><td style="width: 120px;"><div class="tf-radio-group"><label><input type="radio" name="P2_Cau_4_c" value="Đúng"> Đ</label><label><input type="radio" name="P2_Cau_4_c" value="Sai"> S</label></div></td></tr><tr><td><b>d.</b> $\left(P\right)$ cắt trục hoành tại điểm có hoành độ bằng $-1$, $f''\left(-1\right)=6$. Khi đó $b=5$</td><td style="width: 120px;"><div class="tf-radio-group"><label><input type="radio" name="P2_Cau_4_d" value="Đúng"> Đ</label><label><input type="radio" name="P2_Cau_4_d" value="Sai"> S</label></div></td></tr></table></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> <ol class="paren-a"><li>Ta có $f'(x)=2ax+b; f''(x)=2a$. \begin{align*}
+					&amp;f''(1)=4\Leftrightarrow 2a=4\Leftrightarrow a=2\\
+					\Leftrightarrow&amp; b=-1+2a=3.
+			\end{align*}</li><li>$(P)$ có trục đối xứng là đường thẳng $x=3$ \begin{align*}
+				&amp;\Leftrightarrow-\dfrac{b}{2 a}=3 \Leftrightarrow b=-6a.
+			\end{align*} Ta có $f''(3)=2 \Leftrightarrow 2 a=2 \Leftrightarrow a=1$.<br> Khi đó $b=-6$.</li><li>$\left(P\right)$ đi qua điểm $A\left(1;2\right)\Rightarrow a+b=0\Leftrightarrow b=-a$.<br> Mà $f''(2024)=-2$ $\Leftrightarrow 2a=-2$ $\Leftrightarrow a=-1$. Khi đó $b=1$.</li><li>$\left(P\right)$ cắt trục hoành tại điểm có hoành độ bằng $-1$, suy ra $a-b+2=0\Leftrightarrow b=a+2$.<br> Ta có $f''\left(-1\right)=6$ $\Leftrightarrow 2a=6$ $\Leftrightarrow a=3$. Khi đó $b=5$.</li></ol></div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 5:</b> Cho hai hàm số $f(x)=x^3+2x+1$ và $g(x)=\mathrm{e}^{2x+1}$. Khi đó</div></div><div class="options"><div class="table-responsive"><table class="tf-table"><tr><td><b>a.</b> Đạo hàm cấp hai của hàm số $f(x)$ là $f''(x)=6x$</td><td style="width: 120px;"><div class="tf-radio-group"><label><input type="radio" name="P2_Cau_5_a" value="Đúng"> Đ</label><label><input type="radio" name="P2_Cau_5_a" value="Sai"> S</label></div></td></tr><tr><td><b>b.</b> Đạo hàm cấp hai của hàm số $g(x)$ là $g''(x)=4\cdot \mathrm{e}^{2x-1}$</td><td style="width: 120px;"><div class="tf-radio-group"><label><input type="radio" name="P2_Cau_5_b" value="Đúng"> Đ</label><label><input type="radio" name="P2_Cau_5_b" value="Sai"> S</label></div></td></tr><tr><td><b>c.</b> Đạo hàm cấp hai của hàm số $f(x)$ tại $x_0=-2$ là $f''\left(-2\right)=12$</td><td style="width: 120px;"><div class="tf-radio-group"><label><input type="radio" name="P2_Cau_5_c" value="Đúng"> Đ</label><label><input type="radio" name="P2_Cau_5_c" value="Sai"> S</label></div></td></tr><tr><td><b>d.</b> Đạo hàm cấp hai của hàm số $g(x)$ tại $x_0=1$ là $g''(1)=4\cdot \mathrm{e}^3$</td><td style="width: 120px;"><div class="tf-radio-group"><label><input type="radio" name="P2_Cau_5_d" value="Đúng"> Đ</label><label><input type="radio" name="P2_Cau_5_d" value="Sai"> S</label></div></td></tr></table></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> <ol class="paren-a"><li>Đạo hàm cấp hai của hàm số $f(x)$ là $f''(x)=6x$.</li><li>Đạo hàm cấp hai của hàm số $g(x)$ là $g''(x)=4\cdot \mathrm{e}^{2x+1}$.</li><li>Đạo hàm cấp hai của hàm số $f(x)$ tại $x_0=-2$ là $f''\left(-2\right)=6\cdot (-2)=-12$.</li><li>Đạo hàm cấp hai của hàm số $g(x)$ tại $x_0=1$ là $g''(1)=4\cdot \mathrm{e}^{2\cdot 1+1}=4\cdot \mathrm{e}^3$.</li></ol></div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 6:</b> Cho hàm số $f(x)=(2x+5)^5$.</div></div><div class="options"><div class="table-responsive"><table class="tf-table"><tr><td><b>a.</b> Phương trình $f''(x)=0$ có duy nhất một nghiệm $x=-\dfrac{5}{2}$</td><td style="width: 120px;"><div class="tf-radio-group"><label><input type="radio" name="P2_Cau_6_a" value="Đúng"> Đ</label><label><input type="radio" name="P2_Cau_6_a" value="Sai"> S</label></div></td></tr><tr><td><b>b.</b> Phương trình $f''(x)=80$ có tập nghiệm là $S=\left\{-3;-2\right\}$</td><td style="width: 120px;"><div class="tf-radio-group"><label><input type="radio" name="P2_Cau_6_b" value="Đúng"> Đ</label><label><input type="radio" name="P2_Cau_6_b" value="Sai"> S</label></div></td></tr><tr><td><b>c.</b> Phương trình $\dfrac{f''(x)}{(2x+5)^2}=0$ có duy nhất một nghiệm là $x=-\dfrac{5}{2}$</td><td style="width: 120px;"><div class="tf-radio-group"><label><input type="radio" name="P2_Cau_6_c" value="Đúng"> Đ</label><label><input type="radio" name="P2_Cau_6_c" value="Sai"> S</label></div></td></tr><tr><td><b>d.</b> Phương trình $f'(x)=f''(x)$ có duy nhất một nghiệm là $x=-\dfrac{3}{2}$</td><td style="width: 120px;"><div class="tf-radio-group"><label><input type="radio" name="P2_Cau_6_d" value="Đúng"> Đ</label><label><input type="radio" name="P2_Cau_6_d" value="Sai"> S</label></div></td></tr></table></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> <ol class="paren-a"><li>Ta có $f'(x)=\left[(2x+5)^5\right]'=10(2x+5)^4$<br> và $f''(x)=[f'(x)]'=\left[10(2x+5)^4\right]'=80(2x+5)^3$.<br> Do đó $f''(x)=0 \Leftrightarrow 80(2x+5)^3 = 0 \Leftrightarrow (2x+5)^3 = 0 \Leftrightarrow 2x+5=0 \Leftrightarrow x = -\dfrac{5}{2}$.</li><li>$f''(x)=80 \Leftrightarrow 80(2x+5)^3=80 \Leftrightarrow (2x+5)^3=1 \Leftrightarrow 2x+5=1 \Leftrightarrow x=-2$.<br> Vậy tập nghiệm của phương trình $f''(x)=80$ là $S=\left\{2\right\}$.</li><li>Nghiệm $x$ của phương trình $\dfrac{f''(x)}{(2x+5)^2}=0$ phải thỏa điều kiện $$(2x+5)^2 \neq 0 \Leftrightarrow 2x+5 \neq 0 \Leftrightarrow x \neq - \dfrac{5}{2}.$$ Do đó phương trình $\dfrac{f''(x)}{(2x+5)^2}=0$ không có nghiệm $x=-\dfrac{5}{2}$.</li><li>Ta có \begin{align*}
+					f'(x)=f''(x) &amp;\Leftrightarrow 10(2x+5)^4=80(2x+5)^3 \\&amp;\Leftrightarrow10 (2x+5)^3 \left[2x+5-8\right]=0\\ &amp;\Leftrightarrow \left[\begin{aligned}&amp;(2x+5)^4=0\\&amp;2x-3=0\end{aligned}\right.\\ &amp;\Leftrightarrow \left[\begin{aligned}&amp;x=-\dfrac{5}{2}\\&amp;x=\dfrac{3}{2}.\end{aligned}\right.
+			\end{align*} Vậy nghiệm của phương trình $f'(x)=f''(x)$ là $\left[\begin{aligned}&amp;x=-\dfrac{5}{2}\\&amp;x=\dfrac{3}{2}.\end{aligned}\right.$</li></ol></div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 7:</b> Một con lắc lò xo dao động với phương trình <div class="center"><div class="tp">$x(t) = 5\cos\left(2\pi t + \dfrac{\pi}{3}\right)$ (cm, $t$ tính bằng s).</div></div></div></div><div class="options"><div class="table-responsive"><table class="tf-table"><tr><td><b>a.</b> Vận tốc của con lắc tại thời điểm $t$ là $v(t) = -10\pi\sin\left(2\pi t + \dfrac{\pi}{3}\right)$ cm/s</td><td style="width: 120px;"><div class="tf-radio-group"><label><input type="radio" name="P2_Cau_7_a" value="Đúng"> Đ</label><label><input type="radio" name="P2_Cau_7_a" value="Sai"> S</label></div></td></tr><tr><td><b>b.</b> Gia tốc của con lắc là $a(t) = -20\pi^2\cos\left(2\pi t + \dfrac{\pi}{3}\right)$ cm/s$^2$</td><td style="width: 120px;"><div class="tf-radio-group"><label><input type="radio" name="P2_Cau_7_b" value="Đúng"> Đ</label><label><input type="radio" name="P2_Cau_7_b" value="Sai"> S</label></div></td></tr><tr><td><b>c.</b> Tại vị trí cân bằng ($x = 0$), gia tốc của con lắc đạt giá trị lớn nhất</td><td style="width: 120px;"><div class="tf-radio-group"><label><input type="radio" name="P2_Cau_7_c" value="Đúng"> Đ</label><label><input type="radio" name="P2_Cau_7_c" value="Sai"> S</label></div></td></tr><tr><td><b>d.</b> Độ lớn gia tốc lớn nhất của con lắc là $20\pi^2$ cm/s$^2$</td><td style="width: 120px;"><div class="tf-radio-group"><label><input type="radio" name="P2_Cau_7_d" value="Đúng"> Đ</label><label><input type="radio" name="P2_Cau_7_d" value="Sai"> S</label></div></td></tr></table></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> <ol class="paren-a"><li>Vận tốc $v(t) = x'(t) = -5 \cdot 2\pi \sin\left(2\pi t + \dfrac{\pi}{3}\right) = -10\pi\sin\left(2\pi t + \dfrac{\pi}{3}\right)$.</li><li>Gia tốc $a(t) = v'(t) = -10\pi \cdot 2\pi \cos\left(2\pi t + \dfrac{\pi}{3}\right) = -20\pi^2\cos\left(2\pi t + \dfrac{\pi}{3}\right)$.</li><li>Tại vị trí cân bằng $x = 0 \Rightarrow \cos\left(2\pi t + \dfrac{\pi}{3}\right) = 0 \Rightarrow a(t) = 0$. Gia tốc có độ lớn lớn nhất tại các vị trí biên.</li><li>Độ lớn gia tốc lớn nhất $|a(t)|_{\max} = 20\pi^2$ cm/s$^2$.</li></ol></div></div></div>
+<h3>PHẦN 3. Câu trắc nghiệm trả lời ngắn</h3>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 1:</b> Cho hàm số $f(x)=5 x^3-4 x^2-2 x+1$. Giá trị $f''(-2)$ bằng bao nhiêu?</div></div><div class="options"><div class="short-ans-group"><input type="text" class="short-ans-box" maxlength="1" id="P3_Cau_1_1" oninput="this.value=this.value.replace('.', ','); moveNext(this, 'P3_Cau_1_2')" onkeydown="movePrev(event, this, null)"><input type="text" class="short-ans-box" maxlength="1" id="P3_Cau_1_2" oninput="this.value=this.value.replace('.', ','); moveNext(this, 'P3_Cau_1_3')" onkeydown="movePrev(event, this, 'P3_Cau_1_1')"><input type="text" class="short-ans-box" maxlength="1" id="P3_Cau_1_3" oninput="this.value=this.value.replace('.', ','); moveNext(this, 'P3_Cau_1_4')" onkeydown="movePrev(event, this, 'P3_Cau_1_2')"><input type="text" class="short-ans-box" maxlength="1" id="P3_Cau_1_4" oninput="this.value=this.value.replace('.', ','); moveNext(this, null)" onkeydown="movePrev(event, this, 'P3_Cau_1_3')"></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Ta có $f'(x)=15 x^2-8 x-2\Rightarrow f''(x)=30 x-8$. <br>Suy ra $f''(-2)=-68$.</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 2:</b> Biết hàm số $y=f(x)-f(3x)$ liên tục trên $\mathbb{R}$ và có đạo hàm cấp hai với mọi $x \in \mathbb{R}$, biết $y''(3)=5$, $y''(1)=10$. Tính đạo hàm cấp hai của hàm số $g(x)=f(x)-f(9x)$ tại $x=1$.</div></div><div class="options"><div class="short-ans-group"><input type="text" class="short-ans-box" maxlength="1" id="P3_Cau_2_1" oninput="this.value=this.value.replace('.', ','); moveNext(this, 'P3_Cau_2_2')" onkeydown="movePrev(event, this, null)"><input type="text" class="short-ans-box" maxlength="1" id="P3_Cau_2_2" oninput="this.value=this.value.replace('.', ','); moveNext(this, 'P3_Cau_2_3')" onkeydown="movePrev(event, this, 'P3_Cau_2_1')"><input type="text" class="short-ans-box" maxlength="1" id="P3_Cau_2_3" oninput="this.value=this.value.replace('.', ','); moveNext(this, 'P3_Cau_2_4')" onkeydown="movePrev(event, this, 'P3_Cau_2_2')"><input type="text" class="short-ans-box" maxlength="1" id="P3_Cau_2_4" oninput="this.value=this.value.replace('.', ','); moveNext(this, null)" onkeydown="movePrev(event, this, 'P3_Cau_2_3')"></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Đặt $h(x)=f(x)-f(3x)$, $g(x)=f(x)-f(9x)$.<br> Ta có $h'(x)=f'(x)-3f'(3x)$ và $h''(x)=f''(x)-9f''(3x)$.<br> Đồng thời ta có $g'(x)=f'(x)-9f'(9x)$ và $g''(x)=f''(x)-81 f''(9x)$.<br> Do đó đạo hàm cấp hai của hàm số $g(x)=f(x)-f(9x)$ tại $x=1$ là<br> $g''(1)=f''(1)-81f''(9)$.<br> Ta có $\left\{\begin{aligned}&amp;h''(3)=f''(3)-9f''(9)=5 \quad (1)\\&amp;h''(1)=f''(1)-9f''(3)=10 \quad (2).\end{aligned}\right.$<br> Nhân (1) với 9 và cộng với (2), ta được $g''(1)=f''(1)-81f''(9)=9 \cdot 5+10=55$.</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 3:</b> Cho hàm số $f(x)=\sin 2 x$. Giá trị $f''\left(\dfrac{\pi}{12}\right)$ bằng bao nhiêu?</div></div><div class="options"><div class="short-ans-group"><input type="text" class="short-ans-box" maxlength="1" id="P3_Cau_3_1" oninput="this.value=this.value.replace('.', ','); moveNext(this, 'P3_Cau_3_2')" onkeydown="movePrev(event, this, null)"><input type="text" class="short-ans-box" maxlength="1" id="P3_Cau_3_2" oninput="this.value=this.value.replace('.', ','); moveNext(this, 'P3_Cau_3_3')" onkeydown="movePrev(event, this, 'P3_Cau_3_1')"><input type="text" class="short-ans-box" maxlength="1" id="P3_Cau_3_3" oninput="this.value=this.value.replace('.', ','); moveNext(this, 'P3_Cau_3_4')" onkeydown="movePrev(event, this, 'P3_Cau_3_2')"><input type="text" class="short-ans-box" maxlength="1" id="P3_Cau_3_4" oninput="this.value=this.value.replace('.', ','); moveNext(this, null)" onkeydown="movePrev(event, this, 'P3_Cau_3_3')"></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Ta có $f'(x)=2 \cos 2 x\Rightarrow f''(x)=-4 \sin 2 x$. <br>Suy ra $f''\left(\dfrac{\pi}{12}\right)=-2$.</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 4:</b> Một chuyển động thẳng xác định bởi phương trình <div class="center"><div class="tp">$s(t)=-2t^3+75t+3$,</div></div> trong đó $s$ tính bằng mét và $t$ là thời gian tính bằng giây. Hỏi gia tốc của chuyển động tại thời điểm $t=3$ (s) là bao nhiêu m/s$^2$?</div></div><div class="options"><div class="short-ans-group"><input type="text" class="short-ans-box" maxlength="1" id="P3_Cau_4_1" oninput="this.value=this.value.replace('.', ','); moveNext(this, 'P3_Cau_4_2')" onkeydown="movePrev(event, this, null)"><input type="text" class="short-ans-box" maxlength="1" id="P3_Cau_4_2" oninput="this.value=this.value.replace('.', ','); moveNext(this, 'P3_Cau_4_3')" onkeydown="movePrev(event, this, 'P3_Cau_4_1')"><input type="text" class="short-ans-box" maxlength="1" id="P3_Cau_4_3" oninput="this.value=this.value.replace('.', ','); moveNext(this, 'P3_Cau_4_4')" onkeydown="movePrev(event, this, 'P3_Cau_4_2')"><input type="text" class="short-ans-box" maxlength="1" id="P3_Cau_4_4" oninput="this.value=this.value.replace('.', ','); moveNext(this, null)" onkeydown="movePrev(event, this, 'P3_Cau_4_3')"></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Ta có $v(t)=s'(t)=-6t^2+75;\,a(t)=s''(t)=-12t$.<br> Khi đó vận tốc và gia tốc của chuyển động tại thời điểm $t=3$ là $v(3)=21$ (m/s) và $a(3)=-36$ (m/s$^2$).</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 5:</b> Một chất điểm chuyển động có phương trình $s(t) = \dfrac{1}{3}t^3 - 2t^2 + 10t$ ($s$&nbsp;tính bằng mét, $t$ tính bằng giây). Tìm độ lớn gia tốc của chất điểm (đơn vị m/s$^2$) tại thời điểm vận tốc của nó bằng $7$ m/s.</div></div><div class="options"><div class="short-ans-group"><input type="text" class="short-ans-box" maxlength="1" id="P3_Cau_5_1" oninput="this.value=this.value.replace('.', ','); moveNext(this, 'P3_Cau_5_2')" onkeydown="movePrev(event, this, null)"><input type="text" class="short-ans-box" maxlength="1" id="P3_Cau_5_2" oninput="this.value=this.value.replace('.', ','); moveNext(this, 'P3_Cau_5_3')" onkeydown="movePrev(event, this, 'P3_Cau_5_1')"><input type="text" class="short-ans-box" maxlength="1" id="P3_Cau_5_3" oninput="this.value=this.value.replace('.', ','); moveNext(this, 'P3_Cau_5_4')" onkeydown="movePrev(event, this, 'P3_Cau_5_2')"><input type="text" class="short-ans-box" maxlength="1" id="P3_Cau_5_4" oninput="this.value=this.value.replace('.', ','); moveNext(this, null)" onkeydown="movePrev(event, this, 'P3_Cau_5_3')"></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Vận tốc của chất điểm là $v(t) = s'(t) = t^2 - 4t + 10$ (m/s).<br> Thời điểm vận tốc bằng $7$ m/s là nghiệm của phương trình $$t^2 - 4t + 10 = 7 \Leftrightarrow t^2 - 4t + 3 = 0 \Leftrightarrow \left[\begin{aligned}&amp;t=1 \\ &amp;t=3.\end{aligned}\right.$$ Gia tốc của chất điểm là $a(t) = v'(t) = 2t - 4$ (m/s$^2$). <ul><li>Tại $t=1$, $a(1) = 2(1) - 4 = -2$. Độ lớn gia tốc là $|a(1)| = 2$ m/s$^2$.</li><li>Tại $t=3$, $a(3) = 2(3) - 4 = 2$. Độ lớn gia tốc là $|a(3)| = 2$ m/s$^2$.</li></ul> Vậy độ lớn gia tốc tại thời điểm đó luôn bằng $2$ m/s$^2$.</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 6:</b> Cho hàm số $f(x) = \sqrt{x^2 + 1}$. Tính giá trị của $f''(0)$.</div></div><div class="options"><div class="short-ans-group"><input type="text" class="short-ans-box" maxlength="1" id="P3_Cau_6_1" oninput="this.value=this.value.replace('.', ','); moveNext(this, 'P3_Cau_6_2')" onkeydown="movePrev(event, this, null)"><input type="text" class="short-ans-box" maxlength="1" id="P3_Cau_6_2" oninput="this.value=this.value.replace('.', ','); moveNext(this, 'P3_Cau_6_3')" onkeydown="movePrev(event, this, 'P3_Cau_6_1')"><input type="text" class="short-ans-box" maxlength="1" id="P3_Cau_6_3" oninput="this.value=this.value.replace('.', ','); moveNext(this, 'P3_Cau_6_4')" onkeydown="movePrev(event, this, 'P3_Cau_6_2')"><input type="text" class="short-ans-box" maxlength="1" id="P3_Cau_6_4" oninput="this.value=this.value.replace('.', ','); moveNext(this, null)" onkeydown="movePrev(event, this, 'P3_Cau_6_3')"></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Ta có $f'(x) = \dfrac{x}{\sqrt{x^2+1}}$.<br> $f''(x) = \dfrac{(x)'\sqrt{x^2+1} - x(\sqrt{x^2+1})'}{x^2+1} = \dfrac{\sqrt{x^2+1} - \dfrac{x^2}{\sqrt{x^2+1}}}{x^2+1} = \dfrac{1}{(x^2+1)\sqrt{x^2+1}}$.<br> Thay $x=0 \Rightarrow f''(0) = \dfrac{1}{1\cdot 1} = 1$.</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 7:</b> Một chiếc máy bay di chuyển trên đường băng chuẩn bị cất cánh với phương trình quãng đường $s(t) = 2t^2 + \dfrac{1}{30}t^3$ ($0 \le t \le 30$), $s$ tính bằng mét, $t$ tính bằng giây. Tìm gia tốc lớn nhất của máy bay (m/s$^2$) trong khoảng thời gian này.</div></div><div class="options"><div class="short-ans-group"><input type="text" class="short-ans-box" maxlength="1" id="P3_Cau_7_1" oninput="this.value=this.value.replace('.', ','); moveNext(this, 'P3_Cau_7_2')" onkeydown="movePrev(event, this, null)"><input type="text" class="short-ans-box" maxlength="1" id="P3_Cau_7_2" oninput="this.value=this.value.replace('.', ','); moveNext(this, 'P3_Cau_7_3')" onkeydown="movePrev(event, this, 'P3_Cau_7_1')"><input type="text" class="short-ans-box" maxlength="1" id="P3_Cau_7_3" oninput="this.value=this.value.replace('.', ','); moveNext(this, 'P3_Cau_7_4')" onkeydown="movePrev(event, this, 'P3_Cau_7_2')"><input type="text" class="short-ans-box" maxlength="1" id="P3_Cau_7_4" oninput="this.value=this.value.replace('.', ','); moveNext(this, null)" onkeydown="movePrev(event, this, 'P3_Cau_7_3')"></div></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Vận tốc $v(t) = s'(t) = 4t + \dfrac{1}{10}t^2$.<br> Gia tốc $a(t) = v'(t) = 4 + \dfrac{1}{5}t$.<br> Vì hàm số $a(t)$ là hàm bậc nhất có hệ số $a = \dfrac{1}{5} &gt; 0$ nên hàm số đồng biến trên $[0; 30]$.<br> Do đó, $a_{\max} = a(30) = 4 + \dfrac{1}{5}\cdot30 = 10$ m/s$^2$.</div></div></div>
+<h3>PHẦN 4. Tự luận</h3>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 1:</b> Cho hàm số $y=-2+\dfrac{5}{x}\cdot $ Chứng minh rằng $\dfrac{2{y}'}{x}+{y}''=0.$</div></div><div class="options"><textarea class="essay-input" placeholder="Làm bài tự luận tại đây (Hoặc làm trên giấy tùy yêu cầu của GV)..."></textarea></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> ${y}'=-\dfrac{5}{x^2}; {y}''=\dfrac{10}{x^3}$<br> $\dfrac{2{y}'}{x}+{y}''=-\dfrac{10}{x^3}+\dfrac{10}{x^3}=0.$</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 2:</b> Tính đạo hàm cấp hai của các hàm số sau <ol style="column-count: 2; -webkit-column-count: 2; column-gap: 20px; -webkit-column-gap: 20px;"><li>$y=x\sin 2x$;</li><li>$y=\cos^2x$;</li><li>$y=x^4-3x^3+x^2-1$.</li></ol></div></div><div class="options"><textarea class="essay-input" placeholder="Làm bài tự luận tại đây (Hoặc làm trên giấy tùy yêu cầu của GV)..."></textarea></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> <ol><li>$y=x\sin 2x$<br> Ta có $y'=(x)'\cdot \sin 2x+x\cdot \left(\sin 2x\right)'=\sin 2x+2x\cdot \cos 2x$<br> Nên $y''=\left(\sin 2x\right)'+\left(2x\right)'\cdot \cos 2x+2x\cdot \left(\cos 2x\right)'=2\cos 2x+2\cos 2x-4x\cdot \sin 2x=4\cos 2x-4x\cdot \sin 2x$.</li><li>$y=\cos^2x$<br> Ta có $y'=2\cdot \cos x\cdot \left(\cos x\right)'=-2\cos x\cdot \sin x=-\sin 2x$.<br> Suy ra $y''=-\left(\sin 2x\right)'=-2\cos 2x$.</li><li>$y=x^4-3x^3+x^2-1$.<br> Ta có $y'=4x^3-9x^2+2x\Rightarrow y''=12x^2-18x+2$.</li></ol></div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 3:</b> Tính đạo hàm cấp hai của mỗi hàm số sau <ol><li>$ y=3x^{2}-4x+5 $ tại điểm $ x_{0}=-2 $.</li><li>$ y=\log_{3}(2x+1) $ tại điểm $ x_{0}=3 $.</li><li>$ y=\mathrm{e}^{4x+3} $ tại điểm $ x_{0}=1 $.</li><li>$ y=\sin\left(2x+\dfrac{\pi}{3}\right) $ tại điểm $ x_{0}=\dfrac{\pi}{6} $.</li><li>$ y=\cos \left(3x-\dfrac{\pi}{6}\right) $ tại điểm $ x_{0}=0 $.</li></ol></div></div><div class="options"><textarea class="essay-input" placeholder="Làm bài tự luận tại đây (Hoặc làm trên giấy tùy yêu cầu của GV)..."></textarea></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> <ol><li>$ y=3x^{2}-4x+5 $ tại điểm $ x_{0}=-2 $.<br> Ta có $ y'=6x-4 \Rightarrow y''=6$.</li><li>$ y=\log_{3}(2x+1) $ tại điểm $ x_{0}=3 $.<br> Ta có $ y'= \dfrac{2}{(2x+1)\ln 3}\Rightarrow y''=\dfrac{-2\left[(2x+1)\ln3\right]'}{\left[(2x+1)\ln3\right]^{2}}=-\dfrac{4\ln3}{\left[(2x+1)\ln3\right]^{2}} = - \dfrac{4}{(2x+1)^2\ln3}$.<br> Suy ra $ y''(3)=-\dfrac{4\ln3}{\left[(2\cdot 3+1)\ln3\right]^{2}}=-\dfrac{4}{49\ln3} $.</li><li>$ y=\mathrm{e}^{4x+3} $ tại điểm $ x_{0}=1 $.<br> Ta có $ y'=4\mathrm{e}^{4x+3} \Rightarrow y''=16\mathrm{e}^{4x+3}$.</li><li>$ y=\sin\left(2x+\dfrac{\pi}{3}\right) $ tại điểm $ x_{0}=\dfrac{\pi}{6} $.<br> Ta có $ y'=2\cos \left(2x+\dfrac{\pi}{3}\right) \Rightarrow y''=-4\sin\left(2x+\dfrac{\pi}{3}\right) $.<br> Suy ra $ y''\left(\dfrac{\pi}{6}\right)= -4\sin \left(2\cdot\dfrac{\pi}{6}+\dfrac{\pi}{3}\right)=-2\sqrt{3} $.</li><li>$ y=\cos \left(3x-\dfrac{\pi}{6}\right) $ tại điểm $ x_{0}=0 $.<br> Ta có $ y'=-3\sin \left(3x-\dfrac{\pi}{6}\right) \Rightarrow y''= -9\cos \left(3x-\dfrac{\pi}{6}\right)$.<br> Suy ra $ y''\left(0\right)=-9\cos \left(3\cdot 0-\dfrac{\pi}{6}\right)=\dfrac{-9\sqrt{3}}{2} $.</li></ol></div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 4:</b> Cho hàm số $f(x)=\cos \left(5 x+\dfrac{\pi}{7}\right)$. Tính $f''\left(\dfrac{6 \pi}{35}\right)$.</div></div><div class="options"><textarea class="essay-input" placeholder="Làm bài tự luận tại đây (Hoặc làm trên giấy tùy yêu cầu của GV)..."></textarea></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Ta có $f'(x)=-5 \sin \left(5 x+\dfrac{\pi}{7}\right)\Rightarrow f''(x)=-25 \cos \left(5 x+\dfrac{\pi}{7}\right)$.<br> Suy ra $f''\left(\dfrac{6 \pi}{35}\right)=25$.</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 5:</b> Tìm đạo hàm cấp hai của các hàm số sau: <ol style="column-count: 2; -webkit-column-count: 2; column-gap: 20px; -webkit-column-gap: 20px;"><li>$y=-3x^4+4x^3+5x^2-2x$.</li><li>$y=\dfrac{4}{5}x^5-3x^2-x+4$.</li><li>$y=-\dfrac{1}{x}$.</li><li>$y=\dfrac{1}{x-3}$</li><li>$y=x\cdot\sin x$.</li><li>$y=\mathrm{e}^x\cdot\sin x$.</li></ol></div></div><div class="options"><textarea class="essay-input" placeholder="Làm bài tự luận tại đây (Hoặc làm trên giấy tùy yêu cầu của GV)..."></textarea></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> <ol><li>$y'=-12x^3+12x^2+10x-2$; $y''=-36x^2+24x+10$.</li><li>$y'=4x^4-6x-1$; $y''=16x^3-6$.</li><li>$y'=\dfrac{1}{x^2}$; $y''=-\dfrac{2}{x^3}$.</li><li>$y'=-\dfrac{1}{\left(x-3\right)^2}$; $y''=\dfrac{2}{{\left(x-3\right)}^3}$.</li><li>$y'=\sin x+x\cos x$; $y''=2\cos x-x\sin x$.</li><li></li></ol></div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 6:</b> Cho $y=\dfrac{x-3}{x+4}.$ Chứng minh rằng $2{\left({{y}'}\right)}^2=\left(y-1\right){y}''.$</div></div><div class="options"><textarea class="essay-input" placeholder="Làm bài tự luận tại đây (Hoặc làm trên giấy tùy yêu cầu của GV)..."></textarea></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> $y=\dfrac{x-3}{x+4}\Rightarrow {y}'=\dfrac{7}{{\left(x+4\right)}^2}\Rightarrow {y}''=-\dfrac{14}{{\left(x+4\right)}^3}\cdot$<br> Ta có vế trái: $2{\left({{y}'}\right)}^2=\dfrac{98}{{\left(x+4\right)}^4}\cdot $<br> Và vế phải:$\left(y-1\right){y}''=\left(\dfrac{x-3}{x+4}-1\right)\left[\dfrac{-14}{{\left(x+4\right)}^3}\right]=\dfrac{98}{{\left(x+4\right)}^4}\cdot $<br> Vậy $2{\left({{y}'}\right)}^2=\left(y-1\right){y}''.$</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 7:</b> Một chất điểm có phương trình chuyển động $s(t)=6 \sin \left(3 t+\dfrac{\pi}{4}\right)$, trong đó $t&gt;0$, $t$ tính bằng giây, $s(t)$ tính bằng centimét. Tính gia tốc tức thời của chất điểm tại thời điểm $t=\dfrac{\pi}{6}\,(\mathrm{s})$.</div></div><div class="options"><textarea class="essay-input" placeholder="Làm bài tự luận tại đây (Hoặc làm trên giấy tùy yêu cầu của GV)..."></textarea></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Ta có: $s'(t)=18 \cos \left(3 t+\dfrac{\pi}{4}\right)$.<br> Gia tốc tức thời của chất điểm tại thời điểm $t\,(\mathrm{s})$ là: $s''(t)=-54 \sin \left(3 t+\dfrac{\pi}{4}\right)$.<br> Vậy gia tốc tức thời của chất điểm tại thời điểm $t=\dfrac{\pi}{6}\, (\mathrm{s})$ là: $$s''\left(\dfrac{\pi}{6}\right)=-54 \sin \left(3 \cdot \dfrac{\pi}{6}+\dfrac{\pi}{4}\right)=-27 \sqrt{2}\,\left(\mathrm{cm} / \mathrm{s}^2\right).$$</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 8:</b> Cho hàm số $g(x)=\cos x$. <ol><li>Tìm đạo hàm cấp hai của hàm số.</li><li>Tính đạo hàm cấp hai của hàm số tại $x_0=\dfrac{\pi}{6}$.</li></ol></div></div><div class="options"><textarea class="essay-input" placeholder="Làm bài tự luận tại đây (Hoặc làm trên giấy tùy yêu cầu của GV)..."></textarea></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> <ol><li>Ta có: $g'(x)=-\sin x, g''(x)=(-\sin x)'=-\cos x$.</li><li>Vì $g''(x)=-\cos x$ nên $g''\left(\dfrac{\pi}{6}\right)=-\cos \dfrac{\pi}{6}=-\dfrac{\sqrt{3}}{2}$.</li></ol></div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 9:</b> Cho hàm số $f(x)=x^2-4 x$. Giải phương trình $f'(x)=f''(x)$.</div></div><div class="options"><textarea class="essay-input" placeholder="Làm bài tự luận tại đây (Hoặc làm trên giấy tùy yêu cầu của GV)..."></textarea></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> Ta có: $f'(x)=2 x-4, f''(x)=2$.<br> Khi đó, ta có phương trình $$f'(x)=f''(x) \Leftrightarrow 2 x-4=2 \Leftrightarrow x=3.$$</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 10:</b> Cho hàm số $y=x\cos x.$ Chứng minh rằng $x.y-2({y}'-\cos x)+x.{y}''=0.$</div></div><div class="options"><textarea class="essay-input" placeholder="Làm bài tự luận tại đây (Hoặc làm trên giấy tùy yêu cầu của GV)..."></textarea></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> ${y}'=\cos x-x\sin x;{y}''=-2\sin x-x\cos x$ <br> $VT=x.y-2\left({y}'-\cos x\right)+x.{y}''=x.x\cos x-2\left(\cos x-x\sin x-\cos x\right)+x\left(-2\sin x-x\cos x\right)=$<br>$=x^2\cos x+2x\sin x-2x\sin x-x^2\cos x=0=VP$ (đpcm).</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 11:</b> Cho hàm số $y=\sin^2x$. Chứng minh rằng $2y+{y}'\tan x+{y}''-2=0.$</div></div><div class="options"><textarea class="essay-input" placeholder="Làm bài tự luận tại đây (Hoặc làm trên giấy tùy yêu cầu của GV)..."></textarea></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> $ {y}'=2\sin x\cos x;{y}''=2\cos^2x-2\sin^2x$ <br> $2y+{y}'\tan x+{y}''-2=0 \\
+		\Leftrightarrow 2\sin^2x+2\sin x.\cos x.\dfrac{\sin x}{\cos x}+2\cos^2x-2\sin^2x -2=0 \\
+		\Leftrightarrow 2\sin^2x+2\cos^2x-2=0\Leftrightarrow 0=0$ (đúng).</div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 12:</b> Một vật rơi tự do theo phương thẳng đứng có phương trình $ s=\dfrac{1}{2}gt^{2} $, trong đó $ g $ là gia tốc rơi tự do, $ g\approx 9,8 $ m/s$ ^{2} $. <ol><li>Tính vận tốc tức thời của vật tại thời điểm $ t_{0}=2 $ (s).</li><li>Tính gia tốc tức thời của vật tại thời điểm $ t_{0}=2 $ (s).</li></ol></div></div><div class="options"><textarea class="essay-input" placeholder="Làm bài tự luận tại đây (Hoặc làm trên giấy tùy yêu cầu của GV)..."></textarea></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> <ol><li>Phương trình vận tốc của vật $ v(t)= s'(t)=gt $.<br> Vận tốc tức thời của vật tại thời điểm $ t_{0}=2 $ là $ v(2)=9,8\cdot 2= 19,6 $ (m/s).</li><li>Phương trình gia tốc của vật $ a(t)=v'(t)=g$. Do đó $a(2)=9,8 $ (m/s$^{2}$).</li></ol></div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 13:</b> Một con lắc lò xo dao động điều hoà theo phương ngang trên mặt phẳng không ma sát, có phương trình chuyển động <div class="center"><div class="tp">$x=4 \cos \left(\pi t-\dfrac{2 \pi}{3}\right)+3$,</div></div> trong đó $t$ tính bằng giây và $x$ tính bằng centimét. <ol><li>Tìm vận tốc tức thời và gia tốc tức thời của con lắc tại thời điểm $t~(\mathrm{s})$.</li><li>Tìm thời điểm mà vận tốc tức thời của con lắc bằng $0$.</li></ol></div></div><div class="options"><textarea class="essay-input" placeholder="Làm bài tự luận tại đây (Hoặc làm trên giấy tùy yêu cầu của GV)..."></textarea></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> <ul><li>Vận tốc tức thời và gia tốc tức thời của con lắc tại thời điểm $t(\mathrm{~s})$ là<br>\begin{align*}
+				v&amp;= x'=-4\pi \sin \left(\pi t-\dfrac{2 \pi}{3}\right) \\
+				a &amp;= v'=-4\pi^2 \cos \left(\pi t-\dfrac{2 \pi}{3}\right).
+			\end{align*}</li><li class="cl"><span class="lbl">b)</span> Thời điểm mà vận tốc tức thời của con lắc bằng $0$ là<br>\begin{align*}
+				v&amp;= x'=-4\pi \sin \left(\pi t-\dfrac{2 \pi}{3}\right)=0 \\
+				&amp;\Leftrightarrow \sin \left(\pi t-\dfrac{2 \pi}{3}\right)=0 \\
+				&amp;\Leftrightarrow t=\dfrac{2}{3} +k (\mathrm{s}), \,(\text{với}\, k \in \mathbb{N}).
+			\end{align*}</li></ul></div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 14:</b> Một vật thám hiểm đáy biển được điều khiển từ xa di chuyển theo phương trình quỹ đạo $s(t) = -t^4 + 12t^3 - 30t^2 + 100t$ (với $t$ là thời gian tính bằng phút, $0 \le t \le 6$; $s$ là quãng đường tính bằng mét). <ol><li>Xác định công thức tính gia tốc tức thời $a(t)$ của vật tại thời điểm $t$.</li><li>Trong khoảng thời gian $6$ phút chuyển động, tại thời điểm nào vật có gia tốc lớn nhất?</li><li>Tại thời điểm gia tốc của vật đạt giá trị lớn nhất, hãy tính vận tốc của vật. Khi đó vật đang chuyển động nhanh dần hay chậm&nbsp;dần?</li></ol></div></div><div class="options"><textarea class="essay-input" placeholder="Làm bài tự luận tại đây (Hoặc làm trên giấy tùy yêu cầu của GV)..."></textarea></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> <ol><li>Vận tốc tức thời của vật là $v(t) = s'(t) = -4t^3 + 36t^2 - 60t + 100$ (m/phút).<br> Gia tốc tức thời của vật là $a(t) = s''(t) = v'(t) = -12t^2 + 72t - 60$ (m/phút$^2$).</li><li>Xét hàm số gia tốc $a(t) = -12t^2 + 72t - 60$ trên đoạn $[0; 6]$.<br> Đây là một hàm số bậc hai có đồ thị là một parabol có bề lõm hướng xuống dưới.<br> Tọa độ đỉnh của parabol là $t = -\dfrac{b}{2a} = -\dfrac{72}{2 \cdot (-12)} = 3$.<br> Do đó hàm số $a(t)$ đạt giá trị lớn nhất tại $t = 3$.<br> Vậy sau $3$ phút thì vật đạt gia tốc lớn nhất.</li><li>Gia tốc lớn nhất khi $t = 3$.<br> Ta có gia tốc khi $t=3$ là $a(3) = -12(3)^2 + 72(3) - 60 = 48$ (m/phút$^2$).<br> Vận tốc của vật tại thời điểm này là $v(3) = -4(3)^3 + 36(3)^2 - 60(3) + 100 = 136$ (m/phút).<br> Vì $v(3) &gt; 0$ và $a(3) &gt; 0$ (vận tốc và gia tốc cùng dấu) nên tại thời điểm này vật đang chuyển động <b>nhanh dần</b>.</li></ol></div></div></div>
+<div class="question"><div class="question-text"><div class="tp"><b>Câu 15:</b> Cho hàm số $f(x)=\sin^3x+x^2$. Tính giá trị $f''\left(\dfrac{\pi}{2}\right)$.</div></div><div class="options"><textarea class="essay-input" placeholder="Làm bài tự luận tại đây (Hoặc làm trên giấy tùy yêu cầu của GV)..."></textarea></div><div class="solution-box"><div class="tp"><b>Lời giải chi tiết:</b> $f'(x)=3 \sin^2x \cos x+2x$; $f''(x)=6 \sin x \cos^2x-3 \sin^3x+2 \Rightarrow f''\left(\dfrac{\pi}{2}\right)=-1$.</div></div></div>
+        <button type="button" class="submit-btn" id="submitBtn" onclick="submitQuiz()">Nộp Bài</button>
+        <button type="button" class="submit-btn" id="viewSolBtn" onclick="showPasswordPrompt()" style="background: #17a2b8;">Xem Đáp Án & Lời Giải</button>
+    </form>
+    
+    <div id="result"></div>
+    
+    <div id="passwordPrompt">
+        <h4>Mở Khóa Lời Giải</h4>
+        <p style="color: #856404; font-size: 14px; margin-top: 0;">Nhập mật khẩu từ Giáo viên để xem đáp án chi tiết.</p>
+        <input type="password" id="solPassword" placeholder="Nhập mật khẩu...">
+        <button type="button" onclick="checkPassword()">Xem</button>
+    </div>
+
+    <footer class="author-footer">Liên hệ Trần Lê Nam - 0947306694 TeX &gt; HTML</footer>
+
+    <script>
+        const ua = navigator.userAgent || navigator.vendor || window.opera;
+        if ((ua.indexOf("FBAN") === -1) && (ua.indexOf("FBAV") === -1) && (ua.indexOf("Zalo") === -1)) {
+            document.getElementById("zaloWarning").style.display = "none";
+        }
+
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbyrb8pbIJA3IMb6FGuDgjLUuga9JDHC1fIKHMk6qFyYceXHh9SUHS7i-j0FAqG0YK02/exec"; 
+        const correctAnswers = {"P1_Cau_1": "B", "P1_Cau_2": "C", "P1_Cau_3": "D", "P1_Cau_4": "B", "P1_Cau_5": "D", "P1_Cau_6": "B", "P1_Cau_7": "B", "P1_Cau_8": "A", "P1_Cau_9": "A", "P1_Cau_10": "C", "P1_Cau_11": "A", "P1_Cau_12": "C", "P1_Cau_13": "B", "P1_Cau_14": "A", "P1_Cau_15": "A", "P1_Cau_16": "C", "P1_Cau_17": "D", "P1_Cau_18": "D", "P1_Cau_19": "B", "P1_Cau_20": "A", "P1_Cau_21": "C", "P1_Cau_22": "A", "P1_Cau_23": "B", "P1_Cau_24": "A", "P1_Cau_25": "B", "P2_Cau_1_a": "Đúng", "P2_Cau_1_b": "Sai", "P2_Cau_1_c": "Đúng", "P2_Cau_1_d": "Sai", "P2_Cau_2_a": "Đúng", "P2_Cau_2_b": "Đúng", "P2_Cau_2_c": "Sai", "P2_Cau_2_d": "Sai", "P2_Cau_3_a": "Đúng", "P2_Cau_3_b": "Sai", "P2_Cau_3_c": "Đúng", "P2_Cau_3_d": "Đúng", "P2_Cau_4_a": "Sai", "P2_Cau_4_b": "Sai", "P2_Cau_4_c": "Đúng", "P2_Cau_4_d": "Đúng", "P2_Cau_5_a": "Đúng", "P2_Cau_5_b": "Sai", "P2_Cau_5_c": "Sai", "P2_Cau_5_d": "Đúng", "P2_Cau_6_a": "Đúng", "P2_Cau_6_b": "Sai", "P2_Cau_6_c": "Sai", "P2_Cau_6_d": "Sai", "P2_Cau_7_a": "Đúng", "P2_Cau_7_b": "Đúng", "P2_Cau_7_c": "Sai", "P2_Cau_7_d": "Đúng", "P3_Cau_1": "-68", "P3_Cau_2": "55", "P3_Cau_3": "-2", "P3_Cau_4": "-36", "P3_Cau_5": "2", "P3_Cau_6": "1", "P3_Cau_7": "10"};
+        let isSubmitted = false;
+        
+        function moveNext(current, nextId) {
+            if (current.value.length > 1) current.value = current.value.slice(0, 1);
+            if (current.value.length === 1 && nextId) document.getElementById(nextId).focus();
+        }
+        function movePrev(e, current, prevId) {
+            if (e.key === "Backspace" && current.value === "" && prevId) document.getElementById(prevId).focus();
+        }
+
+        // =====================================================================
+        // LƯU TRẠNG THÁI (tải lại trang không mất bài, không reset đồng hồ)
+        // Thêm ?reset=1 vào đường dẫn để xóa trạng thái khi giáo viên muốn thử lại.
+        // =====================================================================
+        function hashStr(str) { let h = 5381; for (let i = 0; i < str.length; i++) h = ((h << 5) + h + str.charCodeAt(i)) | 0; return (h >>> 0).toString(36); }
+        const STORE_KEY = 'quizstate:v2:' + location.pathname + '|' + document.title + '|' + hashStr(JSON.stringify(correctAnswers) + '|' + 19);
+        if (/[?&]reset=1(&|$)/.test(location.search)) { try { localStorage.removeItem(STORE_KEY); } catch (e) {} }
+
+        function loadState() { try { return JSON.parse(localStorage.getItem(STORE_KEY) || 'null'); } catch (e) { return null; } }
+        let state = loadState() || {};
+        function saveState(patch) {
+            Object.assign(state, patch);
+            try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch (e) {}   // bị chặn lưu (chế độ riêng tư...) thì chạy bằng bộ nhớ tạm
+        }
+        function newId() { return (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : (Date.now().toString(36) + Math.random().toString(36).slice(2, 10)); }
+
+        const DURATION_MS = 19 * 60 * 1000;
+        if (!state.endTime) saveState({ endTime: Date.now() + DURATION_MS });
+        if (!state.attemptId) saveState({ attemptId: newId() });
+
+        function formFields() { return Array.from(document.querySelectorAll('#studentName, #studentClass, #quizForm input, #quizForm textarea')); }
+        function collectAnswers() { return formFields().map(el => (el.type === 'radio' || el.type === 'checkbox') ? (el.checked ? 1 : 0) : el.value); }
+        function restoreAnswers(arr) {
+            const f = formFields();
+            if (!Array.isArray(arr) || arr.length !== f.length) return;
+            f.forEach((el, i) => { if (el.type === 'radio' || el.type === 'checkbox') el.checked = !!arr[i]; else el.value = arr[i]; });
+        }
+
+        let saveTimer;
+        function scheduleSave() {
+            if (isSubmitted) return;
+            clearTimeout(saveTimer);
+            saveTimer = setTimeout(() => saveState({ answers: collectAnswers() }), 250);
+        }
+        document.addEventListener('input', scheduleSave);
+        document.addEventListener('change', scheduleSave);
+        window.addEventListener('pagehide', () => { if (!isSubmitted) saveState({ answers: collectAnswers() }); });
+
+        const resDiv = document.getElementById('result');
+        function showResult(html) { resDiv.style.display = 'block'; resDiv.innerHTML = html; }
+        function lockForm() {
+            document.getElementById('submitBtn').style.display = 'none';
+            document.querySelectorAll('#quizForm input, #quizForm textarea, #studentName, #studentClass').forEach(el => el.disabled = true);
+        }
+        const scoreSpan = s => `<span style="font-size: 24px; color: red;">${s}</span>`;
+
+        // Gửi kết quả; mất mạng thì giữ lại và tự gửi lại (khi có mạng, hoặc mỗi 15 giây)
+        let sending = false;
+        function sendPayload() {
+            const finalScoreString = state.finalScore;
+            if (!GAS_URL) {
+                saveState({ sent: true });
+                showResult(`Đã chấm xong (chưa cấu hình nơi nhận kết quả).<br>Điểm của bạn: ${scoreSpan(finalScoreString)}`);
+                return;
+            }
+            if (sending) return;
+            sending = true;
+            fetch(GAS_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                keepalive: true,
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: new URLSearchParams(state.payload)
+            }).then(() => {
+                sending = false;
+                saveState({ sent: true });
+                showResult(`Nộp bài thành công!<br>Điểm của bạn: ${scoreSpan(finalScoreString)}`);
+            }).catch(() => {
+                sending = false;
+                showResult(`Đã chấm xong nhưng <b>chưa gửi được</b> kết quả (mạng yếu).<br>Em hãy giữ nguyên trang này, bài sẽ tự gửi lại khi có mạng.<br>Điểm của bạn: ${scoreSpan(finalScoreString)}`);
+            });
+        }
+        function retryPending() { if (state.submitted && !state.sent) sendPayload(); }
+        window.addEventListener('online', retryPending);
+        setInterval(retryPending, 15000);
+
+        // Đồng hồ tính theo giờ kết thúc nên không lệch khi tab ở nền hoặc điện thoại khóa màn hình
+        const timerEl = document.getElementById("timer");
+        let timeoutFired = false;
+        const countdown = setInterval(tick, 500);
+        document.addEventListener('visibilitychange', tick);
+        function tick() {
+            if (isSubmitted) { clearInterval(countdown); return; }
+            const remain = Math.ceil((state.endTime - Date.now()) / 1000);
+            if (remain <= 0) {
+                if (timeoutFired) return;
+                timeoutFired = true;
+                clearInterval(countdown);
+                timerEl.innerHTML = "HẾT GIỜ!";
+                alert("Đã hết thời gian làm bài. Hệ thống tự động nộp bài!");
+                submitQuiz(true);
+            } else {
+                const m = Math.floor(remain / 60), s = remain % 60;
+                timerEl.innerHTML = m.toString().padStart(2, '0') + ":" + s.toString().padStart(2, '0');
+            }
+        }
+
+        // Khôi phục khi mở lại trang
+        restoreAnswers(state.answers);
+        if (state.submitted) {
+            isSubmitted = true;
+            lockForm();
+            timerEl.innerHTML = "ĐÃ NỘP BÀI";
+            if (state.sent) showResult(`Nộp bài thành công!<br>Điểm của bạn: ${scoreSpan(state.finalScore)}`);
+            else { showResult('Đang gửi lại kết quả...'); retryPending(); }
+        } else {
+            tick();
+        }
+
+        function submitQuiz(autoSubmit = false) {
+            if (isSubmitted) return;
+            const name = document.getElementById('studentName').value.trim();
+            const className = document.getElementById('studentClass').value.trim();
+            
+            if (!autoSubmit && (!name || !className)) {
+                alert("Vui lòng nhập đầy đủ Họ tên và Lớp trước khi nộp!");
+                return;
+            }
+
+            isSubmitted = true;
+            if (typeof timerEl !== 'undefined' && timerEl) {
+                timerEl.innerHTML = "ĐÃ NỘP BÀI";
+            }
+            
+            const form = document.getElementById('quizForm');
+            let score = 0;
+            
+            let payload = {
+                'name': name || "Vô danh (Hết giờ)",
+                'className': className || "N/A"
+            };
+
+            for (let i = 1; i <= 25; i++) {
+                const qName = `P1_Cau_${i}`;
+                const selected = form.querySelector(`input[name="${qName}"]:checked`);
+                let ans = selected ? selected.value : "K";
+                const correctVal = correctAnswers[qName];
+                
+                let isCorrect = (selected && selected.value === correctVal);
+                if (isCorrect) score += 0.25;
+                
+                let statusStr = isCorrect ? "Đúng" : (selected ? "Sai" : "K");
+                payload[qName] = `${ans} (${statusStr})`;
+            }
+
+            const labels_tf = ['a', 'b', 'c', 'd'];
+            for (let i = 1; i <= 7; i++) {
+                let correctCount = 0;
+                let questionDetail = [];
+                
+                labels_tf.forEach(l => {
+                    const qName = `P2_Cau_${i}_${l}`;
+                    if (correctAnswers[qName]) {
+                        const selected = form.querySelector(`input[name="${qName}"]:checked`);
+                        let ans = selected ? selected.value : "K";
+                        const correctVal = correctAnswers[qName];
+                        let isSubCorrect = (selected && selected.value === correctVal);
+                        if (isSubCorrect) correctCount++;
+                        
+                        let subStatus = isSubCorrect ? "Đ" : (selected ? "S" : "-");
+                        questionDetail.push(`${l}:${ans}(${subStatus})`);
+                    }
+                });
+                
+                let p2ScoreEarned = 0;
+                if (correctCount === 1) p2ScoreEarned = 0.1;
+                else if (correctCount === 2) p2ScoreEarned = 0.25;
+                else if (correctCount === 3) p2ScoreEarned = 0.5;
+                else if (correctCount === 4) p2ScoreEarned = 1.0;
+                
+                score += p2ScoreEarned;
+                payload[`P2_Cau_${i}`] = `[${correctCount} ý đúng] ${questionDetail.join(' ')}`;
+            }
+
+            for (let i = 1; i <= 7; i++) {
+                const qName = `P3_Cau_${i}`;
+                if (correctAnswers[qName]) {
+                    let ans = "";
+                    for (let j = 1; j <= 12; j++) {
+                        const box = document.getElementById(`${qName}_${j}`);
+                        if (box && box.value) ans += box.value;
+                    }
+                    
+                    let studentAns = ans.replace(/,/g, '.').replace(/\s+/g, '');
+                    let trueAns = correctAnswers[qName].replace(/,/g, '.').replace(/\s+/g, '');
+                    let isCorrect = (studentAns === trueAns && studentAns !== "");
+                    
+                    if (isCorrect) score += 0.5;
+                    
+                    let statusStr = isCorrect ? "Đúng" : (studentAns !== "" ? "Sai" : "K");
+                    payload[qName] = `${studentAns || 'Bỏ trống'} (${statusStr})`;
+                }
+            }
+
+            const finalScoreString = `${score.toFixed(2)}/16.75`;
+            payload['score'] = score.toFixed(2);
+            payload['maxScore'] = '16.75';
+            payload['attemptId'] = state.attemptId;   // để Apps Script bỏ các lần gửi trùng
+
+            lockForm();
+            saveState({ answers: collectAnswers(), submitted: true, sent: false, payload: payload, finalScore: finalScoreString });
+            showResult('Đã chấm xong, đang gửi kết quả...');
+            sendPayload();
+        }
+
+        function showPasswordPrompt() {
+            document.getElementById('passwordPrompt').style.display = 'block';
+            document.getElementById('viewSolBtn').style.display = 'none';
+            document.getElementById('passwordPrompt').scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        function checkPassword() {
+            const entered = document.getElementById('solPassword').value;
+            if (entered === "0947306694") {
+                document.getElementById('passwordPrompt').style.display = 'none';
+                revealSolutions();
+            } else {
+                alert("Mật khẩu không chính xác! Vui lòng liên hệ Giáo viên.");
+            }
+        }
+
+        function revealSolutions() {
+            isSubmitted = true;
+            
+            document.getElementById('submitBtn').style.display = 'none';
+            const allInputs = document.querySelectorAll('#quizForm input, #quizForm textarea');
+            allInputs.forEach(input => input.disabled = true);
+
+            const form = document.getElementById('quizForm');
+            
+            for (let i = 1; i <= 25; i++) {
+                const qName = `P1_Cau_${i}`;
+                const correctVal = correctAnswers[qName];
+                const allRadios = form.querySelectorAll(`input[name="${qName}"]`);
+                allRadios.forEach(radio => {
+                    const lbl = radio.closest('label');
+                    if (radio.value === correctVal) {
+                        lbl.style.backgroundColor = '#d4edda';
+                        lbl.style.borderColor = '#28a745';
+                    } else if (radio.checked) {
+                        lbl.style.backgroundColor = '#f8d7da';
+                        lbl.style.borderColor = '#dc3545';
+                    } else {
+                        lbl.style.opacity = '0.5';
+                    }
+                });
+            }
+
+            const labels_tf = ['a', 'b', 'c', 'd'];
+            for (let i = 1; i <= 7; i++) {
+                labels_tf.forEach(l => {
+                    const qName = `P2_Cau_${i}_${l}`;
+                    if (correctAnswers[qName]) {
+                        const correctVal = correctAnswers[qName];
+                        const allRadios = form.querySelectorAll(`input[name="${qName}"]`);
+                        allRadios.forEach(radio => {
+                            const lbl = radio.closest('label');
+                            if (radio.value === correctVal) {
+                                lbl.style.backgroundColor = '#d4edda';
+                                lbl.style.color = '#155724';
+                            } else if (radio.checked) {
+                                lbl.style.backgroundColor = '#f8d7da';
+                                lbl.style.color = '#721c24';
+                            } else {
+                                lbl.style.opacity = '0.5';
+                            }
+                        });
+                    }
+                });
+            }
+
+            for (let i = 1; i <= 7; i++) {
+                const qName = `P3_Cau_${i}`;
+                if (correctAnswers[qName]) {
+                    let ans = "";
+                    let boxes = [];
+                    for (let j = 1; j <= 12; j++) {
+                        const box = document.getElementById(`${qName}_${j}`);
+                        if (box) {
+                            boxes.push(box);
+                            if (box.value) ans += box.value;
+                        }
+                    }
+                    
+                    let studentAns = ans.replace(/,/g, '.').replace(/\s+/g, '');
+                    let trueAns = correctAnswers[qName].replace(/,/g, '.').replace(/\s+/g, '');
+                    let isCorrect = (studentAns === trueAns && studentAns !== "");
+                    
+                    boxes.forEach(box => {
+                        if (isCorrect) {
+                            box.style.backgroundColor = '#d4edda';
+                            box.style.borderColor = '#28a745';
+                            box.style.color = '#155724';
+                        } else {
+                            box.style.backgroundColor = '#f8d7da';
+                            box.style.borderColor = '#dc3545';
+                            box.style.color = '#721c24';
+                        }
+                    });
+
+                    const group = document.querySelector(`#${qName}_1`).closest('.options');
+                    let correctDiv = document.createElement('div');
+                    correctDiv.style.marginTop = '10px';
+                    correctDiv.innerHTML = `<span style="color:#28a745; font-weight:bold; font-size:16px;">Đáp án đúng: ${correctAnswers[qName]}</span>`;
+                    group.appendChild(correctDiv);
+                }
+            }
+
+            const solutions = document.querySelectorAll('.solution-box');
+            solutions.forEach(box => box.style.display = 'block');
+
+            // Chuẩn hóa lại SVG vừa hiện ra (lúc này mới đo được kích thước)
+            initMedia();
+            if (window.MathJax && MathJax.typesetPromise) MathJax.typesetPromise().then(initMedia);
+        }
+
+        const MEDIA_SCOPE = '.question, .solution-box';
+        // =====================================================================
+        // XỬ LÝ SVG / ẢNH (dùng chung cho quiz và trình chiếu)
+        // Mỗi template khai báo trước: const MEDIA_SCOPE = '.vung-chua-hinh, ...';
+        // =====================================================================
+        const MEDIA_SVG_SEL = MEDIA_SCOPE.split(',').map(s => s.trim() + ' svg').join(', ');
+        const MEDIA_ALL_SEL = MEDIA_SCOPE.split(',').map(s => s.trim()).flatMap(s => [s + ' svg', s + ' img']).join(', ');
+
+        // Chỉ nhận số thuần hoặc "px"; "10cm", "50%", "auto"... trả về NaN để không đọc sai đơn vị
+        function svgNum(v) {
+            if (v == null) return NaN;
+            const m = String(v).trim().match(/^([0-9]*\.?[0-9]+)(px)?$/i);
+            return m ? parseFloat(m[1]) : NaN;
+        }
+
+        // Đổi id trong từng SVG thành duy nhất để các hình không dùng nhầm clipPath/marker/gradient của nhau
+        let __svgSeq = 0;
+        function uniquifySvgIds(svg) {
+            if (svg.dataset.idsDone) return;
+            svg.dataset.idsDone = '1';
+            const withId = svg.querySelectorAll('[id]');
+            if (!withId.length) return;
+            const prefix = 'svg' + (++__svgSeq) + '_';
+            const map = {};
+            withId.forEach(n => { map[n.id] = prefix + n.id; });
+            const ids = Object.keys(map);
+            const esc = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const urlRe = /url\(\s*(['"]?)#([^)'"\s]+)\1\s*\)/g;
+            const fixUrls = str => str.replace(urlRe, (m, q, id) => map[id] ? `url(${q}#${map[id]}${q})` : m);
+
+            svg.querySelectorAll('*').forEach(n => {
+                if (n.tagName.toLowerCase() === 'style') {
+                    let css = fixUrls(n.textContent);
+                    css = css.replace(new RegExp('#(' + ids.map(esc).join('|') + ')(?![\\w-])', 'g'), '#' + prefix + '$1');
+                    n.textContent = css;
+                    return;
+                }
+                Array.from(n.attributes).forEach(a => {
+                    if (a.name === 'id' || a.value.indexOf('#') < 0) return;
+                    if ((a.name === 'href' || a.name === 'xlink:href') && a.value.charAt(0) === '#') {
+                        const id = a.value.slice(1);
+                        if (map[id]) n.setAttribute(a.name, '#' + map[id]);
+                    } else {
+                        const nv = fixUrls(a.value);
+                        if (nv !== a.value) n.setAttribute(a.name, nv);
+                    }
+                });
+            });
+            withId.forEach(n => { n.id = map[n.id]; });
+        }
+
+        // Chuẩn hóa SVG: id duy nhất + thêm viewBox nếu thiếu để SVG co giãn đúng
+        function normalizeSvgs() {
+            document.querySelectorAll(MEDIA_SVG_SEL).forEach(svg => {
+                if (svg.closest('mjx-container')) return;
+                uniquifySvgIds(svg);
+                if (svg.dataset.normalized) return;
+                const w = svgNum(svg.getAttribute('width'));
+                const h = svgNum(svg.getAttribute('height'));
+
+                if (!svg.hasAttribute('viewBox')) {
+                    if (w > 0 && h > 0) {
+                        svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
+                    } else {
+                        try {   // đang bị ẩn thì getBBox lỗi -> sẽ thử lại khi phần chứa nó hiện ra
+                            const b = svg.getBBox();
+                            if (b.width && b.height)
+                                svg.setAttribute('viewBox', `${b.x - 2} ${b.y - 2} ${b.width + 4} ${b.height + 4}`);
+                        } catch (e) { return; }
+                    }
+                }
+                if (svg.hasAttribute('viewBox')) {
+                    if (w > 0) { svg.style.width = '100%'; svg.style.maxWidth = w + 'px'; }  // kích thước gốc làm trần
+                    svg.removeAttribute('height');
+                    svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+                    svg.dataset.normalized = '1';
+                }
+            });
+        }
+
+        // Zoom: phóng to bằng cách tăng chiều rộng thật, khung tự cao theo, cuộn bằng thanh cuộn gốc
+        const __zoomRefresh = new Set();
+        let __zoomResizeTimer;
+        window.addEventListener('resize', () => {
+            clearTimeout(__zoomResizeTimer);
+            __zoomResizeTimer = setTimeout(() => __zoomRefresh.forEach(fn => fn()), 150);
+        });
+
+        function setupImageZoom() {
+            document.querySelectorAll(MEDIA_ALL_SEL).forEach(el => {
+                if (el.closest('.zoom-container') || el.closest('mjx-container') || el.classList.contains('no-zoom')) return;
+
+                const wrapper = document.createElement('div');
+                wrapper.className = 'zoom-container';
+                const viewport = document.createElement('div');
+                viewport.className = 'zoom-viewport';
+                el.parentNode.insertBefore(wrapper, el);
+                viewport.appendChild(el);
+                wrapper.appendChild(viewport);
+                el.classList.add('zoom-media');
+
+                let scale = 1;
+                const STEP = 0.25, MIN = 1, MAX = 4;
+
+                const toolbar = document.createElement('div');
+                toolbar.className = 'zoom-toolbar';
+                const mk = (txt, title) => {
+                    const b = document.createElement('button');
+                    b.type = 'button'; b.className = 'zoom-btn'; b.innerHTML = txt; b.title = title;
+                    b.setAttribute('aria-label', title);
+                    return b;
+                };
+                const btnIn = mk('➕', 'Phóng to'), btnOut = mk('➖', 'Thu nhỏ'), btnReset = mk('↺', 'Mặc định');
+
+                function apply(newScale) {
+                    const cx = viewport.scrollWidth ? (viewport.scrollLeft + viewport.clientWidth / 2) / viewport.scrollWidth : 0.5;
+                    const cy = viewport.scrollHeight ? (viewport.scrollTop + viewport.clientHeight / 2) / viewport.scrollHeight : 0.5;
+
+                    scale = Math.min(MAX, Math.max(MIN, Math.round(newScale * 100) / 100));
+
+                    el.classList.remove('zoomed');
+                    el.style.removeProperty('--zw');
+                    const base = el.getBoundingClientRect().width;   // chiều rộng vừa khung hiện tại
+                    if (scale > 1 && base > 0) {
+                        el.style.setProperty('--zw', (base * scale) + 'px');
+                        el.classList.add('zoomed');
+                        viewport.scrollLeft = cx * viewport.scrollWidth - viewport.clientWidth / 2;
+                        viewport.scrollTop = cy * viewport.scrollHeight - viewport.clientHeight / 2;
+                    }
+                    viewport.classList.toggle('can-pan', el.classList.contains('zoomed'));
+                    btnIn.disabled = scale >= MAX;
+                    btnOut.disabled = scale <= MIN;
+                }
+
+                btnIn.onclick = () => apply(scale + STEP);
+                btnOut.onclick = () => apply(scale - STEP);
+                btnReset.onclick = () => apply(1);
+                __zoomRefresh.add(() => { if (scale > 1) apply(scale); });
+
+                // Ctrl + lăn chuột để zoom, nhấp đúp để phóng to/reset
+                viewport.addEventListener('wheel', e => {
+                    if (!e.ctrlKey) return;
+                    e.preventDefault();
+                    apply(scale + (e.deltaY < 0 ? STEP : -STEP));
+                }, { passive: false });
+                viewport.addEventListener('dblclick', () => apply(scale > 1 ? 1 : 2));
+
+                // Kéo thả bằng chuột (cảm ứng dùng cuộn gốc của trình duyệt)
+                let dragging = false, sx = 0, sy = 0, sl = 0, st = 0;
+                viewport.addEventListener('pointerdown', e => {
+                    if (e.pointerType !== 'mouse' || !el.classList.contains('zoomed')) return;
+                    dragging = true; sx = e.clientX; sy = e.clientY; sl = viewport.scrollLeft; st = viewport.scrollTop;
+                    viewport.setPointerCapture(e.pointerId);
+                    viewport.classList.add('dragging');
+                });
+                viewport.addEventListener('pointermove', e => {
+                    if (!dragging) return;
+                    viewport.scrollLeft = sl - (e.clientX - sx);
+                    viewport.scrollTop = st - (e.clientY - sy);
+                });
+                const stop = () => { dragging = false; viewport.classList.remove('dragging'); };
+                viewport.addEventListener('pointerup', stop);
+                viewport.addEventListener('pointercancel', stop);
+
+                toolbar.append(btnIn, btnOut, btnReset);
+                wrapper.appendChild(toolbar);
+                apply(1);
+            });
+        }
+
+        // Bọc từng <table> trong khung cuộn ngang (bỏ qua bảng của MathJax hoặc bảng đã được bọc)
+        const MEDIA_TABLE_SEL = MEDIA_SCOPE.split(',').map(s => s.trim() + ' table').join(', ');
+        function wrapTables() {
+            document.querySelectorAll(MEDIA_TABLE_SEL).forEach(t => {
+                if (t.closest('mjx-container, .table-scroll, .table-responsive, #tblOverlay')) return;
+                if (!t.parentNode) return;
+                const w = document.createElement('div');
+                w.className = 'table-scroll';
+                t.parentNode.insertBefore(w, t);
+                w.appendChild(t);
+            });
+        }
+
+        // ---- Bảng rộng: gợi ý vuốt ngang, cột đầu cố định, nút xem toàn màn hình ----
+        const __tblRefresh = [];
+        window.addEventListener('resize', () => __tblRefresh.forEach(fn => fn()));
+        function tblState(box, sc) {
+            const over = sc.scrollWidth > sc.clientWidth + 2;
+            box.classList.toggle('has-scroll', over);
+            box.classList.toggle('at-end', !over || sc.scrollLeft + sc.clientWidth >= sc.scrollWidth - 2);
+        }
+        function enhanceTables() {
+            document.querySelectorAll('.table-responsive, .table-scroll').forEach(sc => {
+                if (sc.dataset.tblDone || sc.closest('#tblOverlay')) return;
+                const table = sc.querySelector('table');
+                if (!table || !sc.parentNode) return;
+                sc.dataset.tblDone = '1';
+                const box = document.createElement('div'); box.className = 'tbl-box';
+                const hint = document.createElement('div'); hint.className = 'tbl-hint';
+                const msg = document.createElement('span'); msg.textContent = '\u2194 Vuốt ngang để xem thêm';
+                const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'tbl-open'; btn.textContent = '\u26F6 Xem toàn màn hình';
+                btn.addEventListener('click', e => { e.stopPropagation(); openTableOverlay(table); });
+                hint.append(msg, btn);
+                const wrap = document.createElement('div'); wrap.className = 'tbl-wrap';
+                const fade = document.createElement('div'); fade.className = 'tbl-fade';
+                sc.parentNode.insertBefore(box, sc);
+                box.append(hint, wrap);
+                wrap.append(sc, fade);
+                const first = table.rows[0];
+                if (first && first.cells.length >= 4 && first.cells[0].colSpan === 1 && first.cells[0].rowSpan === 1) table.classList.add('sticky-first');
+                const upd = () => tblState(box, sc);
+                sc.addEventListener('scroll', upd, { passive: true });
+                if (window.ResizeObserver) new ResizeObserver(upd).observe(table);
+                __tblRefresh.push(upd);
+                upd();
+            });
+        }
+        let tblOv = null, tblScale = 1;
+        function closeTableOverlay() {
+            if (!tblOv) return;
+            tblOv.classList.remove('open');
+            document.documentElement.style.overflow = '';
+        }
+        function openTableOverlay(table) {
+            if (!tblOv) {
+                tblOv = document.createElement('div'); tblOv.id = 'tblOverlay';
+                tblOv.innerHTML = '<div class="tbl-ov-bar"><span class="ttl">Kéo để xem; A+ / A\u2212 đổi cỡ chữ</span>'
+                    + '<button type="button" class="zoom-btn" data-a="-">A\u2212</button><button type="button" class="zoom-btn" data-a="+">A+</button>'
+                    + '<button type="button" class="zoom-btn" data-a="x">\u2715 Đóng</button></div><div class="tbl-ov-body"></div>';
+                document.body.appendChild(tblOv);
+                tblOv.addEventListener('click', e => {
+                    const b = e.target.closest('button[data-a]');
+                    if (!b) return;
+                    if (b.dataset.a === 'x') { closeTableOverlay(); return; }
+                    tblScale = Math.min(2.6, Math.max(0.6, tblScale + (b.dataset.a === '+' ? 0.2 : -0.2)));
+                    tblOv.style.setProperty('--tbl-s', tblScale);
+                });
+                window.addEventListener('keydown', e => {                 // đang xem bảng: không để phím chuyển câu / slide
+                    if (!tblOv.classList.contains('open')) return;
+                    e.stopImmediatePropagation();
+                    if (e.key === 'Escape') closeTableOverlay();
+                }, true);
+            }
+            const body = tblOv.querySelector('.tbl-ov-body');
+            body.innerHTML = '';
+            const c = table.cloneNode(true);
+            c.querySelectorAll('[id]').forEach(n => n.removeAttribute('id'));
+            c.classList.remove('sticky-first');
+            body.appendChild(c);
+            tblScale = 1;
+            tblOv.style.setProperty('--tbl-s', 1);
+            tblOv.classList.add('open');
+            document.documentElement.style.overflow = 'hidden';
+            body.scrollTo(0, 0);
+        }
+
+        function initMedia() { wrapTables(); enhanceTables(); normalizeSvgs(); setupImageZoom(); }
+
+        window.addEventListener('load', () => setTimeout(initMedia, 300));
+
+    </script>
+</body>
+</html>
