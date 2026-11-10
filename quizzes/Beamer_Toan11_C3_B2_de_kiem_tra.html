@@ -132,6 +132,19 @@
         .lw p { margin: 6px 0; color: #333; }
         .lw .lwbtn { display: block; width: 100%; margin-top: 14px; padding: 13px; background: #1e88e5; color: #fff; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; }
         .lw .lwbtn:active { background: #1565c0; }
+        .trow { display: flex; align-items: center; gap: 8px; }
+        .trow h1 { flex: 1 1 auto; min-width: 0; }
+        .lockbtn { flex: 0 0 auto; padding: 6px 10px; background: #fff; color: #1565c0; border: none; border-radius: 6px; font-size: 13px; font-weight: bold; white-space: nowrap; }
+        .lockbtn:active { background: #e3f0fb; }
+        .lockscr { position: fixed; inset: 0; z-index: 350; display: flex; align-items: center; justify-content: center; padding: 24px; background: #1565c0; color: #fff; text-align: center; }
+        .lockscr .lkbox { width: 100%; max-width: 360px; }
+        .lockscr .lkico { font-size: 64px; line-height: 1.2; }
+        .lockscr h2 { margin: 6px 0 10px; font-size: 22px; }
+        .lockscr p { margin: 6px 0; color: #e3f0fb; }
+        .lockscr .lkcnt { margin-top: 12px; padding: 8px 10px; background: rgba(255,255,255,.15); border-radius: 8px; color: #fff; font-weight: bold; }
+        .lockscr .lkbtn { display: block; width: 100%; margin-top: 18px; padding: 14px; background: #fff; color: #1565c0; border: none; border-radius: 8px; font-size: 17px; font-weight: bold; }
+        .lockscr .lkbtn:active { background: #e3f0fb; }
+        .ldbg { position: fixed; left: 0; right: 0; bottom: 0; z-index: 400; max-height: 36vh; overflow: hidden; padding: 4px 6px; background: rgba(0,0,0,.82); color: #9f9; font: 11px/1.35 monospace; white-space: pre-wrap; pointer-events: none; }
         .ltoast { position: fixed; left: 12px; right: 12px; bottom: 18px; z-index: 250; padding: 10px 12px; background: #333; color: #fff; border-radius: 8px; font-size: 14px; text-align: center; }
 
         /* --- SVG / ẢNH + KHUNG ZOOM DÙNG CHUNG (khung tự co giãn, không đặt chiều cao cố định) --- */
@@ -239,7 +252,10 @@
     </div>
 
     <div id="app">
-        <div class="topbar"><h1>Lớp 11 Chương 6 - Ôn tập</h1><span class="lbadge" id="leaveBadge" hidden></span></div>
+        <div class="topbar">
+            <div class="trow"><h1>Lớp 11 Chương 6 - Ôn tập</h1><button type="button" class="lockbtn" id="lockBtn" hidden>🔒 Khóa màn hình</button></div>
+            <span class="lbadge" id="leaveBadge" hidden></span>
+        </div>
         <main>
             <div class="info">Môn: <b>Toán học</b> &nbsp;·&nbsp; 23 câu &nbsp;·&nbsp; Thời gian: <b>30 phút</b> &nbsp;·&nbsp; Thang điểm: <b>10.25</b></div>
             <div class="lrule" id="leaveRule" hidden></div>
@@ -281,6 +297,15 @@
             <button type="button" class="submit-btn" id="submitBtn">Nộp bài</button>
         </main>
         <div class="foot"></div>
+        <div class="lockscr" id="lockScreen" hidden>
+            <div class="lkbox">
+                <div class="lkico">🔒</div>
+                <h2>Màn hình đã khóa</h2>
+                <p>Nội dung bài làm đang được ẩn. Bài làm của em vẫn được giữ nguyên.</p>
+                <p class="lkcnt" id="lkCnt"></p>
+                <button type="button" class="lkbtn" id="unlockBtn">🔓 Mở khóa</button>
+            </div>
+        </div>
         <div class="lw" id="leaveWarn" role="alertdialog" aria-modal="true" aria-labelledby="lwTitle" hidden>
             <div class="lwbox">
                 <div class="lwico">⚠️</div>
@@ -560,7 +585,10 @@
             var GAS_URL = "https://script.google.com/macros/s/AKfycbyrb8pbIJA3IMb6FGuDgjLUuga9JDHC1fIKHMk6qFyYceXHh9SUHS7i-j0FAqG0YK02/exec";
             var KEY = {"P1_Cau_1": "B", "P1_Cau_2": "C", "P1_Cau_3": "A", "P1_Cau_4": "B", "P1_Cau_5": "D", "P1_Cau_6": "B", "P1_Cau_7": "A", "P1_Cau_8": "D", "P1_Cau_9": "C", "P1_Cau_10": "A", "P1_Cau_11": "B", "P1_Cau_12": "A", "P1_Cau_13": "B", "P2_Cau_14_a": "Đúng", "P2_Cau_14_b": "Đúng", "P2_Cau_14_c": "Sai", "P2_Cau_14_d": "Đúng", "P2_Cau_15_a": "Đúng", "P2_Cau_15_b": "Đúng", "P2_Cau_15_c": "Sai", "P2_Cau_15_d": "Sai", "P2_Cau_16_a": "Sai", "P2_Cau_16_b": "Đúng", "P2_Cau_16_c": "Đúng", "P2_Cau_16_d": "Sai", "P2_Cau_17_a": "Đúng", "P2_Cau_17_b": "Sai", "P2_Cau_17_c": "Sai", "P2_Cau_17_d": "Đúng", "P3_Cau_18": "23", "P3_Cau_19": "9,4", "P3_Cau_20": "7,86", "P3_Cau_21": "23,6", "P3_Cau_22": "10,7", "P3_Cau_23": "19,6"};            // {"P1_Cau_1":"B", "P2_Cau_2_a":"Đúng", "P3_Cau_3":"3.5", ...}
             var MAX_TXT = '10.25';
-            var MAX_LEAVES = Math.max(0, parseInt('3', 10) || 0);     // số lần được rời trang; 0 = tắt
+            var MAX_LEAVES = (function () {                                        // số lần được rời trang; 0 = tắt; thiếu giá trị (file cũ) = 3
+                var n = parseInt('3', 10);
+                return isNaN(n) ? 3 : Math.max(0, n);
+            })();
             var GUARD = MAX_LEAVES > 0 && PHONE_ONLY === true;                     // bản xem trước trong phần mềm (PHONE_ONLY=false) không bật
             var PTS_MC = 0.25, PTS_SHORT = 0.5, PTS_TF = [0, 0.1, 0.25, 0.5, 1];
             var PART_NAME = { 1: 'Phần 1 · Trắc nghiệm', 2: 'Phần 2 · Đúng / Sai', 3: 'Phần 3 · Trả lời ngắn' };
@@ -818,6 +846,27 @@
             var armed = false;          // chỉ đếm sau khi trang đã thật sự hiện ra (mở link ở tab nền không bị tính)
             var away = false;           // đang ở ngoài trang: một lần rời chỉ đếm một lần (hidden rồi pagehide)
             var wake = null, wakeBusy = false, toastTimer = 0;
+            var lastLeaveAt = 0;        // thời điểm tính lần rời gần nhất (để các tín hiệu dự phòng không đếm trùng)
+            var lastTouch = 0;          // lần chạm gần nhất vào trang (blur ngay sau khi chạm = bàn phím / hộp thoại, không tính)
+            var dialogOpen = false;     // đang hiện alert / confirm của chính trang này
+            var blurTimer = 0;
+            var locked = !!state.locked;    // đang khóa màn hình (lưu lại: tải lại trang vẫn khóa)
+            var GAP_MS = 5000;         // đồng hồ trang bị "đứng" quá 5 giây = máy khóa / trang bị treo nền
+            var DEBUG = /[?&]debug=1(&|$)/.test(location.search), dbgBox = null, dbgLines = [];
+
+            // thêm ?debug=1 vào cuối link để xem các sự kiện điện thoại gửi về (dùng để kiểm tra trên máy thật)
+            function dbg(m) {
+                if (!DEBUG) return;
+                if (!dbgBox) { dbgBox = document.createElement('div'); dbgBox.className = 'ldbg'; document.body.appendChild(dbgBox); }
+                var d = new Date(), p = function (x) { return (x < 10 ? '0' : '') + x; };
+                dbgLines.push(p(d.getMinutes()) + ':' + p(d.getSeconds()) + ' ' + m);
+                if (dbgLines.length > 10) dbgLines.shift();
+                dbgBox.textContent = 'GUARD=' + GUARD + ' MAX=' + MAX_LEAVES + ' leaves=' + leaves + ' armed=' + armed + ' vis=' + document.visibilityState + '\n' + dbgLines.join('\n');
+            }
+            function ask(fn) {                                          // alert / confirm của trang làm trang mất tiêu điểm: không tính là rời trang
+                dialogOpen = true;
+                try { return fn(); } finally { setTimeout(function () { dialogOpen = false; }, 1200); }
+            }
 
             function toast(msg) {
                 var t = $('#ltoast');
@@ -843,10 +892,39 @@
                     : 'Đây là lần rời trang cuối cùng được phép. Nếu em rời khỏi trang thêm một lần nữa, bài sẽ bị tự động nộp ngay.';
                 $('#leaveWarn').hidden = false;
             }
-            function onLeave() {
-                if (!GUARD || done || !armed || away) return;
-                away = true;
+            // ---- Khóa màn hình: che toàn bộ đề; bấm "Mở khóa" = 1 lần thoát (không phụ thuộc tín hiệu của trình duyệt) ----
+            function showLock() {
+                var left = MAX_LEAVES - leaves;
+                $('#lkCnt').textContent = left > 0
+                    ? 'Mỗi lần mở khóa tính là 1 lần thoát. Em đã dùng ' + leaves + '/' + MAX_LEAVES + ' lần; mở khóa bây giờ là lần thứ ' + (leaves + 1) + '.' +
+                      (left === 1 ? ' ĐÂY LÀ LẦN CUỐI.' : '')
+                    : 'Em đã dùng hết ' + MAX_LEAVES + ' lần thoát. Mở khóa bây giờ bài sẽ được TỰ ĐỘNG NỘP.';
+                $('#lockScreen').hidden = false;
+            }
+            function lockScreen() {
+                if (!GUARD || done || locked) return;
+                locked = true;
+                saveState({ locked: true, form: collect() });
+                dbg('khóa màn hình');
+                $('#leaveWarn').hidden = true;
+                showLock();
+            }
+            function unlockScreen() {
+                if (!locked || done) return;
+                locked = false;
+                saveState({ locked: false });
+                $('#lockScreen').hidden = true;
+                armed = true; away = false;
+                onLeave('mở khóa', true);                               // mở khóa = 1 lần thoát (quá hạn mức thì tự nộp)
+                keepAwake();
+            }
+            function onLeave(why, alreadyBack) {
+                if (locked) { dbg('bỏ qua ' + (why || '?') + ' (đang khóa màn hình)'); return; }    // đã khóa: chỉ tính khi mở khóa
+                if (!GUARD || done || !armed || away) { dbg('bỏ qua ' + (why || '?') + ' (armed=' + armed + ' away=' + away + ')'); return; }
+                if (!alreadyBack) away = true;                          // alreadyBack: tín hiệu nhận được lúc học sinh đã quay lại
+                lastLeaveAt = Date.now();
                 leaves++;
+                dbg('TÍNH rời trang #' + leaves + ' (' + (why || '?') + ')');
                 saveState({ leaves: leaves, form: collect() });
                 if (leaves > MAX_LEAVES) { submit(true); return; }      // quá hạn mức: chấm + nộp ngay, không chờ học sinh quay lại
                 updateLeaveUI();
@@ -872,6 +950,8 @@
                 $('#leaveWarn').hidden = true;
                 $('#leaveBadge').hidden = true;
                 $('#leaveRule').hidden = true;
+                $('#lockBtn').hidden = true;
+                $('#lockScreen').hidden = true;
             }
             function initGuard() {
                 if (!GUARD) return;
@@ -879,15 +959,44 @@
                 rule.textContent = '⚠ Lưu ý: không được thoát khỏi trang, chuyển sang ứng dụng khác hay khóa máy khi đang làm bài. ' +
                     'Rời trang quá ' + MAX_LEAVES + ' lần, bài sẽ được tự động nộp.';
                 rule.hidden = false;
-                armed = (document.visibilityState === 'visible');
+                armed = (document.visibilityState !== 'hidden');       // một số trình duyệt nhúng báo trạng thái lạ lúc mở: sẽ bật khi học sinh chạm vào trang
                 updateLeaveUI();
-                if (leaves > 0) showWarn();                             // mở lại link sau khi đã rời: nhắc lại số lần
+                dbg('khởi động, bảo vệ đang BẬT');
+                $('#lockBtn').hidden = false;
+                $('#lockBtn').addEventListener('click', lockScreen);
+                $('#unlockBtn').addEventListener('click', unlockScreen);
+                if (locked) showLock();                                 // tải lại trang khi đang khóa: vẫn khóa, không né được
+                else if (leaves > 0) showWarn();                        // mở lại link sau khi đã rời: nhắc lại số lần
+                var back = function (why) { dbg('quay lại (' + why + ')'); armed = true; away = false; keepAwake(); };
                 document.addEventListener('visibilitychange', function () {
-                    if (document.visibilityState === 'hidden') onLeave();
-                    else { armed = true; away = false; keepAwake(); }
+                    dbg('visibilitychange -> ' + document.visibilityState);
+                    if (document.visibilityState === 'hidden') onLeave('hidden'); else back('visible');
                 });
-                window.addEventListener('pagehide', onLeave);           // đóng tab / đóng trình duyệt / tải lại
-                window.addEventListener('pageshow', function (e) { if (e.persisted) { armed = true; away = false; keepAwake(); } });
+                window.addEventListener('pagehide', function () { dbg('pagehide'); onLeave('pagehide'); });   // đóng tab / đóng trình duyệt / tải lại
+                window.addEventListener('pageshow', function (e) { dbg('pageshow persisted=' + e.persisted); if (e.persisted) back('pageshow'); });
+                // ---- tín hiệu dự phòng cho trình duyệt nhúng (Zalo, Messenger...) không gửi visibilitychange khi chuyển app ----
+                document.addEventListener('freeze', function () { dbg('freeze'); onLeave('freeze'); });
+                document.addEventListener('resume', function () { back('resume'); });
+                window.addEventListener('blur', function () {
+                    dbg('blur');
+                    clearTimeout(blurTimer);
+                    blurTimer = setTimeout(function () {
+                        if (dialogOpen || Date.now() - lastTouch < 1500) { dbg('blur bỏ qua (vừa chạm / hộp thoại)'); return; }
+                        if (document.hasFocus && document.hasFocus()) { dbg('blur bỏ qua (trang vẫn có tiêu điểm)'); return; }
+                        onLeave('blur');
+                    }, 700);
+                });
+                window.addEventListener('focus', function () { clearTimeout(blurTimer); if (document.visibilityState !== 'hidden') back('focus'); });
+                var lastTick = Date.now();                              // đồng hồ nhịp: máy khóa / trang bị đóng băng thì nhịp bị trễ
+                setInterval(function () {
+                    var now = Date.now(), gap = now - lastTick;
+                    lastTick = now;
+                    if (gap > GAP_MS && !dialogOpen && lastLeaveAt < now - gap) onLeave('đồng hồ trễ ' + Math.round(gap / 1000) + 's', true);
+                }, 1000);
+                var touch = function () { lastTouch = Date.now(); if (!armed) { armed = true; dbg('bật theo dõi (học sinh chạm vào trang)'); } };
+                document.addEventListener('touchstart', touch, true);
+                document.addEventListener('click', touch, true);
+                document.addEventListener('focusin', touch, true);
                 window.addEventListener('beforeunload', function (e) {  // hỏi "Rời trang?" nơi trình duyệt hỗ trợ (iOS Safari thì không)
                     if (done) return;
                     e.preventDefault();
@@ -918,14 +1027,14 @@
                     name = name || '(chưa nhập tên)';
                     cls = cls || '(chưa nhập lớp)';
                 } else if (!name || !cls) {
-                    alert('Vui lòng nhập đầy đủ Họ và tên và Lớp trước khi nộp bài!');
+                    ask(function () { alert('Vui lòng nhập đầy đủ Họ và tên và Lớp trước khi nộp bài!'); });
                     (name ? clsEl : nameEl).focus();
                     return;
                 }
                 var res = grade();
                 if (!auto) {
                     var inc = res.items.filter(function (it) { return it.incomplete; }).length;
-                    if (inc && !confirm('Em còn ' + inc + ' câu chưa làm xong. Vẫn nộp bài?')) return;
+                    if (inc && !ask(function () { return confirm('Em còn ' + inc + ' câu chưa làm xong. Vẫn nộp bài?'); })) return;
                 }
 
                 var payload = { name: name, className: cls };
