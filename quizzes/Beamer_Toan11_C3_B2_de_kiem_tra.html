@@ -121,6 +121,19 @@
         .foot { text-align: center; font-size: 12px; color: #5f7b94; padding: 4px 10px 18px; }
         .foot:empty { display: none; }
 
+        /* ---- chặn thoát khỏi trang ---- */
+        .lbadge { display: inline-block; margin-top: 4px; padding: 1px 10px; border-radius: 10px; background: #fff3cd; color: #7a5600; font-size: 12px; font-weight: bold; }
+        .lbadge.max { background: #f8d7da; color: #721c24; }
+        .lrule { margin: 8px 0 4px; padding: 7px 10px; background: #fff3cd; border: 1px solid #f0ad4e; border-radius: 8px; color: #7a5600; font-size: 13px; }
+        .lw { position: fixed; inset: 0; z-index: 300; display: flex; align-items: center; justify-content: center; padding: 20px; background: rgba(0,0,0,.6); }
+        .lw .lwbox { width: 100%; max-width: 380px; background: #fff; border: 3px solid #dc3545; border-radius: 12px; padding: 20px 18px; text-align: center; }
+        .lw .lwico { font-size: 44px; line-height: 1.2; }
+        .lw h2 { margin: 6px 0 8px; font-size: 19px; color: #dc3545; }
+        .lw p { margin: 6px 0; color: #333; }
+        .lw .lwbtn { display: block; width: 100%; margin-top: 14px; padding: 13px; background: #1e88e5; color: #fff; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; }
+        .lw .lwbtn:active { background: #1565c0; }
+        .ltoast { position: fixed; left: 12px; right: 12px; bottom: 18px; z-index: 250; padding: 10px 12px; background: #333; color: #fff; border-radius: 8px; font-size: 14px; text-align: center; }
+
         /* --- SVG / ẢNH + KHUNG ZOOM DÙNG CHUNG (khung tự co giãn, không đặt chiều cao cố định) --- */
         :root {
             --zoom-accent: #1e88e5; --zoom-accent-hover: #1565c0;
@@ -226,9 +239,10 @@
     </div>
 
     <div id="app">
-        <div class="topbar"><h1>Lớp 11 Chương 6 - Ôn tập</h1></div>
+        <div class="topbar"><h1>Lớp 11 Chương 6 - Ôn tập</h1><span class="lbadge" id="leaveBadge" hidden></span></div>
         <main>
             <div class="info">Môn: <b>Toán học</b> &nbsp;·&nbsp; 23 câu &nbsp;·&nbsp; Thời gian: <b>30 phút</b> &nbsp;·&nbsp; Thang điểm: <b>10.25</b></div>
+            <div class="lrule" id="leaveRule" hidden></div>
             <div class="who">
                 <label for="stName">Họ và tên</label>
                 <input type="text" id="stName" placeholder="Nhập họ và tên…" autocomplete="name" autocapitalize="words">
@@ -267,6 +281,14 @@
             <button type="button" class="submit-btn" id="submitBtn">Nộp bài</button>
         </main>
         <div class="foot"></div>
+        <div class="lw" id="leaveWarn" role="alertdialog" aria-modal="true" aria-labelledby="lwTitle" hidden>
+            <div class="lwbox">
+                <div class="lwico">⚠️</div>
+                <h2 id="lwTitle"></h2>
+                <p id="lwMsg"></p>
+                <button type="button" class="lwbtn" id="lwOk">Em đã hiểu, tiếp tục làm bài</button>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -538,6 +560,8 @@
             var GAS_URL = "https://script.google.com/macros/s/AKfycbyrb8pbIJA3IMb6FGuDgjLUuga9JDHC1fIKHMk6qFyYceXHh9SUHS7i-j0FAqG0YK02/exec";
             var KEY = {"P1_Cau_1": "B", "P1_Cau_2": "C", "P1_Cau_3": "A", "P1_Cau_4": "B", "P1_Cau_5": "D", "P1_Cau_6": "B", "P1_Cau_7": "A", "P1_Cau_8": "D", "P1_Cau_9": "C", "P1_Cau_10": "A", "P1_Cau_11": "B", "P1_Cau_12": "A", "P1_Cau_13": "B", "P2_Cau_14_a": "Đúng", "P2_Cau_14_b": "Đúng", "P2_Cau_14_c": "Sai", "P2_Cau_14_d": "Đúng", "P2_Cau_15_a": "Đúng", "P2_Cau_15_b": "Đúng", "P2_Cau_15_c": "Sai", "P2_Cau_15_d": "Sai", "P2_Cau_16_a": "Sai", "P2_Cau_16_b": "Đúng", "P2_Cau_16_c": "Đúng", "P2_Cau_16_d": "Sai", "P2_Cau_17_a": "Đúng", "P2_Cau_17_b": "Sai", "P2_Cau_17_c": "Sai", "P2_Cau_17_d": "Đúng", "P3_Cau_18": "23", "P3_Cau_19": "9,4", "P3_Cau_20": "7,86", "P3_Cau_21": "23,6", "P3_Cau_22": "10,7", "P3_Cau_23": "19,6"};            // {"P1_Cau_1":"B", "P2_Cau_2_a":"Đúng", "P3_Cau_3":"3.5", ...}
             var MAX_TXT = '10.25';
+            var MAX_LEAVES = Math.max(0, parseInt('3', 10) || 0);     // số lần được rời trang; 0 = tắt
+            var GUARD = MAX_LEAVES > 0 && PHONE_ONLY === true;                     // bản xem trước trong phần mềm (PHONE_ONLY=false) không bật
             var PTS_MC = 0.25, PTS_SHORT = 0.5, PTS_TF = [0, 0.1, 0.25, 0.5, 1];
             var PART_NAME = { 1: 'Phần 1 · Trắc nghiệm', 2: 'Phần 2 · Đúng / Sai', 3: 'Phần 3 · Trả lời ngắn' };
 
@@ -572,6 +596,7 @@
             if (!state.attemptId) saveState({ attemptId: newId() });
 
             var done = false;
+            var leaves = state.leaves || 0;                    // số lần đã rời trang (cộng dồn kể cả khi mở lại link)
 
             // ---- đọc / khôi phục bài làm ----
             function collect() {
@@ -736,6 +761,8 @@
                     '<div class="rcnt">✔ Đúng: <b>' + nR + '</b> câu' + (nP ? ' &nbsp;·&nbsp; ● Đúng một phần: <b>' + nP + '</b>' : '') +
                     ' &nbsp;·&nbsp; ✘ Sai / chưa làm: <b>' + nW + '</b></div>' +
                     '<div id="sendmsg" class="smsg"></div>';
+                if (GUARD && state.autoSubmit) html += '<div class="smsg bad">⏱ Bài được nộp tự động vì em đã rời khỏi trang quá ' + MAX_LEAVES + ' lần.</div>';
+                else if (GUARD && leaves > 0) html += '<div class="smsg">Số lần rời khỏi trang khi làm bài: <b>' + leaves + '</b></div>';
                 [1, 2, 3].forEach(function (p) {
                     if (groups[p] && groups[p].length) html += '<h4>' + PART_NAME[p] + '</h4><div class="chips">' + groups[p].join('') + '</div>';
                 });
@@ -783,34 +810,145 @@
             window.addEventListener('online', retryPending);
             setInterval(retryPending, 15000);
 
-            function submit() {
+            // =====================================================================
+            // CHẶN THOÁT KHỎI TRANG (chỉ bật trên điện thoại thật, xem GUARD)
+            //   rời trang = chuyển app / về màn hình chính / khóa máy / đóng tab / tải lại.
+            //   Rời ≤ MAX_LEAVES lần: cảnh báo. Rời quá MAX_LEAVES lần: tự nộp bài.
+            // =====================================================================
+            var armed = false;          // chỉ đếm sau khi trang đã thật sự hiện ra (mở link ở tab nền không bị tính)
+            var away = false;           // đang ở ngoài trang: một lần rời chỉ đếm một lần (hidden rồi pagehide)
+            var wake = null, wakeBusy = false, toastTimer = 0;
+
+            function toast(msg) {
+                var t = $('#ltoast');
+                if (!t) { t = document.createElement('div'); t.id = 'ltoast'; t.className = 'ltoast'; document.body.appendChild(t); }
+                t.textContent = msg;
+                t.hidden = false;
+                clearTimeout(toastTimer);
+                toastTimer = setTimeout(function () { t.hidden = true; }, 3500);
+            }
+            function updateLeaveUI() {
+                var b = $('#leaveBadge');
+                if (!GUARD || done || leaves < 1) { b.hidden = true; return; }
+                b.hidden = false;
+                b.textContent = '⚠ Đã rời trang: ' + Math.min(leaves, MAX_LEAVES) + '/' + MAX_LEAVES;
+                b.classList.toggle('max', leaves >= MAX_LEAVES);
+            }
+            function showWarn() {
+                var left = MAX_LEAVES - leaves;
+                $('#lwTitle').textContent = 'Em đã rời khỏi trang bài làm (lần ' + leaves + '/' + MAX_LEAVES + ')';
+                $('#lwMsg').textContent = left > 0
+                    ? 'Không được thoát hoặc chuyển sang ứng dụng khác khi đang làm bài. Em còn được rời thêm ' + left +
+                      ' lần; rời quá ' + MAX_LEAVES + ' lần bài sẽ bị tự động nộp.'
+                    : 'Đây là lần rời trang cuối cùng được phép. Nếu em rời khỏi trang thêm một lần nữa, bài sẽ bị tự động nộp ngay.';
+                $('#leaveWarn').hidden = false;
+            }
+            function onLeave() {
+                if (!GUARD || done || !armed || away) return;
+                away = true;
+                leaves++;
+                saveState({ leaves: leaves, form: collect() });
+                if (leaves > MAX_LEAVES) { submit(true); return; }      // quá hạn mức: chấm + nộp ngay, không chờ học sinh quay lại
+                updateLeaveUI();
+                showWarn();                                             // học sinh quay lại sẽ thấy hộp cảnh báo
+            }
+            function keepAwake() {                                      // giữ màn hình sáng để máy tự khóa không bị tính là rời trang
+                if (!GUARD || done || wake || wakeBusy || document.visibilityState !== 'visible') return;
+                try {
+                    if (navigator.wakeLock && navigator.wakeLock.request) {
+                        wakeBusy = true;
+                        navigator.wakeLock.request('screen').then(function (l) {
+                            wakeBusy = false;
+                            wake = l;
+                            l.addEventListener('release', function () { wake = null; });
+                        }).catch(function () { wakeBusy = false; });
+                    }
+                } catch (e) { wakeBusy = false; }
+            }
+            function trap() { try { history.pushState({ exam: 1 }, '', location.href); } catch (e) {} }
+            function stopGuard() {
+                try { if (wake) wake.release(); } catch (e) {}
+                wake = null;
+                $('#leaveWarn').hidden = true;
+                $('#leaveBadge').hidden = true;
+                $('#leaveRule').hidden = true;
+            }
+            function initGuard() {
+                if (!GUARD) return;
+                var rule = $('#leaveRule');
+                rule.textContent = '⚠ Lưu ý: không được thoát khỏi trang, chuyển sang ứng dụng khác hay khóa máy khi đang làm bài. ' +
+                    'Rời trang quá ' + MAX_LEAVES + ' lần, bài sẽ được tự động nộp.';
+                rule.hidden = false;
+                armed = (document.visibilityState === 'visible');
+                updateLeaveUI();
+                if (leaves > 0) showWarn();                             // mở lại link sau khi đã rời: nhắc lại số lần
+                document.addEventListener('visibilitychange', function () {
+                    if (document.visibilityState === 'hidden') onLeave();
+                    else { armed = true; away = false; keepAwake(); }
+                });
+                window.addEventListener('pagehide', onLeave);           // đóng tab / đóng trình duyệt / tải lại
+                window.addEventListener('pageshow', function (e) { if (e.persisted) { armed = true; away = false; keepAwake(); } });
+                window.addEventListener('beforeunload', function (e) {  // hỏi "Rời trang?" nơi trình duyệt hỗ trợ (iOS Safari thì không)
+                    if (done) return;
+                    e.preventDefault();
+                    e.returnValue = '';
+                    return '';
+                });
+                window.addEventListener('popstate', function () {       // chặn nút Back
+                    if (done) return;
+                    trap();
+                    toast('Không thể quay lại khi đang làm bài. Làm xong hãy bấm "Nộp bài".');
+                });
+                trap();
+                keepAwake();
+                // một số trình duyệt chỉ cho giữ màn hình sáng / thêm lịch sử sau khi người dùng chạm vào trang
+                var first = function () { keepAwake(); trap(); document.removeEventListener('touchstart', first, true); document.removeEventListener('click', first, true); };
+                document.addEventListener('touchstart', first, true);
+                document.addEventListener('click', first, true);
+                $('#lwOk').addEventListener('click', function () { $('#leaveWarn').hidden = true; keepAwake(); });
+            }
+
+            // auto = true: bị nộp tự động vì rời trang quá hạn mức (bỏ qua bước kiểm tra họ tên / lớp / câu chưa làm)
+            function submit(auto) {
                 if (done) return;
+                auto = (auto === true);
                 var nameEl = $('#stName'), clsEl = $('#stClass');
                 var name = nameEl.value.trim(), cls = clsEl.value.trim();
-                if (!name || !cls) {
+                if (auto) {
+                    name = name || '(chưa nhập tên)';
+                    cls = cls || '(chưa nhập lớp)';
+                } else if (!name || !cls) {
                     alert('Vui lòng nhập đầy đủ Họ và tên và Lớp trước khi nộp bài!');
                     (name ? clsEl : nameEl).focus();
                     return;
                 }
                 var res = grade();
-                var inc = res.items.filter(function (it) { return it.incomplete; }).length;
-                if (inc && !confirm('Em còn ' + inc + ' câu chưa làm xong. Vẫn nộp bài?')) return;
+                if (!auto) {
+                    var inc = res.items.filter(function (it) { return it.incomplete; }).length;
+                    if (inc && !confirm('Em còn ' + inc + ' câu chưa làm xong. Vẫn nộp bài?')) return;
+                }
 
                 var payload = { name: name, className: cls };
                 res.items.forEach(function (it) { if (it.graded) payload[it.id] = fmt(it.pts); });    // điểm từng câu
                 payload.score = res.score.toFixed(2);
                 payload.maxScore = MAX_TXT;
                 payload.attemptId = state.attemptId;                // để Apps Script bỏ các lần gửi trùng
+                if (GUARD) {                                        // Apps Script tự thêm 2 cột này vào Google Sheet
+                    payload.Roi_trang = String(leaves);
+                    if (auto) payload.Tu_dong_nop = 'Co';
+                }
 
                 done = true;
-                saveState({ form: collect(), submitted: true, sent: false, payload: payload, finalScore: payload.score + '/' + MAX_TXT });
+                saveState({ form: collect(), submitted: true, sent: false, payload: payload, autoSubmit: auto,
+                            finalScore: payload.score + '/' + MAX_TXT });
+                stopGuard();
                 lockForm();
                 showGrade(res);
                 var box = $('#result');
                 if (box.scrollIntoView) box.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 sendPayload();
             }
-            $('#submitBtn').addEventListener('click', submit);
+            $('#submitBtn').addEventListener('click', function () { submit(false); });
 
             // ---- mở lại trang ----
             restore(state.form);
@@ -819,6 +957,8 @@
                 lockForm();
                 showGrade(grade());
                 retryPending();
+            } else {
+                initGuard();
             }
         })();
     </script>
