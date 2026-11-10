@@ -653,7 +653,7 @@
             var GUARD = MAX_LEAVES > 0 && PHONE_ONLY === true;                     // bản xem trước trong phần mềm (PHONE_ONLY=false) không bật
             var IS_DESKTOP = (window.EXAM_IS_PHONE === false);                     // đang mở trên máy tính (chỉ xảy ra khi ALLOW_DESKTOP)
             var DESK_GUARD = GUARD && IS_DESKTOP;                                  // khóa cửa sổ làm bài trên máy tính
-            var GRACE_MIN = 2;                                                     // phút đầu (kể từ lúc mở đề lần đầu) KHÔNG tính rời trang, để học sinh làm quen
+            var GRACE_MIN = 1;                                                     // phút đầu (kể từ lúc mở đề lần đầu) KHÔNG tính rời trang, để học sinh làm quen
             var GRACE_MS = GRACE_MIN * 60 * 1000;
             var RETAKE_PW = String("0947306694" || '');                       // mật khẩu cho phép làm lại; rỗng = không cho làm lại
             var PTS_MC = 0.25, PTS_SHORT = 0.5, PTS_TF = [0, 0.1, 0.25, 0.5, 1];
