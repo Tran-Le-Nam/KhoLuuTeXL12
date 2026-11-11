@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="robots" content="noindex">
-    <title>HK I - NH 2025-2026 - Rạch Kiến - Long An</title>
+    <title>HK I - NH 2025-2026 - Rạch Kiên - Long An</title>
     <script>
         var PHONE_ONLY = true;
         var ALLOW_DESKTOP = true;          // true: cho phép làm bài trên máy tính (kèm khóa cửa sổ làm bài)
@@ -57,6 +57,14 @@
         .who input { width: 100%; padding: 10px; font-size: 16px; border: 2px solid #b3d4fc; border-radius: 6px; background: #fff; color: #1c2b3a; }
         .who input:focus { border-color: #1e88e5; outline: none; }
         .who input:disabled { background: #eef3f8; color: #555; }
+        .who input.bad { border-color: #d32f2f; background: #fff5f5; }
+        .start-btn { display: block; width: 100%; margin-top: 12px; padding: 13px; background: #1e88e5; color: #fff; border: 0; border-radius: 8px; font-size: 16px; font-weight: bold; }
+        .start-btn:active { background: #1565c0; }
+        .start-err { color: #d32f2f; font-size: 14px; font-weight: bold; margin-top: 8px; min-height: 0; }
+        .start-note { font-size: 13px; color: #546e7a; margin-top: 8px; }
+        /* Chưa bấm "Bắt đầu": ẩn đề (vẫn giữ bố cục để MathJax / ảnh đo kích thước đúng) và nút Nộp bài */
+        #app.pregate #qs { height: 0; overflow: hidden; visibility: hidden; margin: 0; padding: 0; }
+        #app.pregate #submitBtn { display: none; }
 
         /* ---- câu hỏi ---- */
         .q { background: #fff; border: 2px solid #b3d4fc; border-radius: 10px; padding: 12px; margin: 12px 0; overflow-x: auto; -webkit-overflow-scrolling: touch; scroll-margin-top: 64px; }
@@ -290,7 +298,7 @@
 
     <div id="app">
         <div class="topbar">
-            <div class="trow"><h1>HK I - NH 2025-2026 - Rạch Kiến - Long An</h1><button type="button" class="lockbtn" id="lockBtn" hidden>🔒 Khóa màn hình</button></div>
+            <div class="trow"><h1>HK I - NH 2025-2026 - Rạch Kiên - Long An</h1><button type="button" class="lockbtn" id="lockBtn" hidden>🔒 Khóa màn hình</button></div>
             <span class="lbadge" id="leaveBadge" hidden></span>
         </div>
         <main>
@@ -301,6 +309,9 @@
                 <input type="text" id="stName" placeholder="Nhập họ và tên…" autocomplete="name" autocapitalize="words">
                 <label for="stClass">Lớp</label>
                 <input type="text" id="stClass" placeholder="Nhập lớp… (vd 12A1)" autocomplete="off">
+                <div class="start-note" id="startNote">Nhập đầy đủ Họ và tên, Lớp rồi bấm "Bắt đầu làm bài". Đề và đồng hồ chỉ hiện ra sau khi bấm.</div>
+                <div class="start-err" id="startErr" role="alert"></div>
+                <button type="button" class="start-btn" id="startBtn">▶ Bắt đầu làm bài</button>
             </div>
             <div id="result" role="status"></div>
             <div id="qs">
@@ -657,7 +668,7 @@
             var GUARD = MAX_LEAVES > 0 && PHONE_ONLY === true;                     // bản xem trước trong phần mềm (PHONE_ONLY=false) không bật
             var IS_DESKTOP = (window.EXAM_IS_PHONE === false);                     // đang mở trên máy tính (chỉ xảy ra khi ALLOW_DESKTOP)
             var DESK_GUARD = GUARD && IS_DESKTOP;                                  // khóa cửa sổ làm bài trên máy tính
-            var GRACE_MIN = 1;                                                     // phút đầu (kể từ lúc mở đề lần đầu) KHÔNG tính rời trang, để học sinh làm quen
+            var GRACE_MIN = 2;                                                     // phút đầu (kể từ lúc mở đề lần đầu) KHÔNG tính rời trang, để học sinh làm quen
             var GRACE_MS = GRACE_MIN * 60 * 1000;
             var RETAKE_PW = String("0947306694" || '');                       // mật khẩu cho phép làm lại; rỗng = không cho làm lại
             var PTS_MC = 0.25, PTS_SHORT = 0.5, PTS_TF = [0, 0.1, 0.25, 0.5, 1];
@@ -692,7 +703,7 @@
             }
             function newId() { return (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : (Date.now().toString(36) + Math.random().toString(36).slice(2, 10)); }
             if (!state.attemptId) saveState({ attemptId: newId() });
-            if (!state.startedAt) saveState({ startedAt: Date.now() });            // mốc bắt đầu lượt làm bài (lưu lại: tải lại trang không kéo dài thời gian làm quen)
+            // state.startedAt = mốc học sinh bấm "Bắt đầu làm bài" (lưu lại: tải lại trang không kéo dài thời gian làm quen)
             function inGrace() { return (Date.now() - (state.startedAt || 0)) < GRACE_MS; }
 
             var done = false;
@@ -1369,6 +1380,41 @@
                 });
             }
 
+            // ---- cổng bắt đầu: phải nhập Họ và tên + Lớp mới thấy đề, đồng hồ và bộ đếm rời trang mới chạy ----
+            function openGate(show) {
+                var app = $('#app');
+                app.classList.toggle('pregate', !!show);
+                $('#startBtn').hidden = !show;
+                $('#startNote').hidden = !show;
+                $('#startErr').hidden = !show;
+            }
+            function begin() {
+                var nameEl = $('#stName'), clsEl = $('#stClass');
+                var name = nameEl.value.trim(), cls = clsEl.value.trim();
+                nameEl.classList.toggle('bad', !name);
+                clsEl.classList.toggle('bad', !cls);
+                if (!name || !cls) {
+                    $('#startErr').textContent = !name && !cls ? 'Em cần nhập Họ và tên và Lớp trước khi bắt đầu!'
+                                               : (!name ? 'Em chưa nhập Họ và tên!' : 'Em chưa nhập Lớp!');
+                    (!name ? nameEl : clsEl).focus();
+                    return;
+                }
+                $('#startErr').textContent = '';
+                nameEl.value = name; clsEl.value = cls;
+                var t = Date.now();
+                state.startedAt = t;
+                if (PHONE_ONLY === true) saveState({ started: true, startedAt: t, form: collect() });   // bản xem thử trong ứng dụng: không lưu, lần mở sau lại hiện cổng
+                openGate(false);
+                initGuard();
+                startTimer();
+                window.scrollTo(0, 0);
+            }
+            $('#startBtn').addEventListener('click', begin);
+            [$('#stName'), $('#stClass')].forEach(function (el) {
+                el.addEventListener('input', function () { el.classList.remove('bad'); $('#startErr').textContent = ''; });
+            });
+            $('#stClass').addEventListener('keydown', function (e) { if (e.key === 'Enter' && !$('#startBtn').hidden) { e.preventDefault(); begin(); } });
+
             // ---- mở lại trang ----
             applyShuffle();                                             // phải chạy trước restore() và đồng hồ
             restore(state.form);
@@ -1378,9 +1424,14 @@
                 showGrade(grade());
                 showEnded();
                 retryPending();
-            } else {
+            } else if (state.started || (state.endTime && PHONE_ONLY === true)) {
+                // đã bấm "Bắt đầu" trước đó (hoặc trạng thái cũ đã có đồng hồ): vào thẳng bài, không hỏi lại
+                if (!state.startedAt) saveState({ startedAt: Date.now() });
+                openGate(false);
                 initGuard();
                 startTimer();                                           // hết giờ trong lúc đóng trang: mở lại sẽ tự nộp ngay
+            } else {
+                openGate(true);                                         // chưa bắt đầu: bắt nhập Họ tên + Lớp
             }
         })();
     </script>
