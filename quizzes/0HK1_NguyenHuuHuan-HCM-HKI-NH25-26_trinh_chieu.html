@@ -4,6 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lớp 11 Chương 6 - Ôn tập - Trình Chiếu</title>
+    <script>
+        // Phân loại thiết bị: điện thoại (màn cảm ứng, cạnh ngắn < 600px) không có bút viết lẫn in;
+        // máy tính bảng (cảm ứng, lớn hơn) có bút nhưng không có in; máy tính có cả hai.
+        (function () {
+            var d = document.documentElement;
+            var touch = !!(window.matchMedia && window.matchMedia('(hover: none) and (pointer: coarse)').matches);
+            var phone = touch && Math.min(screen.width, screen.height) < 600;
+            if (phone) d.classList.add('no-ink', 'no-print');
+            else if (touch) d.classList.add('no-print');
+        })();
+    </script>
     <style>
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #eccfa0; font-family: Arial, sans-serif; display: flex; justify-content: center; align-items: center; overflow: hidden; }
         .slide-container { width: 95vw; height: 95vh; height: 95dvh; background: #fff; border-radius: 5px; box-shadow: 0 5px 15px rgba(0,0,0,0.5); display: flex; flex-direction: column; position: relative; padding: 10px; box-sizing: border-box; }
@@ -230,6 +241,10 @@
             .toc-legend { display: none; }
         }
 
+
+        /* --- ẨN CÔNG CỤ KHÔNG DÙNG ĐƯỢC TRÊN THIẾT BỊ (xem đoạn script phân loại ở đầu trang) --- */
+        html.no-ink #penBtn, html.no-ink #inkBar, html.no-ink #inkCanvas { display: none !important; }
+        html.no-print #printBtn, html.no-print #inkPrint, html.no-print #printModal { display: none !important; }
 
         /* --- IN SLIDE (kèm nét bút): hộp chọn phạm vi + bản in --- */
         .pr-modal { position: fixed; inset: 0; z-index: 1100; background: rgba(0,0,0,.5); display: none; align-items: center; justify-content: center; padding: 14px; }
@@ -1272,6 +1287,7 @@ mjx-container { max-width: 100%; overflow-x: auto; overflow-y: hidden; -webkit-o
 
         // mở / đóng thanh bút. Đóng thanh thì nét đã viết vẫn hiện, chỉ không vẽ được nữa
         function inkToggle() {
+            if (document.documentElement.classList.contains('no-ink')) return;   // điện thoại: không có bút viết
             ink.open = !ink.open;
             if (ink.open) ink.tool = ink.prev || 'pen';
             else { inkCommit(); ink.tool = 'cursor'; }
@@ -1469,6 +1485,7 @@ mjx-container { max-width: 100%; overflow-x: auto; overflow-y: hidden; -webkit-o
         // ---- hộp chọn phạm vi in ----
         function prModal() { return document.getElementById('printModal'); }
         function openPrint() {
+            if (document.documentElement.classList.contains('no-print')) return;   // chỉ in trên máy tính
             inkCommit();
             const n = slides.length;
             if (!n) return;
@@ -1510,7 +1527,7 @@ mjx-container { max-width: 100%; overflow-x: auto; overflow-y: hidden; -webkit-o
 
         // Ctrl+P / menu in của trình duyệt: tự in câu đang xem kèm nét bút (thay vì trang trống / bị cắt)
         window.addEventListener('beforeprint', () => {
-            if (prRoot) return;
+            if (prRoot || document.documentElement.classList.contains('no-print')) return;
             try { prPrepare([currentSlide], true, false); } catch (err) { console.warn(err); prCleanup(); }
         });
         window.addEventListener('afterprint', prCleanup);
